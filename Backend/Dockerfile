@@ -1,34 +1,39 @@
-# Use official JDK 17 (lightweight alpine)
+# Use Eclipse Temurin JDK 17 Alpine image
 FROM eclipse-temurin:17-jdk-alpine AS builder
 
-# Set work directory
+# Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper + pom.xml
+# Copy Maven wrapper
 COPY mvnw .
 COPY .mvn .mvn
+
+# Make mvnw executable
+RUN chmod +x mvnw
+
+# Copy pom.xml first (for caching dependencies)
 COPY pom.xml .
 
-# Pre-download dependencies (better build cache)
+# Pre-download dependencies
 RUN ./mvnw dependency:go-offline -B
 
-# Copy the rest of the project
-COPY src src
+# Copy source code
+COPY src ./src
 
-# Build the application
+# Build the project
 RUN ./mvnw clean package -DskipTests
 
-# -----------------------
-# Run Stage (smaller image)
-# -----------------------
+# ----------- Runtime Stage -----------
+
 FROM eclipse-temurin:17-jdk-alpine
+
 WORKDIR /app
 
-# Copy only the built JAR
-COPY --from=builder /app/target/*.jar app.jar
+# Copy the jar from the builder stage
+COPY --from=builder /app/target/backend-0.0.1-SNAPSHOT.jar ./backend.jar
 
-# Expose backend port
+# Expose port
 EXPOSE 8080
 
-# Run Spring Boot
-CMD ["java", "-jar", "app.jar"]
+# Run the backend
+CMD ["java", "-jar", "backend.jar"]
