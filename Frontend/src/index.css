@@ -1,0 +1,8 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white min-h-screen;
+}
