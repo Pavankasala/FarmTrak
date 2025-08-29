@@ -1,3 +1,15 @@
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error('Unhandled error caught by window.onerror:', {
+    message,
+    source,
+    lineno,
+    colno,
+    error: error ? error.stack : 'No error object'
+  });
+  // Return true to prevent the default browser error handling
+  return true;
+};
+
 // src/App.jsx
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Welcome from './pages/Welcome';

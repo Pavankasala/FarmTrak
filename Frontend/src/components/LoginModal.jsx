@@ -2,11 +2,10 @@
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { API_BASE_URL } from "../utils/api"; // <-- import centralized API URL
 
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
   if (!isOpen) return null;
-
-  const API_BASE_URL = process.env.REACT_APP_API_URL;
 
   const handleGoogleSuccess = async (credentialResponse) => {
     if (!credentialResponse?.credential) return;
