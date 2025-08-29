@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { getCurrentUser } from "../utils/login";
 
 export default function FeedPredictor({ flockId }) {
-  const userEmail = getCurrentUser(); // logged-in user
+  const userEmail = getCurrentUser();
   const [numBirds, setNumBirds] = useState("");
   const [birdType, setBirdType] = useState("broiler");
   const [customBird, setCustomBird] = useState("");
@@ -15,7 +15,6 @@ export default function FeedPredictor({ flockId }) {
   const [records, setRecords] = useState([]);
   const [editId, setEditId] = useState(null);
 
-  // Load user-specific feed records for this flock
   useEffect(() => {
     const savedRecords = JSON.parse(localStorage.getItem("feedRecords") || "[]");
     setRecords(savedRecords.filter((r) => r.flockId === flockId && r.userEmail === userEmail));
@@ -117,13 +116,11 @@ export default function FeedPredictor({ flockId }) {
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🧠 Feed Predictor</h1>
 
-      {/* Form + Result + Records */}
       <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
-        {/* Form Inputs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Number of Birds</label>
-            <input type="number" value={numBirds} onChange={(e) => setNumBirds(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"/>
+            <input type="number" value={numBirds} onChange={(e) => setNumBirds(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
           </div>
 
           <div>
@@ -138,13 +135,13 @@ export default function FeedPredictor({ flockId }) {
           {birdType === "other" && (
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Custom Bird Name</label>
-              <input type="text" value={customBird} onChange={(e) => setCustomBird(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" placeholder="Enter bird name"/>
+              <input type="text" value={customBird} onChange={(e) => setCustomBird(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" placeholder="Enter bird name" />
             </div>
           )}
 
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total Feed Given</label>
-            <input type="number" value={totalFeedGiven} onChange={(e) => setTotalFeedGiven(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"/>
+            <input type="number" value={totalFeedGiven} onChange={(e) => setTotalFeedGiven(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
           </div>
 
           <div>
@@ -157,7 +154,7 @@ export default function FeedPredictor({ flockId }) {
 
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Days Feed Lasted</label>
-            <input type="number" value={daysLasted} onChange={(e) => setDaysLasted(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"/>
+            <input type="number" value={daysLasted} onChange={(e) => setDaysLasted(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
           </div>
 
           <div>
@@ -169,25 +166,30 @@ export default function FeedPredictor({ flockId }) {
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex flex-wrap gap-2">
-          <button onClick={calculateFeed} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow">Calculate</button>
-          {editId && <button onClick={resetForm} className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow">Cancel</button>}
+          <button onClick={calculateFeed} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow">
+            Calculate
+          </button>
+          {editId && (
+            <button onClick={resetForm} className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow">
+              Cancel
+            </button>
+          )}
         </div>
 
-        {/* Result */}
         {typeof result === "string" ? (
           <div className="text-red-600 dark:text-red-400">{result}</div>
         ) : result ? (
           <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded">
             ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
             <div className="mt-2">
-              <button onClick={saveRecord} className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded">{editId ? "Update Record" : "Save Record"}</button>
+              <button onClick={saveRecord} className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded">
+                {editId ? "Update Record" : "Save Record"}
+              </button>
             </div>
           </div>
         ) : null}
 
-        {/* Saved Records Table */}
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">📋 Saved Records</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
@@ -202,7 +204,8 @@ export default function FeedPredictor({ flockId }) {
             </thead>
             <tbody>
               {records.length > 0 ? (
-                [...records].sort((a, b) => new Date(b.date) - new Date(a.date))
+                [...records]
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
                   .map((r) => (
                     <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
                       <td className="px-4 py-2 whitespace-nowrap">{new Date(r.date).toLocaleDateString()}</td>

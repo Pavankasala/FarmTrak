@@ -11,7 +11,6 @@ export default function FlockManagement() {
 
   const userEmail = localStorage.getItem("userEmail");
 
-  // Fetch all flocks for the logged-in user
   const fetchFlocks = async () => {
     if (!userEmail) return;
 
@@ -25,7 +24,6 @@ export default function FlockManagement() {
     }
   };
 
-  // Add a new flock
   const handleAddFlock = async () => {
     if (!userEmail) {
       alert("User not logged in!");
@@ -57,7 +55,6 @@ export default function FlockManagement() {
     }
   };
 
-  // Delete a flock
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this flock?")) return;
     try {
@@ -68,19 +65,16 @@ export default function FlockManagement() {
     }
   };
 
-  // Start editing a flock
   const startEditing = (flock) => {
     setEditingId(flock.id);
     setEditedFlock({ type: flock.type, customType: "", quantity: flock.quantity, age: flock.age });
   };
 
-  // Cancel editing
   const cancelEdit = () => {
     setEditingId(null);
     setEditedFlock({ type: "Broiler", customType: "", quantity: "", age: "" });
   };
 
-  // Update a flock
   const handleUpdate = async () => {
     if (!userEmail) {
       alert("User not logged in!");
@@ -110,7 +104,6 @@ export default function FlockManagement() {
     }
   };
 
-  // Fetch flocks on load and whenever userEmail changes
   useEffect(() => {
     if (userEmail) fetchFlocks();
   }, [userEmail]);
@@ -119,10 +112,8 @@ export default function FlockManagement() {
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center">🐓 Flock Management</h1>
 
-      {/* Form */}
       <div className="bg-white dark:bg-white/5 shadow p-6 rounded-xl w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-          {/* Bird Type */}
           <div>
             <label className="font-semibold text-gray-900 dark:text-white">Bird Type</label>
             <select
@@ -145,7 +136,6 @@ export default function FlockManagement() {
             )}
           </div>
 
-          {/* Quantity */}
           <div>
             <label className="font-semibold text-gray-900 dark:text-white">Quantity</label>
             <input
@@ -156,7 +146,6 @@ export default function FlockManagement() {
             />
           </div>
 
-          {/* Age */}
           <div>
             <label className="font-semibold text-gray-900 dark:text-white">Age (weeks)</label>
             <input
@@ -167,7 +156,6 @@ export default function FlockManagement() {
             />
           </div>
 
-          {/* Add Button */}
           <div className="flex justify-end">
             <button
               onClick={handleAddFlock}
@@ -179,7 +167,6 @@ export default function FlockManagement() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white dark:bg-white/5 shadow p-4 rounded-xl overflow-x-auto">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white text-center">📋 Current Flocks</h2>
         <table className="min-w-full text-left">

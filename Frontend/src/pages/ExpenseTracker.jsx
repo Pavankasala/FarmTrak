@@ -1,11 +1,12 @@
-// src/pages/ExpenseTracker.jsx
+//Frontend\src\pages\ExpenseTracker.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCurrentUser } from "../utils/login";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+
 export default function ExpenseTracker() {
   const userEmail = getCurrentUser(); // logged-in user
-  const API_BASE_URL = process.env.REACT_APP_API_URL; // ✅ deployment-ready
 
   const [expenses, setExpenses] = useState([]);
   const [form, setForm] = useState({
@@ -18,7 +19,6 @@ export default function ExpenseTracker() {
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch expenses from backend
   const fetchExpenses = async () => {
     if (!userEmail) return;
     try {
@@ -60,7 +60,6 @@ export default function ExpenseTracker() {
           headers: { "X-User-Email": userEmail },
         });
       }
-
       setForm({ id: null, category: "", amount: "", date: "", notes: "", paid: false });
       setIsEditing(false);
       fetchExpenses();

@@ -12,7 +12,6 @@ export default function ProductionTracker({ onDataUpdate }) {
 
   const userEmail = getCurrentUser();
 
-  // Load flocks and egg productions
   const loadData = async () => {
     if (!userEmail) return;
     try {
@@ -24,7 +23,6 @@ export default function ProductionTracker({ onDataUpdate }) {
       setFlocks(flockRes.data || []);
       setProductions(prodRes.data || []);
 
-      // Update today's egg count for dashboard
       const today = new Date().toISOString().split("T")[0];
       const todayRecords = prodRes.data.filter((p) => p.date === today);
       const totalToday = todayRecords.reduce((sum, p) => sum + p.count, 0);
@@ -39,13 +37,11 @@ export default function ProductionTracker({ onDataUpdate }) {
     if (userEmail) loadData();
   }, [userEmail]);
 
-  // Handle form input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  // Add or update production
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.flockId || !form.count || !form.date) return;
@@ -65,12 +61,10 @@ export default function ProductionTracker({ onDataUpdate }) {
     }
   };
 
-  // Edit a record
   const handleEdit = (prod) => {
     setForm({ id: prod.id, flockId: prod.flockId.toString(), count: prod.count.toString(), date: prod.date });
   };
 
-  // Delete a record
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
@@ -87,7 +81,6 @@ export default function ProductionTracker({ onDataUpdate }) {
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center">🥚 Egg Production Tracker</h1>
 
-      {/* Form */}
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-white/5 p-6 rounded-2xl shadow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end"
@@ -141,7 +134,6 @@ export default function ProductionTracker({ onDataUpdate }) {
         )}
       </form>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
           <thead>
