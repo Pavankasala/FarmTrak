@@ -13,8 +13,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@CrossOrigin(origins = "https://your-frontend-domain.com")
 @RestController
-@CrossOrigin(origins = "http://localhost:5173") // your frontend
 @RequestMapping("/api")
 public class LoginController {
 

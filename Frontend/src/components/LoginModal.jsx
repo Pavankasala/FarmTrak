@@ -10,7 +10,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     if (!credentialResponse || !credentialResponse.credential) return;
 
     try {
-      const res = await axios.post("http://localhost:8080/api/google-login", {
+      const res = await axios.post("https://farmtrak.onrender.com/api/google-login", {
         token: credentialResponse.credential,
       });
 
