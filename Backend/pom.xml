@@ -83,8 +83,7 @@
             <scope>runtime</scope>
         </dependency>
     </dependencies>
-
-    <build>
+        <build>
         <plugins>
             <!-- Maven Compiler Plugin -->
             <plugin>
@@ -102,6 +101,11 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
