@@ -1,6 +1,10 @@
 // src/components/Sidebar.jsx
 import { NavLink } from "react-router-dom";
 
+/**
+ * Sidebar navigation component for FarmTrak dashboard.
+ * Highlights the active route.
+ */
 export default function Sidebar() {
   return (
     <aside className="bg-white dark:bg-gray-900 w-60 h-screen shadow-md p-4 space-y-4 transition-colors">
@@ -21,6 +25,7 @@ export default function Sidebar() {
         >
           📋 Dashboard
         </NavLink>
+
         <NavLink
           to="/dashboard/feed"
           className={({ isActive }) =>
@@ -33,6 +38,7 @@ export default function Sidebar() {
         >
           🧠 Feed Predictor
         </NavLink>
+
         <NavLink
           to="/dashboard/flock"
           className={({ isActive }) =>
@@ -45,18 +51,20 @@ export default function Sidebar() {
         >
           🐓 Flock Management
         </NavLink>
+
         <NavLink
-        to="/dashboard/eggs"
-        className={({ isActive }) =>
-          `px-2 py-1 rounded transition-colors ${
-            isActive
-              ? "bg-indigo-600 text-white"
-              : "text-gray-700 dark:text-gray-300"
-          } hover:bg-indigo-500 hover:text-white`
-        }
-      >
-        🥚 Egg Production
-      </NavLink>
+          to="/dashboard/eggs"
+          className={({ isActive }) =>
+            `px-2 py-1 rounded transition-colors ${
+              isActive
+                ? "bg-indigo-600 text-white"
+                : "text-gray-700 dark:text-gray-300"
+            } hover:bg-indigo-500 hover:text-white`
+          }
+        >
+          🥚 Egg Production
+        </NavLink>
+
         <NavLink
           to="/dashboard/expenses"
           className={({ isActive }) =>

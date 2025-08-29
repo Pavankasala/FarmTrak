@@ -1,4 +1,4 @@
-//Frontend\src\components\LoginModal.jsx
+// Frontend/src/components/LoginModal.jsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
@@ -6,19 +6,19 @@ import axios from "axios";
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
   if (!isOpen) return null;
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL;
+
   const handleGoogleSuccess = async (credentialResponse) => {
-    if (!credentialResponse || !credentialResponse.credential) return;
+    if (!credentialResponse?.credential) return;
 
     try {
-      const res = await axios.post("https://farmtrak.onrender.com/api/google-login", {
+      const res = await axios.post(`${API_BASE_URL}/api/google-login`, {
         token: credentialResponse.credential,
       });
 
       if (res.data.status === "success") {
-        // ✅ Store email in localStorage for FlockManagement
+        // ✅ Store email and token in localStorage
         localStorage.setItem("userEmail", res.data.email);
-
-        // Also optionally store token
         localStorage.setItem("token", res.data.token);
 
         // Call parent success callback
@@ -27,12 +27,12 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
           email: res.data.email,
         });
 
-        onClose(); // close the modal after login
+        onClose(); // close modal after successful login
       } else {
         alert("Google login failed: " + res.data.message);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
       alert("Login error: " + err.message);
     }
   };

@@ -4,16 +4,25 @@ import axios from "axios";
 import { getCurrentUser } from "../utils/login";
 
 export default function ExpenseTracker() {
-  const userEmail = getCurrentUser(); // Get logged-in user dynamically
+  const userEmail = getCurrentUser(); // logged-in user
+  const API_BASE_URL = process.env.REACT_APP_API_URL; // ✅ deployment-ready
+
   const [expenses, setExpenses] = useState([]);
-  const [form, setForm] = useState({ id: null, category: "", amount: "", date: "", notes: "", paid: false });
+  const [form, setForm] = useState({
+    id: null,
+    category: "",
+    amount: "",
+    date: "",
+    notes: "",
+    paid: false,
+  });
   const [isEditing, setIsEditing] = useState(false);
 
   // Fetch expenses from backend
   const fetchExpenses = async () => {
     if (!userEmail) return;
     try {
-      const res = await axios.get(`http://localhost:8080/api/expenses`, { params: { userEmail } });
+      const res = await axios.get(`${API_BASE_URL}/api/expenses`, { params: { userEmail } });
       setExpenses(res.data);
     } catch (err) {
       console.error("Failed to fetch expenses:", err);
@@ -38,23 +47,23 @@ export default function ExpenseTracker() {
       amount: parseFloat(form.amount),
       date: form.date,
       notes: form.notes,
-      paid: form.paid
+      paid: form.paid,
     };
 
     try {
       if (isEditing) {
-        await axios.put(`http://localhost:8080/api/expenses/${form.id}`, payload, {
-          headers: { "X-User-Email": userEmail }
+        await axios.put(`${API_BASE_URL}/api/expenses/${form.id}`, payload, {
+          headers: { "X-User-Email": userEmail },
         });
       } else {
-        await axios.post("http://localhost:8080/api/expenses", payload, {
-          headers: { "X-User-Email": userEmail }
+        await axios.post(`${API_BASE_URL}/api/expenses`, payload, {
+          headers: { "X-User-Email": userEmail },
         });
       }
 
       setForm({ id: null, category: "", amount: "", date: "", notes: "", paid: false });
       setIsEditing(false);
-      fetchExpenses(); // Refresh list
+      fetchExpenses();
     } catch (err) {
       console.error("Failed to save expense:", err);
     }
@@ -63,7 +72,7 @@ export default function ExpenseTracker() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
-      await axios.delete(`http://localhost:8080/api/expenses/${id}`, { headers: { "X-User-Email": userEmail } });
+      await axios.delete(`${API_BASE_URL}/api/expenses/${id}`, { headers: { "X-User-Email": userEmail } });
       fetchExpenses();
     } catch (err) {
       console.error("Failed to delete expense:", err);
@@ -77,16 +86,18 @@ export default function ExpenseTracker() {
 
   const handleTogglePaid = async (exp) => {
     try {
-      await axios.put(`http://localhost:8080/api/expenses/${exp.id}`, { ...exp, paid: !exp.paid }, {
-        headers: { "X-User-Email": userEmail }
-      });
+      await axios.put(
+        `${API_BASE_URL}/api/expenses/${exp.id}`,
+        { ...exp, paid: !exp.paid },
+        { headers: { "X-User-Email": userEmail } }
+      );
       fetchExpenses();
     } catch (err) {
       console.error("Failed to toggle paid:", err);
     }
   };
 
-  const total = expenses.filter(exp => !exp.paid).reduce((sum, exp) => sum + exp.amount, 0);
+  const total = expenses.filter((exp) => !exp.paid).reduce((sum, exp) => sum + exp.amount, 0);
 
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-6xl mx-auto">
@@ -95,10 +106,38 @@ export default function ExpenseTracker() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="w-full bg-white dark:bg-white/5 shadow p-6 rounded-xl space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" name="category" value={form.category} onChange={handleChange} placeholder="Category" className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
-          <input type="number" step="0.01" name="amount" value={form.amount} onChange={handleChange} placeholder="Amount" className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
-          <input type="date" name="date" value={form.date} onChange={handleChange} className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
-          <input type="text" name="notes" value={form.notes} onChange={handleChange} placeholder="Notes (optional)" className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
+          <input
+            type="text"
+            name="category"
+            value={form.category}
+            onChange={handleChange}
+            placeholder="Category"
+            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          />
+          <input
+            type="number"
+            step="0.01"
+            name="amount"
+            value={form.amount}
+            onChange={handleChange}
+            placeholder="Amount"
+            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          />
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          />
+          <input
+            type="text"
+            name="notes"
+            value={form.notes}
+            onChange={handleChange}
+            placeholder="Notes (optional)"
+            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          />
         </div>
 
         {isEditing && (
@@ -113,7 +152,13 @@ export default function ExpenseTracker() {
             {isEditing ? "✏️ Update Expense" : "➕ Add Expense"}
           </button>
           {isEditing && (
-            <button type="button" onClick={() => setIsEditing(false)} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            >
+              Cancel
+            </button>
           )}
         </div>
       </form>
@@ -133,37 +178,43 @@ export default function ExpenseTracker() {
             </tr>
           </thead>
           <tbody>
-      {expenses.length > 0 ? (
-        [...expenses]
-          .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort descending by date
-          .map((exp, index) => (
-            <tr key={exp.id} className="border-b dark:border-gray-700">
-              <td className="p-2">{index + 1}</td>
-              <td className="p-2">{new Date(exp.date).toLocaleDateString()}</td>
-              <td className="p-2">{exp.category}</td>
-              <td className="p-2">{exp.notes || "-"}</td>
-              <td className="p-2">₹{exp.amount.toFixed(2)}</td>
-              <td className="p-2 text-center">
-                <input type="checkbox" checked={exp.paid} onChange={() => handleTogglePaid(exp)} />
-              </td>
-              <td className="p-2 space-x-2">
-                <button onClick={() => handleEdit(exp)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(exp.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))
-      ) : (
-        <tr>
-          <td colSpan="7" className="p-4 text-center text-gray-500 dark:text-gray-400">
-            No expenses recorded yet
-          </td>
-        </tr>
-      )}
-    </tbody>
+            {expenses.length > 0 ? (
+              [...expenses]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map((exp, index) => (
+                  <tr key={exp.id} className="border-b dark:border-gray-700">
+                    <td className="p-2">{index + 1}</td>
+                    <td className="p-2">{new Date(exp.date).toLocaleDateString()}</td>
+                    <td className="p-2">{exp.category}</td>
+                    <td className="p-2">{exp.notes || "-"}</td>
+                    <td className="p-2">₹{exp.amount.toFixed(2)}</td>
+                    <td className="p-2 text-center">
+                      <input type="checkbox" checked={exp.paid} onChange={() => handleTogglePaid(exp)} />
+                    </td>
+                    <td className="p-2 space-x-2">
+                      <button
+                        onClick={() => handleEdit(exp)}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(exp.id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="p-4 text-center text-gray-500 dark:text-gray-400">
+                  No expenses recorded yet
+                </td>
+              </tr>
+            )}
+          </tbody>
         </table>
       </div>
 

@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { getCurrentUser } from "../utils/login";
 
 export default function Dashboard() {
-  const userEmail = getCurrentUser(); // get logged-in user dynamically
+  const userEmail = getCurrentUser(); // logged-in user
 
   const [stats, setStats] = useState({
     totalBirds: 0,
@@ -19,11 +19,12 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Fetch all data
+      const API_BASE_URL = process.env.REACT_APP_API_URL; // ✅ use environment variable
+
       const [flocksRes, expensesRes, eggsRes] = await Promise.all([
-        axios.get(`http://localhost:8080/api/flocks?userEmail=${userEmail}`),
-        axios.get(`http://localhost:8080/api/expenses?userEmail=${userEmail}`),
-        axios.get(`http://localhost:8080/api/eggs?userEmail=${userEmail}`)
+        axios.get(`${API_BASE_URL}/api/flocks?userEmail=${userEmail}`),
+        axios.get(`${API_BASE_URL}/api/expenses?userEmail=${userEmail}`),
+        axios.get(`${API_BASE_URL}/api/eggs?userEmail=${userEmail}`)
       ]);
 
       const flocks = flocksRes.data;
@@ -35,14 +36,14 @@ export default function Dashboard() {
 
       const todayStr = new Date().toISOString().split("T")[0];
 
-      // Last 7 days
+      // Last 7 days array
       const last7Days = Array.from({ length: 7 }).map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
         return d;
       });
 
-      // Egg trend data
+      // Egg trend for last 7 days
       const eggTrendData = last7Days.map(day => {
         const dayStr = day.toISOString().split("T")[0];
         const total = eggs
@@ -57,7 +58,7 @@ export default function Dashboard() {
       const eggsToday = eggs.filter(e => e.date.split("T")[0] === todayStr)
                             .reduce((sum, e) => sum + e.count, 0);
 
-      // Expense trend data
+      // Expense trend for last 7 days
       const expenseTrendData = last7Days.map(day => {
         const dayStr = day.toISOString().split("T")[0];
         const total = expenses
@@ -80,7 +81,7 @@ export default function Dashboard() {
       setExpenseTrend(expenseTrendData);
 
     } catch (err) {
-      console.error(err);
+      console.error("Dashboard data load error:", err);
     }
   };
 
@@ -95,7 +96,9 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🌾 Farm Dashboard</h1>
-        <p className="text-gray-700 dark:text-gray-300 mt-2">Quick overview of your farm stats and today’s performance</p>
+        <p className="text-gray-700 dark:text-gray-300 mt-2">
+          Quick overview of your farm stats and today’s performance
+        </p>
       </div>
 
       {/* 4 Stat Cards */}

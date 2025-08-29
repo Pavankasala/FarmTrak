@@ -13,9 +13,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@CrossOrigin(origins = "https://your-frontend-domain.com")
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class LoginController {
 
     private static final String CLIENT_ID = "1091305199358-8dmcca126f88clk710fkvkmu5r5l08ap.apps.googleusercontent.com";
