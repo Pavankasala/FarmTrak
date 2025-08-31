@@ -15,8 +15,8 @@ export default function ProductionTracker({ onDataUpdate }) {
     if (!userEmail) return;
     try {
       const [flockRes, prodRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/flocks?userEmail=${userEmail}`),
-        axios.get(`${API_BASE_URL}/api/eggs?userEmail=${userEmail}`),
+        axios.get(`${API_BASE_URL}/api/flocks`, { headers: { "X-User-Email": userEmail } }),
+        axios.get(`${API_BASE_URL}/api/eggs`, { headers: { "X-User-Email": userEmail } }),
       ]);
 
       setFlocks(flockRes.data || []);
