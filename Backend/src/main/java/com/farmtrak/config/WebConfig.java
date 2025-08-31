@@ -1,4 +1,3 @@
-//Backend\src\main\java\com\farmtrak\config\WebConfig.java
 package com.farmtrak.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -8,15 +7,13 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.servlet.ModelAndView;
-
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("https://farmtrak.onrender.com", "https://pavankasala.github.io") // Allow your deployed frontend domains
+                .allowedOrigins("https://farmtrak.onrender.com", "https://pavankasala.github.io")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -27,7 +24,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+                // Set COOP and COEP headers for cross-origin popup communication support
                 response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+                response.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
                 return true;
             }
         });
