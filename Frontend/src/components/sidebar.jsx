@@ -1,3 +1,4 @@
+//Frontend\src\components\sidebar.jsx
 import { NavLink } from "react-router-dom";
 
 /**
