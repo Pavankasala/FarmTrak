@@ -15,7 +15,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/eggs")
-@CrossOrigin(origins = "*")
 public class EggProductionController {
 
     private final EggProductionRepository eggRepo;

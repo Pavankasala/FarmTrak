@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/flocks")
-@CrossOrigin(origins = "*")
 public class FlockController {
 
     private final FlockRepository repo;
