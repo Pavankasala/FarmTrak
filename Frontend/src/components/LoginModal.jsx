@@ -1,8 +1,7 @@
 // Frontend/src/components/LoginModal.jsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import axios from "axios";
-import { API_BASE_URL } from "../utils/api";
+import { api } from "../utils/api";
 
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
   if (!isOpen) return null;
@@ -11,14 +10,16 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     if (!credentialResponse?.credential) return;
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/google-login`, {
+      const res = await api.post("/api/google-login", {
         token: credentialResponse.credential,
       });
 
       if (res.data.status === "success") {
+        // Save token and email to localStorage
         localStorage.setItem("userEmail", res.data.email);
         localStorage.setItem("token", res.data.token);
 
+        // Notify parent component about login success
         onSuccess({
           token: res.data.token,
           email: res.data.email,
@@ -40,12 +41,14 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
         <h2 className="text-lg font-semibold mb-4 text-light-text dark:text-dark-text text-center">
           Login with Google
         </h2>
+
+        {/* Google Login Button */}
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={() => alert("Google login failed")}
-          ux_mode="redirect"
-          login_uri="https://farmtrak-backend.onrender.com/api/google-login"
+          ux_mode="popup" // use popup mode for cross-origin safety
         />
+
         <button
           onClick={onClose}
           className="mt-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-light-bg dark:text-dark-text rounded hover:bg-light-primaryHover dark:hover:bg-dark-primaryHover"
