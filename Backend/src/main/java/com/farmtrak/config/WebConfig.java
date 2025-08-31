@@ -4,11 +4,11 @@ package com.farmtrak.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-// import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-// import org.springframework.web.servlet.HandlerInterceptor;
-// import jakarta.servlet.http.HttpServletRequest;
-// import jakarta.servlet.http.HttpServletResponse;
-// import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.HandlerInterceptor;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.ModelAndView;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -23,8 +23,6 @@ public class WebConfig implements WebMvcConfigurer {
             .maxAge(3600);
     }
 
-    // Temporarily disable interceptor setting Cross-Origin-Opener-Policy for debugging
-    /*
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HandlerInterceptor() {
@@ -35,5 +33,4 @@ public class WebConfig implements WebMvcConfigurer {
             }
         });
     }
-    */
 }
