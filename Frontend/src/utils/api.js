@@ -1,2 +1,7 @@
 // src/utils/api.js
-export const API_BASE_URL =process.env.REACT_APP_API_URL || "https://farmtrak-backend.onrender.com";
+import axios from "axios";
+
+export const api = axios.create({
+  baseURL: "https://farmtrak.onrender.com", // deployed backend URL
+  withCredentials: true,
+});

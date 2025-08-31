@@ -40,7 +40,12 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
         <h2 className="text-lg font-semibold mb-4 text-light-text dark:text-dark-text text-center">
           Login with Google
         </h2>
-        <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => alert("Google login failed")} />
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => alert("Google login failed")}
+          ux_mode="redirect"
+          login_uri="https://farmtrak-backend.onrender.com/api/google-login"
+        />
         <button
           onClick={onClose}
           className="mt-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-light-bg dark:text-dark-text rounded hover:bg-light-primaryHover dark:hover:bg-dark-primaryHover"
