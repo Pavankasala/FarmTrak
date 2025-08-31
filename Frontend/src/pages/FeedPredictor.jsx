@@ -1,231 +1,249 @@
-// src/pages/FeedPredictor.jsx
+// Frontend/src/components/FeedPredictor.jsx
 import { useState, useEffect } from "react";
+import axios from "axios";
+import { API_BASE_URL } from "../utils/api";
 import { getCurrentUser } from "../utils/login";
 
 export default function FeedPredictor({ flockId }) {
   const userEmail = getCurrentUser();
-  const [numBirds, setNumBirds] = useState("");
-  const [birdType, setBirdType] = useState("broiler");
-  const [customBird, setCustomBird] = useState("");
-  const [totalFeedGiven, setTotalFeedGiven] = useState("");
-  const [feedUnit, setFeedUnit] = useState("kg");
-  const [daysLasted, setDaysLasted] = useState(1);
-  const [resultUnit, setResultUnit] = useState("kg");
-  const [result, setResult] = useState(null);
-  const [records, setRecords] = useState([]);
-  const [editId, setEditId] = useState(null);
 
+  const [numBirds, setNumBirds] = useState("");
+  const [birdType, setBirdType] = useState("Broiler"); // Capitalized to match flock data
+  const [unit, setUnit] = useState("kg");
+  const [totalFeedGiven, setTotalFeedGiven] = useState("");
+  const [daysLasted, setDaysLasted] = useState("");
+  const [result, setResult] = useState(null);
+
+  const [records, setRecords] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+
+  // ✅ Fetch records from backend
   useEffect(() => {
-    const savedRecords = JSON.parse(localStorage.getItem("feedRecords") || "[]");
-    setRecords(savedRecords.filter((r) => r.flockId === flockId && r.userEmail === userEmail));
+    if (userEmail && flockId) {
+      axios
+        .get(`${API_BASE_URL}/api/feedRecords`, {
+          params: { flockId, userEmail },
+        })
+        .then((res) => setRecords(res.data))
+        .catch((err) => console.error("Error fetching feed records:", err));
+    }
   }, [flockId, userEmail]);
 
-  const calculateFeed = () => {
-    const birds = parseFloat(numBirds);
-    const totalFeed = parseFloat(totalFeedGiven);
-    const days = parseInt(daysLasted);
-
-    if (isNaN(birds) || isNaN(totalFeed) || birds <= 0 || totalFeed <= 0 || days <= 0) {
-      setResult("Please enter valid numbers.");
+  // ✅ Calculate feed requirement
+  const calculateFeed = async () => {
+    if (!numBirds || !totalFeedGiven || !daysLasted) {
+      alert("Please enter all values");
       return;
     }
 
-    const feedKg = feedUnit === "g" ? totalFeed / 1000 : totalFeed;
-    const perBirdPerDayKg = feedKg / birds / days;
-    const totalPerDayKg = feedKg / days;
+    let totalFeedInKg = parseFloat(totalFeedGiven);
+    if (unit === "g") totalFeedInKg = totalFeedInKg / 1000;
 
-    const displayPerBird = resultUnit === "g" ? perBirdPerDayKg * 1000 : perBirdPerDayKg;
-    const displayTotal = resultUnit === "g" ? totalPerDayKg * 1000 : totalPerDayKg;
-
-    setResult({
-      perBird: displayPerBird.toFixed(2),
-      total: displayTotal.toFixed(2),
-      unit: resultUnit,
-    });
-  };
-
-  const resetForm = () => {
-    setEditId(null);
-    setNumBirds("");
-    setBirdType("broiler");
-    setCustomBird("");
-    setTotalFeedGiven("");
-    setFeedUnit("kg");
-    setDaysLasted(1);
-    setResult(null);
-  };
-
-  const saveRecord = () => {
-    if (!result) return;
-
-    const birdName = birdType === "other" ? customBird || "Other" : birdType;
+    const feedPerDay = totalFeedInKg / parseFloat(daysLasted);
+    const feedPerBird = (feedPerDay * 1000) / parseInt(numBirds);
 
     const newRecord = {
-      id: editId || Date.now(),
+      id: editingId || null,
       flockId,
+      userEmail,
       numBirds,
       birdType,
-      customBird: birdType === "other" ? customBird : "",
       totalFeedGiven,
-      feedUnit,
+      unit,
       daysLasted,
-      perBird: result.perBird,
-      total: result.total,
-      unit: result.unit,
-      birdName,
-      date: new Date().toISOString(),
-      userEmail,
+      feedPerDay: feedPerDay.toFixed(2),
+      feedPerBird: feedPerBird.toFixed(2),
     };
 
-    let allRecords = JSON.parse(localStorage.getItem("feedRecords") || "[]");
-    if (editId) {
-      allRecords = allRecords.map((r) => (r.id === editId ? newRecord : r));
-    } else {
-      allRecords.push(newRecord);
+    try {
+      if (editingId) {
+        // Update existing record
+        const res = await axios.put(
+          `${API_BASE_URL}/api/feedRecords/${editingId}`,
+          newRecord
+        );
+        setRecords(records.map((r) => (r.id === editingId ? res.data : r)));
+        setEditingId(null);
+      } else {
+        // Add new record
+        const res = await axios.post(`${API_BASE_URL}/api/feedRecords`, newRecord);
+        setRecords([...records, res.data]);
+      }
+      setResult({
+        feedPerDay: newRecord.feedPerDay,
+        feedPerBird: newRecord.feedPerBird,
+        unit: newRecord.unit,
+      });
+      resetForm(false); // don't reset birdType every time
+    } catch (err) {
+      console.error("Error saving feed record:", err);
+      alert("Failed to save feed record");
     }
-
-    localStorage.setItem("feedRecords", JSON.stringify(allRecords));
-    setRecords(allRecords.filter((r) => r.flockId === flockId && r.userEmail === userEmail));
-    resetForm();
   };
 
-  const handleEdit = (record) => {
-    setEditId(record.id);
-    setNumBirds(record.numBirds);
-    setBirdType(record.birdType);
-    setCustomBird(record.customBird || "");
-    setTotalFeedGiven(record.totalFeedGiven);
-    setFeedUnit(record.feedUnit);
-    setDaysLasted(record.daysLasted);
+  // ✅ Reset form
+  const resetForm = (resetBirdType = true) => {
+    setNumBirds("");
+    setTotalFeedGiven("");
+    setDaysLasted("");
+    setResult(null);
+    setEditingId(null);
+    if (resetBirdType) setBirdType("Broiler");
+  };
+
+  // ✅ Edit record
+  const handleEdit = (rec) => {
+    setNumBirds(rec.numBirds);
+    setBirdType(rec.birdType);
+    setTotalFeedGiven(rec.totalFeedGiven);
+    setUnit(rec.unit);
+    setDaysLasted(rec.daysLasted);
+    setEditingId(rec.id);
     setResult({
-      perBird: record.perBird,
-      total: record.total,
-      unit: record.unit,
+      feedPerDay: rec.feedPerDay,
+      feedPerBird: rec.feedPerBird,
+      unit: rec.unit,
     });
   };
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Delete this record?")) return;
-    const allRecords = JSON.parse(localStorage.getItem("feedRecords") || "[]");
-    const updatedRecords = allRecords.filter((r) => r.id !== id);
-    localStorage.setItem("feedRecords", JSON.stringify(updatedRecords));
-    setRecords(updatedRecords.filter((r) => r.flockId === flockId && r.userEmail === userEmail));
+  // ✅ Delete record
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/api/feedRecords/${id}`);
+      setRecords(records.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error("Error deleting record:", err);
+      alert("Failed to delete record");
+    }
   };
 
   return (
-    <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🧠 Feed Predictor</h1>
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow mt-6">
+      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+        🐔 Feed Predictor
+      </h2>
 
-      <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Number of Birds</label>
-            <input type="number" value={numBirds} onChange={(e) => setNumBirds(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
-          </div>
+      {/* Input Fields */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <input
+          type="number"
+          value={numBirds}
+          onChange={(e) => setNumBirds(e.target.value)}
+          placeholder="Number of Birds"
+          className="border rounded p-2 dark:bg-gray-700 dark:text-white"
+        />
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Bird Type</label>
-            <select value={birdType} onChange={(e) => setBirdType(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white">
-              <option value="broiler">Broiler</option>
-              <option value="layer">Layer</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
+        <select
+          value={birdType}
+          onChange={(e) => setBirdType(e.target.value)}
+          className="border rounded p-2 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="Broiler">Broiler</option>
+          <option value="Layer">Layer</option>
+          <option value="Other">Other</option>
+        </select>
 
-          {birdType === "other" && (
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Custom Bird Name</label>
-              <input type="text" value={customBird} onChange={(e) => setCustomBird(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" placeholder="Enter bird name" />
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total Feed Given</label>
-            <input type="number" value={totalFeedGiven} onChange={(e) => setTotalFeedGiven(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Feed Unit</label>
-            <select value={feedUnit} onChange={(e) => setFeedUnit(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white">
-              <option value="kg">Kilograms</option>
-              <option value="g">Grams</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Days Feed Lasted</label>
-            <input type="number" value={daysLasted} onChange={(e) => setDaysLasted(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Show Result In</label>
-            <select value={resultUnit} onChange={(e) => setResultUnit(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white">
-              <option value="kg">Kilograms</option>
-              <option value="g">Grams</option>
-            </select>
-          </div>
+        <div className="flex">
+          <input
+            type="number"
+            value={totalFeedGiven}
+            onChange={(e) => setTotalFeedGiven(e.target.value)}
+            placeholder="Total Feed Given"
+            className="border rounded p-2 flex-1 dark:bg-gray-700 dark:text-white"
+          />
+          <select
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            className="border rounded p-2 ml-2 dark:bg-gray-700 dark:text-white"
+          >
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+          </select>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button onClick={calculateFeed} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow">
-            Calculate
-          </button>
-          {editId && (
-            <button onClick={resetForm} className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow">
-              Cancel
-            </button>
-          )}
+        <input
+          type="number"
+          value={daysLasted}
+          onChange={(e) => setDaysLasted(e.target.value)}
+          placeholder="Days Lasted"
+          className="border rounded p-2 dark:bg-gray-700 dark:text-white"
+        />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="mt-4 flex space-x-2">
+        <button
+          onClick={calculateFeed}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          {editingId ? "Update Record" : "Calculate & Save"}
+        </button>
+        <button
+          onClick={() => resetForm()}
+          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+        >
+          Reset
+        </button>
+      </div>
+
+      {/* Results */}
+      {result && (
+        <div className="mt-4 p-4 bg-green-100 text-green-800 rounded">
+          ✅ Estimated Feed Requirement: <br />
+          <strong>
+            Per bird/day: {result.feedPerBird} g | Total/day: {result.feedPerDay} {result.unit}
+          </strong>
         </div>
+      )}
 
-        {typeof result === "string" ? (
-          <div className="text-red-600 dark:text-red-400">{result}</div>
-        ) : result ? (
-          <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded">
-            ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
-            <div className="mt-2">
-              <button onClick={saveRecord} className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded">
-                {editId ? "Update Record" : "Save Record"}
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">📋 Saved Records</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
-            <thead>
-              <tr className="bg-gray-100 dark:bg-gray-800 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2">Bird Type</th>
-                <th className="px-4 py-2">Per Bird/Day</th>
-                <th className="px-4 py-2">Total Birds/Day</th>
-                <th className="px-4 py-2">Actions</th>
+      {/* Records Table */}
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">
+        📋 Saved Records
+      </h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white dark:bg-gray-700 border rounded mt-2">
+          <thead>
+            <tr className="bg-gray-200 dark:bg-gray-600">
+              <th className="p-2">Birds</th>
+              <th className="p-2">Type</th>
+              <th className="p-2">Feed Given</th>
+              <th className="p-2">Days</th>
+              <th className="p-2">Feed/Day</th>
+              <th className="p-2">Feed/Bird</th>
+              <th className="p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.map((rec) => (
+              <tr key={rec.id} className="text-center border-t">
+                <td className="p-2">{rec.numBirds}</td>
+                <td className="p-2">{rec.birdType}</td>
+                <td className="p-2">
+                  {rec.totalFeedGiven} {rec.unit}
+                </td>
+                <td className="p-2">{rec.daysLasted}</td>
+                <td className="p-2">
+                  {rec.feedPerDay} {rec.unit}
+                </td>
+                <td className="p-2">{rec.feedPerBird} g</td>
+                <td className="p-2 space-x-2">
+                  <button
+                    onClick={() => handleEdit(rec)}
+                    className="px-2 py-1 bg-yellow-500 text-white rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(rec.id)}
+                    className="px-2 py-1 bg-red-500 text-white rounded"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {records.length > 0 ? (
-                [...records]
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .map((r) => (
-                    <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
-                      <td className="px-4 py-2 whitespace-nowrap">{new Date(r.date).toLocaleDateString()}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{r.birdName}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{r.perBird} {r.unit}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{r.total} {r.unit}</td>
-                      <td className="px-4 py-2 flex gap-2 flex-wrap">
-                        <button onClick={() => handleEdit(r)} className="bg-yellow-500 hover:bg-yellow-400 text-white px-3 py-1 rounded">Edit</button>
-                        <button onClick={() => handleDelete(r.id)} className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded">Delete</button>
-                      </td>
-                    </tr>
-                  ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No feed records yet</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

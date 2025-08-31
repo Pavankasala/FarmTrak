@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCurrentUser } from "../utils/login";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL;
+import { API_BASE_URL } from "../utils/api";   // ✅ use shared config
 
 export default function ExpenseTracker() {
   const userEmail = getCurrentUser(); // logged-in user
