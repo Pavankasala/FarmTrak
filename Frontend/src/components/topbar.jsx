@@ -22,7 +22,7 @@ export default function Topbar() {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
+    <header className="bg-light-bg dark:bg-gray-800 shadow h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700">
       <span className="font-semibold text-gray-800 dark:text-white text-lg">
         {isLoggedIn() ? `Welcome, ${user} 👨‍🌾` : "Welcome to FarmTrak"}
       </span>

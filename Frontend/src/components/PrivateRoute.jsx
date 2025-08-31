@@ -5,12 +5,16 @@ import { isLoggedIn } from "../utils/login";
 /**
  * Protects routes that require authentication.
  * Redirects to "/" if the user is not logged in.
+ *
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - The protected component(s)
  */
 export default function PrivateRoute({ children }) {
-  // Check login status from localStorage (isLoggedIn utility)
+  // Redirect to login if not authenticated
   if (!isLoggedIn()) {
     return <Navigate to="/" replace />;
   }
 
+  // Render protected route
   return children;
 }

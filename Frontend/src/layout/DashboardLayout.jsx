@@ -12,7 +12,7 @@ export default function DashboardLayout() {
   });
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+   <div className="flex h-screen bg-light-bg dark:bg-dark-bg">
       <Sidebar />
       <div className="flex flex-col flex-grow">
         <Topbar />

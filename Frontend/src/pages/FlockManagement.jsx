@@ -1,6 +1,6 @@
-// Frontend\src\pages\FlockManagement.jsx
+// Frontend/src/pages/FlockManagement.jsx
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "../utils/api";  
+import { API_BASE_URL } from "../utils/api";
 
 export default function FlockManagement() {
   const [flocks, setFlocks] = useState([]);
@@ -12,7 +12,6 @@ export default function FlockManagement() {
 
   const fetchFlocks = async () => {
     if (!userEmail) return;
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/flocks?userEmail=${userEmail}`);
       if (!response.ok) throw new Error("Failed to fetch flocks");
@@ -24,10 +23,7 @@ export default function FlockManagement() {
   };
 
   const handleAddFlock = async () => {
-    if (!userEmail) {
-      alert("User not logged in!");
-      return;
-    }
+    if (!userEmail) return alert("User not logged in!");
 
     const finalType = newFlock.type === "Other" ? newFlock.customType.trim() : newFlock.type;
     if (!finalType || !newFlock.quantity || !newFlock.age) return;
@@ -75,10 +71,7 @@ export default function FlockManagement() {
   };
 
   const handleUpdate = async () => {
-    if (!userEmail) {
-      alert("User not logged in!");
-      return;
-    }
+    if (!userEmail) return alert("User not logged in!");
 
     const finalType = editedFlock.type === "Other" ? editedFlock.customType.trim() : editedFlock.type;
     if (!finalType || !editedFlock.quantity || !editedFlock.age) return;
@@ -111,7 +104,7 @@ export default function FlockManagement() {
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center">🐓 Flock Management</h1>
 
-      <div className="bg-white dark:bg-white/5 shadow p-6 rounded-xl w-full">
+      <div className="bg-light-bg dark:bg-dark-card shadow p-6 rounded-xl w-full transition-colors">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
             <label className="font-semibold text-gray-900 dark:text-white">Bird Type</label>
@@ -158,7 +151,7 @@ export default function FlockManagement() {
           <div className="flex justify-end">
             <button
               onClick={handleAddFlock}
-              className="bg-green-600 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-green-700"
+              className="bg-green-600 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-green-700 transition-colors"
             >
               ➕ Add Flock
             </button>
@@ -166,7 +159,7 @@ export default function FlockManagement() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-white/5 shadow p-4 rounded-xl overflow-x-auto">
+      <div className="bg-light-bg dark:bg-dark-card shadow p-4 rounded-xl overflow-x-auto transition-colors">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white text-center">📋 Current Flocks</h2>
         <table className="min-w-full text-left">
           <thead>
@@ -218,10 +211,10 @@ export default function FlockManagement() {
                     />
                   </td>
                   <td className="p-2 flex flex-wrap gap-2">
-                    <button onClick={handleUpdate} className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+                    <button onClick={handleUpdate} className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors">
                       Save
                     </button>
-                    <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">
+                    <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors">
                       Cancel
                     </button>
                   </td>
@@ -232,10 +225,10 @@ export default function FlockManagement() {
                   <td className="p-2 text-gray-900 dark:text-white">{flock.quantity}</td>
                   <td className="p-2 text-gray-900 dark:text-white">{flock.age}</td>
                   <td className="p-2 flex flex-wrap gap-2">
-                    <button onClick={() => startEditing(flock)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+                    <button onClick={() => startEditing(flock)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors">
                       Edit
                     </button>
-                    <button onClick={() => handleDelete(flock.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                    <button onClick={() => handleDelete(flock.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">
                       Delete
                     </button>
                   </td>

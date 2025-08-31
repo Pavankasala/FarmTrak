@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { getCurrentUser } from "../utils/login";
-import { API_BASE_URL } from "../utils/api";   // ✅ use shared config
+import { API_BASE_URL } from "../utils/api";
 
 export default function Dashboard() {
   const userEmail = getCurrentUser();
@@ -34,7 +34,6 @@ export default function Dashboard() {
       const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
       const todayStr = new Date().toISOString().split("T")[0];
-
       const last7Days = Array.from({ length: 7 }).map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -89,8 +88,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto px-4 py-10">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🌾 Farm Dashboard</h1>
-        <p className="text-gray-700 dark:text-gray-300 mt-2">
+        <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">🌾 Farm Dashboard</h1>
+        <p className="text-light-subtext dark:text-dark-subtext mt-2">
           Quick overview of your farm stats and today’s performance
         </p>
       </div>
@@ -102,33 +101,33 @@ export default function Dashboard() {
           { emoji: "🧠", label: "Feed Required", value: stats.feedToday > 0 ? `${stats.feedToday.toFixed(2)} kg` : "No feed predicted" },
           { emoji: "💸", label: "Total Expenses", value: `₹${stats.totalExpenses}` },
         ].map((card, idx) => (
-          <div key={idx} className="bg-white dark:bg-white/5 p-4 rounded-2xl shadow text-center">
+          <div key={idx} className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow text-center">
             <div className="text-2xl">{card.emoji}</div>
-            <div className="font-semibold text-gray-900 dark:text-white mt-2">{card.label}</div>
-            <div className="text-gray-700 dark:text-gray-300 mt-1">{card.value}</div>
+            <div className="font-semibold text-light-text dark:text-dark-text mt-2">{card.label}</div>
+            <div className="text-light-subtext dark:text-dark-subtext mt-1">{card.value}</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-white/5 p-4 rounded-2xl shadow">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-2">🥚 Egg Production (Last 7 days)</h2>
+        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🥚 Egg Production (Last 7 days)</h2>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={eggTrend}>
-              <XAxis dataKey="date" />
-              <YAxis />
+              <XAxis dataKey="date" stroke="#9CA3AF" />
+              <YAxis stroke="#9CA3AF" />
               <Tooltip />
               <Line type="monotone" dataKey="eggs" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-white/5 p-4 rounded-2xl shadow">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-2">💸 Expenses (Last 7 days)</h2>
+        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">💸 Expenses (Last 7 days)</h2>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={expenseTrend}>
-              <XAxis dataKey="date" />
-              <YAxis />
+              <XAxis dataKey="date" stroke="#9CA3AF" />
+              <YAxis stroke="#9CA3AF" />
               <Tooltip />
               <Line type="monotone" dataKey="expenses" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>

@@ -35,13 +35,15 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-80 flex flex-col items-center">
-        <h2 className="text-lg font-semibold mb-4 text-center">Login with Google</h2>
+    <div className="fixed inset-0 bg-dark-bg bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-light-bg dark:bg-dark-bg p-6 rounded-lg w-80 flex flex-col items-center">
+        <h2 className="text-lg font-semibold mb-4 text-light-text dark:text-dark-text text-center">
+          Login with Google
+        </h2>
         <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => alert("Google login failed")} />
         <button
           onClick={onClose}
-          className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          className="mt-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-light-bg dark:text-dark-text rounded hover:bg-light-primaryHover dark:hover:bg-dark-primaryHover"
         >
           Cancel
         </button>

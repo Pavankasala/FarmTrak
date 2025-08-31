@@ -1,11 +1,11 @@
-//Frontend\src\pages\ExpenseTracker.jsx
+//Frontend/src/pages/ExpenseTracker.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCurrentUser } from "../utils/login";
-import { API_BASE_URL } from "../utils/api";   // ✅ use shared config
+import { API_BASE_URL } from "../utils/api"; 
 
 export default function ExpenseTracker() {
-  const userEmail = getCurrentUser(); // logged-in user
+  const userEmail = getCurrentUser();
 
   const [expenses, setExpenses] = useState([]);
   const [form, setForm] = useState({
@@ -99,10 +99,10 @@ export default function ExpenseTracker() {
 
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💰 Expense Tracker</h1>
+      <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">💰 Expense Tracker</h1>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="w-full bg-white dark:bg-white/5 shadow p-6 rounded-xl space-y-4">
+      <form onSubmit={handleSubmit} className="w-full bg-light-bg dark:bg-dark-card shadow p-6 rounded-xl space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="text"
@@ -110,7 +110,7 @@ export default function ExpenseTracker() {
             value={form.category}
             onChange={handleChange}
             placeholder="Category"
-            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
           />
           <input
             type="number"
@@ -119,14 +119,14 @@ export default function ExpenseTracker() {
             value={form.amount}
             onChange={handleChange}
             placeholder="Amount"
-            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
           />
           <input
             type="date"
             name="date"
             value={form.date}
             onChange={handleChange}
-            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
           />
           <input
             type="text"
@@ -134,26 +134,26 @@ export default function ExpenseTracker() {
             value={form.notes}
             onChange={handleChange}
             placeholder="Notes (optional)"
-            className="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
           />
         </div>
 
         {isEditing && (
           <div className="flex items-center gap-2">
             <input type="checkbox" name="paid" checked={form.paid} onChange={handleChange} />
-            <label className="text-gray-700 dark:text-gray-300">Mark as Paid</label>
+            <label className="text-light-subtext dark:text-dark-subtext">Mark as Paid</label>
           </div>
         )}
 
         <div className="flex flex-wrap gap-2">
-          <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          <button type="submit" className="bg-primary text-white px-4 py-2 rounded hover:bg-primaryHover">
             {isEditing ? "✏️ Update Expense" : "➕ Add Expense"}
           </button>
           {isEditing && (
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className="bg-dark-dim text-white px-4 py-2 rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -163,16 +163,16 @@ export default function ExpenseTracker() {
 
       {/* Expense Table */}
       <div className="w-full overflow-x-auto">
-        <table className="min-w-full text-left bg-white dark:bg-white/5 shadow rounded-xl">
+        <table className="min-w-full text-left bg-light-bg dark:bg-dark-card shadow rounded-xl">
           <thead>
-            <tr className="border-b dark:border-gray-700">
-              <th className="p-2 text-gray-900 dark:text-white">#</th>
-              <th className="p-2 text-gray-900 dark:text-white">Date</th>
-              <th className="p-2 text-gray-900 dark:text-white">Category</th>
-              <th className="p-2 text-gray-900 dark:text-white">Notes</th>
-              <th className="p-2 text-gray-900 dark:text-white">Amount</th>
-              <th className="p-2 text-gray-900 dark:text-white">Paid</th>
-              <th className="p-2 text-gray-900 dark:text-white">Actions</th>
+            <tr className="border-b border-light-muted dark:border-dark-dim">
+              <th className="p-2 text-light-text dark:text-dark-text">#</th>
+              <th className="p-2 text-light-text dark:text-dark-text">Date</th>
+              <th className="p-2 text-light-text dark:text-dark-text">Category</th>
+              <th className="p-2 text-light-text dark:text-dark-text">Notes</th>
+              <th className="p-2 text-light-text dark:text-dark-text">Amount</th>
+              <th className="p-2 text-light-text dark:text-dark-text">Paid</th>
+              <th className="p-2 text-light-text dark:text-dark-text">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -180,7 +180,7 @@ export default function ExpenseTracker() {
               [...expenses]
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .map((exp, index) => (
-                  <tr key={exp.id} className="border-b dark:border-gray-700">
+                  <tr key={exp.id} className="border-b border-light-muted dark:border-dark-dim">
                     <td className="p-2">{index + 1}</td>
                     <td className="p-2">{new Date(exp.date).toLocaleDateString()}</td>
                     <td className="p-2">{exp.category}</td>
@@ -207,7 +207,7 @@ export default function ExpenseTracker() {
                 ))
             ) : (
               <tr>
-                <td colSpan="7" className="p-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="7" className="p-4 text-center text-light-subtext dark:text-dark-subtext">
                   No expenses recorded yet
                 </td>
               </tr>
@@ -217,7 +217,7 @@ export default function ExpenseTracker() {
       </div>
 
       {/* Total */}
-      <div className="w-full p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl font-semibold text-gray-900 dark:text-white text-center">
+      <div className="w-full p-4 bg-light-card dark:bg-dark-card/20 rounded-xl font-semibold text-light-text dark:text-dark-text text-center">
         📊 Total Unpaid Expenses: ₹{total.toFixed(2)}
       </div>
     </div>

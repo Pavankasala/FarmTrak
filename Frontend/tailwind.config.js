@@ -3,7 +3,7 @@ export default {
   darkMode: 'class',
   content: [
     './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
+    './src/**/*.{js,ts,jsx,tsx,css}',
   ],
   theme: {
     extend: {
@@ -17,7 +17,6 @@ export default {
           primary: '#4F46E5',
           primaryHover: '#6366F1',
         },
-
         // 🌙 Dark Mode
         dark: {
           bg: '#111827',
@@ -28,6 +27,9 @@ export default {
           primary: '#6366F1',
           primaryHover: '#818CF8',
         },
+        // Fallback colors for legacy usage like bg-white
+        white: '#ffffff',
+        black: '#000000',
       },
     },
   },

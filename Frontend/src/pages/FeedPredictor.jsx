@@ -10,7 +10,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
     feedAmount: "",
   });
 
-  // ✅ Fetch feed records
+  // Fetch feed records
   const fetchRecords = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/feedRecords`, {
@@ -27,7 +27,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
     if (flockId && userEmail) fetchRecords();
   }, [flockId, userEmail]);
 
-  // ✅ Add new record
+  // Add new record
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
@@ -41,7 +41,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
     }
   };
 
-  // ✅ Update record
+  // Update record
   const handleUpdate = async (id, updatedRecord) => {
     try {
       const res = await axios.put(`${API_BASE_URL}/api/feedRecords/${id}`, updatedRecord, {
@@ -53,7 +53,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
     }
   };
 
-  // ✅ Delete record
+  // Delete record
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${API_BASE_URL}/api/feedRecords/${id}`, {
@@ -66,7 +66,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div className="p-4 bg-light-bg dark:bg-dark-card rounded-lg shadow-md transition-colors">
       <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
         Feed Predictor
       </h2>
@@ -77,7 +77,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
           type="date"
           value={newRecord.date}
           onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })}
-          className="border rounded p-2 flex-1"
+          className="border rounded p-2 flex-1 bg-light-bg dark:bg-dark-bg text-gray-900 dark:text-white"
           required
         />
         <input
@@ -85,12 +85,12 @@ export default function FeedPredictor({ flockId, userEmail }) {
           placeholder="Feed Amount"
           value={newRecord.feedAmount}
           onChange={(e) => setNewRecord({ ...newRecord, feedAmount: e.target.value })}
-          className="border rounded p-2 flex-1"
+          className="border rounded p-2 flex-1 bg-light-bg dark:bg-dark-bg text-gray-900 dark:text-white"
           required
         />
         <button
           type="submit"
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
         >
           Add
         </button>
@@ -101,9 +101,9 @@ export default function FeedPredictor({ flockId, userEmail }) {
         {records.map((record) => (
           <li
             key={record.id}
-            className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-2 rounded"
+            className="flex justify-between items-center bg-light-bg dark:bg-dark-card p-2 rounded shadow-sm transition-colors"
           >
-            <span>
+            <span className="text-gray-900 dark:text-white">
               {record.date} - {record.feedAmount} kg
             </span>
             <div className="space-x-2">
@@ -114,13 +114,13 @@ export default function FeedPredictor({ flockId, userEmail }) {
                     feedAmount: parseFloat(record.feedAmount) + 1,
                   })
                 }
-                className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
                 +1
               </button>
               <button
                 onClick={() => handleDelete(record.id)}
-                className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
               >
                 Delete
               </button>

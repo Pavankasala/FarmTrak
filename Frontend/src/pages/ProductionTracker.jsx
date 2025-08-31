@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCurrentUser } from "../utils/login";
-import { API_BASE_URL } from "../utils/api";  
+import { API_BASE_URL } from "../utils/api";
 
 export default function ProductionTracker({ onDataUpdate }) {
   const [flocks, setFlocks] = useState([]);
@@ -22,10 +22,10 @@ export default function ProductionTracker({ onDataUpdate }) {
       setFlocks(flockRes.data || []);
       setProductions(prodRes.data || []);
 
+      // Update total eggs today
       const today = new Date().toISOString().split("T")[0];
       const todayRecords = prodRes.data.filter((p) => p.date === today);
       const totalToday = todayRecords.reduce((sum, p) => sum + p.count, 0);
-
       onDataUpdate?.({ eggsToday: totalToday });
     } catch (err) {
       console.error("Error loading data:", err);
@@ -80,9 +80,10 @@ export default function ProductionTracker({ onDataUpdate }) {
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center">🥚 Egg Production Tracker</h1>
 
+      {/* Add / Update Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-white/5 p-6 rounded-2xl shadow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end"
+        className="bg-light-bg dark:bg-light-bg/5 p-6 rounded-2xl shadow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end transition-colors"
       >
         <select
           name="flockId"
@@ -117,7 +118,7 @@ export default function ProductionTracker({ onDataUpdate }) {
 
         <button
           type="submit"
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded w-full sm:w-auto"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded w-full sm:w-auto transition-colors"
         >
           {form.id ? "Update" : "Add"}
         </button>
@@ -126,15 +127,16 @@ export default function ProductionTracker({ onDataUpdate }) {
           <button
             type="button"
             onClick={resetForm}
-            className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded w-full sm:w-auto"
+            className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded w-full sm:w-auto transition-colors"
           >
             Cancel
           </button>
         )}
       </form>
 
+      {/* Production Records Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
+        <table className="min-w-full bg-light-bg dark:bg-light-bg/5 rounded-xl overflow-hidden transition-colors">
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-800 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
               <th className="px-4 py-2">#</th>
@@ -159,13 +161,13 @@ export default function ProductionTracker({ onDataUpdate }) {
                       <td className="px-4 py-2 flex flex-wrap gap-2">
                         <button
                           onClick={() => handleEdit(prod)}
-                          className="bg-yellow-500 hover:bg-yellow-400 text-white px-3 py-1 rounded"
+                          className="bg-yellow-500 hover:bg-yellow-400 text-white px-3 py-1 rounded transition-colors"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(prod.id)}
-                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded"
+                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded transition-colors"
                         >
                           Delete
                         </button>
