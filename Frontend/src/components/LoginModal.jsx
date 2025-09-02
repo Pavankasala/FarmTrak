@@ -10,7 +10,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     if (!credentialResponse?.credential) return;
 
     try {
-      const res = await api.post("/api/google-login", {
+      const res = await api.post("/google-login", {
         token: credentialResponse.credential,
       });
 

@@ -25,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
                 // Set COOP and COEP headers for cross-origin popup communication support
-                response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+                response.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
                 response.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
                 return true;
             }
