@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { getCurrentUser } from "../utils/login";
-import { API_BASE_URL } from "../utils/api";
+import { api } from "../utils/api";
 
 export default function Dashboard() {
   const userEmail = getCurrentUser();
@@ -20,11 +20,11 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-        const [flocksRes, expensesRes, eggsRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/flocks?userEmail=${userEmail}`),
-          axios.get(`${API_BASE_URL}/expenses?userEmail=${userEmail}`),
-          axios.get(`${API_BASE_URL}/eggs?userEmail=${userEmail}`),
-        ]);
+      const [flocksRes, expensesRes, eggsRes] = await Promise.all([
+        api.get("/flocks", { headers: { "X-User-Email": userEmail } }),
+        api.get("/expenses", { headers: { "X-User-Email": userEmail } }),
+        api.get("/eggs", { headers: { "X-User-Email": userEmail } }),
+      ]);
 
       const flocks = flocksRes.data;
       const expenses = expensesRes.data;
@@ -94,6 +94,7 @@ export default function Dashboard() {
         </p>
       </div>
 
+      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {[
           { emoji: "🐓", label: "Total Birds", value: stats.totalBirds },
@@ -109,6 +110,7 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🥚 Egg Production (Last 7 days)</h2>
