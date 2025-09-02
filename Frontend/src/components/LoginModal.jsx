@@ -10,12 +10,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     if (!credentialResponse?.credential) return;
 
     try {
-      const googleLoginPath = "/api/google-login";
-      // Log the base URL from api.js and the full constructed URL
-      console.log("LoginModal: API_BASE_URL from api.js (should be):", api.defaults.baseURL);
-      console.log("LoginModal: Attempting POST to:", api.defaults.baseURL + googleLoginPath);
-
-      const res = await api.post(googleLoginPath, {
+      const res = await api.post("/api/google-login", {
         token: credentialResponse.credential,
       });
 
