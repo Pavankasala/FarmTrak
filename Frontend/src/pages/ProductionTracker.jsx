@@ -15,8 +15,8 @@ export default function ProductionTracker({ onDataUpdate }) {
     if (!userEmail) return;
     try {
       const [flockRes, prodRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/flocks`, { headers: { "X-User-Email": userEmail } }),
-        axios.get(`${API_BASE_URL}/api/eggs`, { headers: { "X-User-Email": userEmail } }),
+      axios.get(`${API_BASE_URL}/flocks`, { headers: { "X-User-Email": userEmail } }),
+      axios.get(`${API_BASE_URL}/eggs`, { headers: { "X-User-Email": userEmail } }),
       ]);
 
       setFlocks(flockRes.data || []);
@@ -49,10 +49,10 @@ export default function ProductionTracker({ onDataUpdate }) {
 
     try {
       if (form.id) {
-        await axios.put(`${API_BASE_URL}/api/eggs/${form.id}`, payload, { headers: { "X-User-Email": userEmail } });
-      } else {
-        await axios.post(`${API_BASE_URL}/api/eggs`, payload, { headers: { "X-User-Email": userEmail } });
-      }
+        await axios.put(`${API_BASE_URL}/eggs/${form.id}`, payload, { headers: { "X-User-Email": userEmail } });
+        } else {
+        await axios.post(`${API_BASE_URL}/eggs`, payload, { headers: { "X-User-Email": userEmail } });
+        }
       resetForm();
       await loadData();
     } catch (err) {
@@ -67,7 +67,7 @@ export default function ProductionTracker({ onDataUpdate }) {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
-      await axios.delete(`${API_BASE_URL}/api/eggs/${id}`, { headers: { "X-User-Email": userEmail } });
+      await axios.delete(`${API_BASE_URL}/eggs/${id}`, { headers: { "X-User-Email": userEmail } });
       await loadData();
     } catch (err) {
       console.error("Error deleting production:", err);

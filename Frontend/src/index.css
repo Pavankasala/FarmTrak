@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
+@layer base {
   html, body {
     @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white min-h-screen;
   }

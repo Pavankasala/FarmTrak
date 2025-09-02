@@ -20,11 +20,11 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const [flocksRes, expensesRes, eggsRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/flocks?userEmail=${userEmail}`),
-        axios.get(`${API_BASE_URL}/api/expenses?userEmail=${userEmail}`),
-        axios.get(`${API_BASE_URL}/api/eggs?userEmail=${userEmail}`),
-      ]);
+        const [flocksRes, expensesRes, eggsRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/flocks?userEmail=${userEmail}`),
+          axios.get(`${API_BASE_URL}/expenses?userEmail=${userEmail}`),
+          axios.get(`${API_BASE_URL}/eggs?userEmail=${userEmail}`),
+        ]);
 
       const flocks = flocksRes.data;
       const expenses = expensesRes.data;
