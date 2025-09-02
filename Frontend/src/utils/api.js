@@ -1,7 +1,9 @@
 // src/utils/api.js
 import axios from "axios";
 
+export const API_BASE_URL = "https://farmtrak.onrender.com/api";
+
 export const api = axios.create({
-  baseURL: "https://farmtrak.onrender.com/api", // deployed backend URL
+  baseURL: API_BASE_URL, // use the same URL here
   withCredentials: true,
 });
