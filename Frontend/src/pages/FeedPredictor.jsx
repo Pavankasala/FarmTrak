@@ -6,6 +6,7 @@ import { getCurrentUser } from "../utils/login";
 
 export default function FeedPredictor() {
   const userEmail = getCurrentUser(); // Logged-in user
+
   const [birdType, setBirdType] = useState("broiler");
   const [customBird, setCustomBird] = useState("");
   const [numBirds, setNumBirds] = useState("");
@@ -17,12 +18,12 @@ export default function FeedPredictor() {
   const [records, setRecords] = useState([]);
   const [editId, setEditId] = useState(null);
 
-  // Fetch all feed records for the user
+  // Fetch all feed records
   const fetchRecords = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/feedRecords`, {
         headers: { "X-User-Email": userEmail },
-        params: { flockId: 0 }, // dummy param, backend can ignore if not needed
+        params: { flockId: 0 },
       });
       setRecords(res.data || []);
     } catch (err) {
@@ -32,6 +33,7 @@ export default function FeedPredictor() {
 
   useEffect(() => { fetchRecords(); }, [userEmail]);
 
+  // Calculate feed result
   const calculateFeed = () => {
     const birds = parseFloat(numBirds);
     const totalFeed = parseFloat(totalFeedGiven);
@@ -56,6 +58,7 @@ export default function FeedPredictor() {
     });
   };
 
+  // Reset form
   const resetForm = () => {
     setEditId(null);
     setBirdType("broiler");
@@ -67,6 +70,7 @@ export default function FeedPredictor() {
     setResult(null);
   };
 
+  // Save or update record
   const saveRecord = async () => {
     if (!result) return;
 
@@ -81,7 +85,6 @@ export default function FeedPredictor() {
 
     const birdName = birdType === "other" ? customBird || "Other" : birdType;
 
-    // Ensure feed is in kg for backend
     const totalFeedKg = feedUnit === "g" ? totalFeed / 1000 : totalFeed;
     const feedPerDayKg = totalFeedKg / days;
     const feedPerBirdKg = totalFeedKg / birds / days;
@@ -91,14 +94,14 @@ export default function FeedPredictor() {
       birdType,
       customBird: birdType === "other" ? customBird : "",
       totalFeedGiven: totalFeedKg,
-      unit: "kg", // always send kg to backend
+      unit: "kg",
       daysLasted: days,
       feedPerDay: feedPerDayKg,
       feedPerBird: feedPerBirdKg,
       birdName,
-      date: new Date().toISOString(), // current date/time
+      date: new Date().toISOString(),
       userEmail,
-      flockId: 0, // dummy for backend
+      flockId: 0,
     };
 
     try {
@@ -119,20 +122,25 @@ export default function FeedPredictor() {
     }
   };
 
-
-
+  // Edit record
   const handleEdit = (record) => {
     setEditId(record.id);
-    setBirdType(record.birdType);
-    setCustomBird(record.customBird || "");
+
+    if (record.birdType === "other") {
+      setBirdType("other");
+      setCustomBird(record.customBird || "Other");
+    } else {
+      setBirdType(record.birdType || "broiler");
+      setCustomBird("");
+    }
+
     setNumBirds(record.numBirds);
     setTotalFeedGiven(record.totalFeedGiven);
     setFeedUnit("kg");
     setDaysLasted(record.daysLasted);
-    const perBird =
-      resultUnit === "g" ? record.feedPerBird * 1000 : record.feedPerBird;
-    const total =
-      resultUnit === "g" ? record.feedPerDay * record.daysLasted * 1000 : record.feedPerDay * record.daysLasted;
+
+    const perBird = resultUnit === "g" ? record.feedPerBird * 1000 : record.feedPerBird;
+    const total = resultUnit === "g" ? record.feedPerDay * record.daysLasted * 1000 : record.feedPerDay * record.daysLasted;
 
     setResult({
       perBird: perBird.toFixed(2),
@@ -142,6 +150,7 @@ export default function FeedPredictor() {
     });
   };
 
+  // Delete record
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
@@ -219,12 +228,10 @@ export default function FeedPredictor() {
         {result && typeof result !== "string" && (
           <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded">
             ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
-            {result.date && (
-              <> | Date: <b>{new Date(result.date).toLocaleDateString()}</b></>
-            )}
+            {result.date && <> | Date: <b>{new Date(result.date).toLocaleDateString()}</b></>}
           </div>
         )}
-        
+
         {/* Saved Records */}
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">📋 Saved Records</h2>
         <div className="overflow-x-auto">
@@ -243,14 +250,19 @@ export default function FeedPredictor() {
                 [...records].sort((a, b) => new Date(b.date) - new Date(a.date)).map(r => (
                   <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
                     <td className="px-4 py-2">{r.date ? new Date(r.date).toLocaleDateString() : "-"}</td>
-                    <td className="px-4 py-2">{r.birdName}</td>
+                    <td className="px-4 py-2">{r.birdType === "other" ? r.customBird || "Other" : r.birdType}</td>
                     <td className="px-4 py-2">
                       {resultUnit === "g"
                         ? ((r.totalFeedGiven / r.numBirds / r.daysLasted) * 1000).toFixed(2)
                         : (r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)
                       } {resultUnit}
                     </td>
-                    <td className="px-4 py-2">{resultUnit === "g" ? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(2) : (r.totalFeedGiven / r.daysLasted).toFixed(2)} {resultUnit}</td>
+                    <td className="px-4 py-2">
+                      {resultUnit === "g"
+                        ? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(2)
+                        : (r.totalFeedGiven / r.daysLasted).toFixed(2)
+                      } {resultUnit}
+                    </td>
                     <td className="px-4 py-2 flex gap-2 flex-wrap">
                       <button onClick={() => handleEdit(r)} className="bg-yellow-500 hover:bg-yellow-400 text-white px-3 py-1 rounded">Edit</button>
                       <button onClick={() => handleDelete(r.id)} className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded">Delete</button>
