@@ -14,7 +14,7 @@ export default function FlockManagement() {
   const fetchFlocks = async () => {
     if (!userEmail) return;
     try {
-      const res = await api.get("/flocks", { params: { userEmail } });
+      const res = await api.get("/flocks", {  headers: { "X-User-Email": userEmail }});
       setFlocks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch flocks:", err);

@@ -14,9 +14,10 @@ export default function ProductionTracker({ onDataUpdate }) {
     if (!userEmail) return;
     try {
       const [flockRes, prodRes] = await Promise.all([
-        api.get("/flocks", { params: { userEmail } }),
-        api.get("/eggs", { params: { userEmail } }),
-      ]);
+      api.get("/flocks", { headers: { "X-User-Email": userEmail } }),
+      api.get("/eggs", { headers: { "X-User-Email": userEmail } }),
+    ]);
+
 
       const flocksData = flockRes.data || [];
       const productionsData = prodRes.data || [];
