@@ -6,15 +6,18 @@ import { API_BASE_URL } from "../utils/api";
 export default function FeedPredictor({ flockId, userEmail }) {
   const [records, setRecords] = useState([]);
   const [newRecord, setNewRecord] = useState({
-    date: "",
-    feedAmount: "",
+    numBirds: "",
+    birdType: "",
+    totalFeedGiven: "",
+    unit: "kg",
+    daysLasted: "",
   });
 
   // Fetch feed records
   const fetchRecords = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/feedRecords`, {
-        params: { flockId, userEmail },
+        params: { flockId },
         headers: { "X-User-Email": userEmail },
       });
       setRecords(res.data);
@@ -31,11 +34,22 @@ export default function FeedPredictor({ flockId, userEmail }) {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_BASE_URL}/feedRecords`, newRecord, {
+      const payload = {
+        ...newRecord,
+        flockId,
+      };
+
+      const res = await axios.post(`${API_BASE_URL}/feedRecords`, payload, {
         headers: { "X-User-Email": userEmail },
       });
       setRecords([...records, res.data]);
-      setNewRecord({ date: "", feedAmount: "" });
+      setNewRecord({
+        numBirds: "",
+        birdType: "",
+        totalFeedGiven: "",
+        unit: "kg",
+        daysLasted: "",
+      });
     } catch (err) {
       console.error("Error adding feed record:", err);
     }
@@ -44,9 +58,13 @@ export default function FeedPredictor({ flockId, userEmail }) {
   // Update record
   const handleUpdate = async (id, updatedRecord) => {
     try {
-      const res = await axios.put(`${API_BASE_URL}/feedRecords/${id}`, updatedRecord, {
-        headers: { "X-User-Email": userEmail },
-      });
+      const res = await axios.put(
+        `${API_BASE_URL}/feedRecords/${id}`,
+        updatedRecord,
+        {
+          headers: { "X-User-Email": userEmail },
+        }
+      );
       setRecords(records.map((r) => (r.id === id ? res.data : r)));
     } catch (err) {
       console.error("Error updating feed record:", err);
@@ -72,27 +90,54 @@ export default function FeedPredictor({ flockId, userEmail }) {
       </h2>
 
       {/* Add Form */}
-      <form onSubmit={handleAdd} className="flex gap-2 mb-4">
+      <form onSubmit={handleAdd} className="grid grid-cols-2 gap-2 mb-4">
         <input
-          type="date"
-          value={newRecord.date}
-          onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })}
-          className="border rounded p-2 flex-1 bg-light-bg dark:bg-dark-bg text-gray-900 dark:text-white"
+          type="number"
+          placeholder="Number of Birds"
+          value={newRecord.numBirds}
+          onChange={(e) => setNewRecord({ ...newRecord, numBirds: e.target.value })}
+          className="border rounded p-2"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Bird Type"
+          value={newRecord.birdType}
+          onChange={(e) => setNewRecord({ ...newRecord, birdType: e.target.value })}
+          className="border rounded p-2"
           required
         />
         <input
           type="number"
-          placeholder="Feed Amount"
-          value={newRecord.feedAmount}
-          onChange={(e) => setNewRecord({ ...newRecord, feedAmount: e.target.value })}
-          className="border rounded p-2 flex-1 bg-light-bg dark:bg-dark-bg text-gray-900 dark:text-white"
+          placeholder="Total Feed Given"
+          value={newRecord.totalFeedGiven}
+          onChange={(e) =>
+            setNewRecord({ ...newRecord, totalFeedGiven: e.target.value })
+          }
+          className="border rounded p-2"
+          required
+        />
+        <select
+          value={newRecord.unit}
+          onChange={(e) => setNewRecord({ ...newRecord, unit: e.target.value })}
+          className="border rounded p-2"
+        >
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+        </select>
+        <input
+          type="number"
+          placeholder="Days Lasted"
+          value={newRecord.daysLasted}
+          onChange={(e) => setNewRecord({ ...newRecord, daysLasted: e.target.value })}
+          className="border rounded p-2"
           required
         />
         <button
           type="submit"
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+          className="col-span-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
         >
-          Add
+          Add Record
         </button>
       </form>
 
@@ -104,14 +149,14 @@ export default function FeedPredictor({ flockId, userEmail }) {
             className="flex justify-between items-center bg-light-bg dark:bg-dark-card p-2 rounded shadow-sm transition-colors"
           >
             <span className="text-gray-900 dark:text-white">
-              {record.date} - {record.feedAmount} kg
+              {record.numBirds} {record.birdType} → {record.totalFeedGiven} {record.unit} ({record.daysLasted} days)
             </span>
             <div className="space-x-2">
               <button
                 onClick={() =>
                   handleUpdate(record.id, {
                     ...record,
-                    feedAmount: parseFloat(record.feedAmount) + 1,
+                    totalFeedGiven: parseFloat(record.totalFeedGiven) + 1,
                   })
                 }
                 className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"

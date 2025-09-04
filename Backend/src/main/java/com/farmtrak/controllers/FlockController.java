@@ -21,56 +21,49 @@ public class FlockController {
 
     // GET all flocks
     @GetMapping
-    public List<Flock> getAllFlocks(@RequestParam("userEmail") String userEmail) {
+    public List<Flock> getAllFlocks(@RequestHeader("X-User-Email") String userEmail) {
         return repo.findByUserEmail(userEmail);
     }
 
-    // GET a specific flock by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Flock> getFlockById(@PathVariable Long id) {
-        Flock flock = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flock not found with id: " + id));
-        return ResponseEntity.ok(flock);
-    }
-
-    // POST a new flock
+    // POST
     @PostMapping
-    public Flock addFlock(@RequestBody Flock flock) {
+    public Flock addFlock(@RequestHeader("X-User-Email") String userEmail, @RequestBody Flock flock) {
+        flock.setUserEmail(userEmail);
         return repo.save(flock);
     }
 
-    // PUT (update) an existing flock
+    // PUT
     @PutMapping("/{id}")
-    public ResponseEntity<Flock> updateFlock(@PathVariable Long id, @RequestBody Flock updatedFlock, @RequestParam String userEmail) {
-        // First, find the existing flock or throw an exception if not found
+    public ResponseEntity<Flock> updateFlock(@PathVariable Long id,
+                                            @RequestHeader("X-User-Email") String userEmail,
+                                            @RequestBody Flock updatedFlock) {
         Flock existingFlock = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Flock not found with id: " + id));
 
-        // Ensure the user trying to update is the owner of the flock
         if (!existingFlock.getUserEmail().equals(userEmail)) {
-            return ResponseEntity.status(403).build(); // Forbidden
+            return ResponseEntity.status(403).build();
         }
 
-        // Update the fields, ensuring userEmail is not changed
         existingFlock.setType(updatedFlock.getType());
         existingFlock.setQuantity(updatedFlock.getQuantity());
         existingFlock.setAge(updatedFlock.getAge());
-        existingFlock.setUserEmail(existingFlock.getUserEmail()); // Ensure userEmail is not changed
 
-        // Save the updated flock and return it
         final Flock savedFlock = repo.save(existingFlock);
         return ResponseEntity.ok(savedFlock);
     }
 
-    // DELETE a flock
+    // DELETE
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFlock(@PathVariable Long id) {
-        // First, check if the flock exists. If not, findById will throw the exception.
+    public ResponseEntity<Void> deleteFlock(@PathVariable Long id,
+                                            @RequestHeader("X-User-Email") String userEmail) {
         Flock flock = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Flock not found with id: " + id));
 
-        // If it exists, delete it
+        if (!flock.getUserEmail().equals(userEmail)) {
+            return ResponseEntity.status(403).build();
+        }
+
         repo.delete(flock);
-        return ResponseEntity.noContent().build(); // Return 204 No Content on successful deletion
+        return ResponseEntity.noContent().build();
     }
 }

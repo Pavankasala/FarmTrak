@@ -85,19 +85,18 @@ public class EggProductionController {
     }
 
     @GetMapping("/today")
-    public List<EggProduction> getTodayProduction(@RequestParam("userEmail") String userEmail) {
+    public List<EggProduction> getTodayProduction(@RequestHeader("X-User-Email") String userEmail) {
         return eggRepo.findByUserEmailAndDate(userEmail, LocalDate.now());
     }
 
     @GetMapping
-    public List<EggProduction> getAll(@RequestParam("userEmail") String userEmail) {
+    public List<EggProduction> getAll(@RequestHeader("X-User-Email") String userEmail) {
         return eggRepo.findByUserEmail(userEmail);
     }
-
-    // Check if record exists for given flockId + date + userEmail
+        // Check if record exists for given flockId + date + userEmail
     @GetMapping("/exists")
     public boolean checkIfExists(@RequestParam Long flockId, @RequestParam String date,
-                                      @RequestParam("userEmail") String userEmail) {
+                                @RequestHeader("X-User-Email") String userEmail) {
         LocalDate localDate = LocalDate.parse(date);
         return eggRepo.findByFlockIdAndDateAndUserEmail(flockId, localDate, userEmail).isPresent();
     }

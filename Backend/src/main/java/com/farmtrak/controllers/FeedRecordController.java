@@ -1,9 +1,11 @@
 // Backend/src/main/java/com/farmtrak/controllers/FeedRecordController.java
 package com.farmtrak.controllers;
 
-import com.farmtrak.exception.ResourceNotFoundException;
 import com.farmtrak.model.FeedRecord;
 import com.farmtrak.repository.FeedRecordRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,56 +15,53 @@ import java.util.List;
 @RequestMapping("/api/feedRecords")
 public class FeedRecordController {
 
-    private final FeedRecordRepository repo;
+    @Autowired
+    private FeedRecordRepository feedRecordRepository;
 
-    public FeedRecordController(FeedRecordRepository repo) {
-        this.repo = repo;
-    }
-
-    // GET all feed records for a flock + user
+    // Get records by flock
     @GetMapping
-    public List<FeedRecord> getFeedRecords(@RequestParam Long flockId, @RequestParam String userEmail) {
-        return repo.findByFlockIdAndUserEmail(flockId, userEmail);
+    public ResponseEntity<List<FeedRecord>> getFeedRecords(
+            @RequestHeader("X-User-Email") String userEmail,
+            @RequestParam Long flockId) {
+
+        List<FeedRecord> records = feedRecordRepository.findByUserEmailAndFlockId(userEmail, flockId);
+        return ResponseEntity.ok(records);
     }
 
-    // GET one record
-    @GetMapping("/{id}")
-    public ResponseEntity<FeedRecord> getFeedRecord(@PathVariable Long id) {
-        FeedRecord record = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Feed record not found with id: " + id));
-        return ResponseEntity.ok(record);
-    }
-
-    // POST new record
+    // Add record
     @PostMapping
-    public FeedRecord addFeedRecord(@RequestBody FeedRecord record) {
-        return repo.save(record);
+    public ResponseEntity<FeedRecord> addFeedRecord(
+            @RequestHeader("X-User-Email") String userEmail,
+            @RequestBody FeedRecord feedRecord) {
+
+        feedRecord.setUserEmail(userEmail);
+        FeedRecord saved = feedRecordRepository.save(feedRecord);
+        return ResponseEntity.ok(saved);
     }
 
-    // PUT update record
-    @PutMapping("/{id}")
-    public ResponseEntity<FeedRecord> updateFeedRecord(@PathVariable Long id, @RequestBody FeedRecord updated) {
-        FeedRecord existing = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Feed record not found with id: " + id));
+    // Update record
+   @PutMapping("/{id}")
+    public ResponseEntity<FeedRecord> updateFeedRecord(
+            @RequestHeader("X-User-Email") String userEmail,
+            @PathVariable Long id,
+            @RequestBody FeedRecord updatedRecord) {
 
-        existing.setNumBirds(updated.getNumBirds());
-        existing.setBirdType(updated.getBirdType());
-        existing.setTotalFeedGiven(updated.getTotalFeedGiven());
-        existing.setUnit(updated.getUnit());
-        existing.setDaysLasted(updated.getDaysLasted());
-        existing.setFeedPerDay(updated.getFeedPerDay());
-        existing.setFeedPerBird(updated.getFeedPerBird());
-        // Keep flockId & userEmail unchanged
+        return feedRecordRepository.findById(id).map(record -> {
+            if (!record.getUserEmail().equals(userEmail)) {
+                return new ResponseEntity<FeedRecord>(HttpStatus.FORBIDDEN);
+            }
 
-        return ResponseEntity.ok(repo.save(existing));
-    }
+            record.setFlockId(updatedRecord.getFlockId());
+            record.setNumBirds(updatedRecord.getNumBirds());
+            record.setBirdType(updatedRecord.getBirdType());
+            record.setTotalFeedGiven(updatedRecord.getTotalFeedGiven());
+            record.setUnit(updatedRecord.getUnit());
+            record.setDaysLasted(updatedRecord.getDaysLasted());
+            record.setFeedPerDay(updatedRecord.getFeedPerDay());
+            record.setFeedPerBird(updatedRecord.getFeedPerBird());
 
-    // DELETE record
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFeedRecord(@PathVariable Long id) {
-        FeedRecord record = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Feed record not found with id: " + id));
-        repo.delete(record);
-        return ResponseEntity.noContent().build();
-    }
+            FeedRecord saved = feedRecordRepository.save(record);
+            return ResponseEntity.ok(saved);
+        }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        }
 }
