@@ -120,6 +120,7 @@ export default function FeedPredictor() {
   };
 
 
+
   const handleEdit = (record) => {
     setEditId(record.id);
     setBirdType(record.birdType);
