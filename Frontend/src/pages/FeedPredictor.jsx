@@ -235,8 +235,13 @@ export default function FeedPredictor() {
                   <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
                     <td className="px-4 py-2">{r.date ? new Date(r.date).toLocaleDateString() : "-"}</td>
                     <td className="px-4 py-2">{r.birdName}</td>
-                    <td className="px-4 py-2">{(r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)} {r.unit}</td>
-                    <td className="px-4 py-2">{(r.totalFeedGiven / r.daysLasted).toFixed(2)} {r.unit}</td>
+                    <td className="px-4 py-2">
+                      {resultUnit === "g"
+                        ? ((r.totalFeedGiven / r.numBirds / r.daysLasted) * 1000).toFixed(2)
+                        : (r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)
+                      } {resultUnit}
+                    </td>
+                    <td className="px-4 py-2">{resultUnit === "g"? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(2): (r.totalFeedGiven / r.daysLasted).toFixed(2)} {resultUnit}</td>
                     <td className="px-4 py-2 flex gap-2 flex-wrap">
                       <button onClick={() => handleEdit(r)} className="bg-yellow-500 hover:bg-yellow-400 text-white px-3 py-1 rounded">Edit</button>
                       <button onClick={() => handleDelete(r.id)} className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded">Delete</button>
