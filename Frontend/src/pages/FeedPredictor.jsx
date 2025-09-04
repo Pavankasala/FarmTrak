@@ -4,7 +4,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
 import { getCurrentUser } from "../utils/login";
 
-export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate }) {
+export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
   const [records, setRecords] = useState([]);
   const [flocks, setFlocks] = useState([]);
   const [newRecord, setNewRecord] = useState({
@@ -14,11 +14,12 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
     totalFeedGiven: "",
     unit: "kg",
     daysLasted: "",
+    id: null, // null = new, not editing
   });
 
   const userEmail = getCurrentUser();
 
-  // Fetch available flocks for dropdown
+  // Fetch available flocks
   const fetchFlocks = async () => {
     if (!userEmail) return;
     try {
@@ -40,7 +41,7 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
         params: { flockId: parseInt(newRecord.flockId, 10) },
       });
       setRecords(res.data || []);
-      // Update today's total feed
+      // Update today's feed total
       const today = new Date().toISOString().split("T")[0];
       const todayRecords = res.data.filter(r => r.date && r.date.startsWith(today));
       const totalToday = todayRecords.reduce((sum, r) => sum + (r.totalFeedGiven || 0), 0);
@@ -66,40 +67,58 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
       totalFeedGiven: "",
       unit: "kg",
       daysLasted: "",
+      id: null,
     });
   };
 
-  const handleAdd = async (e) => {
+  const handleAddOrUpdate = async (e) => {
     e.preventDefault();
     if (!newRecord.flockId) return alert("Please select a flock");
     if (!newRecord.numBirds || !newRecord.birdType || !newRecord.totalFeedGiven || !newRecord.daysLasted) return;
 
-    const numBirds = parseInt(newRecord.numBirds, 10);
-    const totalFeed = parseFloat(newRecord.totalFeedGiven);
-    const days = parseInt(newRecord.daysLasted, 10);
-
     const payload = {
       flockId: parseInt(newRecord.flockId, 10),
-      numBirds,
+      numBirds: parseInt(newRecord.numBirds, 10),
       birdType: newRecord.birdType.trim(),
-      totalFeedGiven: totalFeed,
+      totalFeedGiven: parseFloat(newRecord.totalFeedGiven),
       unit: newRecord.unit,
-      daysLasted: days,
-      feedPerDay: totalFeed / days,
-      feedPerBird: totalFeed / numBirds,
+      daysLasted: parseInt(newRecord.daysLasted, 10),
+      feedPerDay: parseFloat(newRecord.totalFeedGiven) / parseInt(newRecord.daysLasted, 10),
+      feedPerBird: parseFloat(newRecord.totalFeedGiven) / parseInt(newRecord.numBirds, 10),
       date: new Date().toISOString(),
       userEmail,
     };
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/feedRecords`, payload, {
-        headers: { "X-User-Email": userEmail },
-      });
-      setRecords([...records, res.data]);
+      if (newRecord.id) {
+        // Update existing record
+        const res = await axios.put(`${API_BASE_URL}/feedRecords/${newRecord.id}`, payload, {
+          headers: { "X-User-Email": userEmail },
+        });
+        setRecords(records.map(r => (r.id === newRecord.id ? res.data : r)));
+      } else {
+        // Add new record
+        const res = await axios.post(`${API_BASE_URL}/feedRecords`, payload, {
+          headers: { "X-User-Email": userEmail },
+        });
+        setRecords([...records, res.data]);
+      }
       resetForm();
     } catch (err) {
-      console.error("Error adding feed record:", err);
+      console.error("Error saving feed record:", err);
     }
+  };
+
+  const handleEdit = (record) => {
+    setNewRecord({
+      flockId: record.flockId,
+      numBirds: record.numBirds,
+      birdType: record.birdType,
+      totalFeedGiven: record.totalFeedGiven,
+      unit: record.unit,
+      daysLasted: record.daysLasted,
+      id: record.id,
+    });
   };
 
   const handleDelete = async (id) => {
@@ -117,8 +136,8 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
     <div className="p-4 bg-light-bg dark:bg-dark-card rounded-lg shadow-md transition-colors">
       <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Feed Predictor</h2>
 
-      {/* Add Record Form */}
-      <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+      {/* Form */}
+      <form onSubmit={handleAddOrUpdate} className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
         <select
           name="flockId"
           value={newRecord.flockId || ""}
@@ -182,7 +201,7 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
           type="submit"
           className="col-span-3 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
         >
-          Add Record
+          {newRecord.id ? "Update Record" : "Add Record"}
         </button>
       </form>
 
@@ -191,6 +210,7 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
         <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-800 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
+              <th className="px-4 py-2">#</th>
               <th className="px-4 py-2">Date</th>
               <th className="px-4 py-2">Bird Type</th>
               <th className="px-4 py-2">Per Bird/Day</th>
@@ -202,19 +222,20 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
             {records.length > 0 ? (
               [...records]
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .map((r) => (
+                .map((r, index) => (
                   <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {new Date(r.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">{r.birdType}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {(r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)} {r.unit}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {(r.totalFeedGiven / r.daysLasted).toFixed(2)} {r.unit}
-                    </td>
+                    <td className="px-4 py-2">{index + 1}</td>
+                    <td className="px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-2">{r.birdType}</td>
+                    <td className="px-4 py-2">{(r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)} {r.unit}</td>
+                    <td className="px-4 py-2">{(r.totalFeedGiven / r.daysLasted).toFixed(2)} {r.unit}</td>
                     <td className="px-4 py-2 flex gap-2">
+                      <button
+                        onClick={() => handleEdit(r)}
+                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
                       <button
                         onClick={() => handleDelete(r.id)}
                         className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
@@ -226,7 +247,7 @@ export default function FeedPredictor({ flockId: initialFlockId, onDataUpdate })
                 ))
             ) : (
               <tr>
-                <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="6" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
                   No feed records yet
                 </td>
               </tr>
