@@ -13,7 +13,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
   // Fetch feed records
   const fetchRecords = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/feedRecords`, {
+      const res = await axios.get(`${API_BASE_URL}/feedRecords`, {
         params: { flockId, userEmail },
         headers: { "X-User-Email": userEmail },
       });
@@ -31,7 +31,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/feedRecords`, newRecord, {
+      const res = await axios.post(`${API_BASE_URL}/feedRecords`, newRecord, {
         headers: { "X-User-Email": userEmail },
       });
       setRecords([...records, res.data]);
@@ -44,7 +44,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
   // Update record
   const handleUpdate = async (id, updatedRecord) => {
     try {
-      const res = await axios.put(`${API_BASE_URL}/api/feedRecords/${id}`, updatedRecord, {
+      const res = await axios.put(`${API_BASE_URL}/feedRecords/${id}`, updatedRecord, {
         headers: { "X-User-Email": userEmail },
       });
       setRecords(records.map((r) => (r.id === id ? res.data : r)));
@@ -56,7 +56,7 @@ export default function FeedPredictor({ flockId, userEmail }) {
   // Delete record
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/feedRecords/${id}`, {
+      await axios.delete(`${API_BASE_URL}/feedRecords/${id}`, {
         headers: { "X-User-Email": userEmail },
       });
       setRecords(records.filter((r) => r.id !== id));

@@ -13,7 +13,7 @@ export default function FlockManagement() {
   const fetchFlocks = async () => {
     if (!userEmail) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/flocks?userEmail=${userEmail}`);
+      const response = await fetch(`${API_BASE_URL}/flocks?userEmail=${userEmail}`);
       if (!response.ok) throw new Error("Failed to fetch flocks");
       const data = await response.json();
       setFlocks(Array.isArray(data) ? data : []);
@@ -36,7 +36,7 @@ export default function FlockManagement() {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/flocks`, {
+      const response = await fetch(`${API_BASE_URL}/flocks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEntry),
@@ -53,7 +53,7 @@ export default function FlockManagement() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this flock?")) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/flocks/${id}?userEmail=${userEmail}`, { method: "DELETE" });
+      const response = await fetch(`${API_BASE_URL}/flocks/${id}?userEmail=${userEmail}`, { method: "DELETE" });
       if (response.ok) fetchFlocks();
     } catch (err) {
       console.error(err);
@@ -77,7 +77,7 @@ export default function FlockManagement() {
     if (!finalType || !editedFlock.quantity || !editedFlock.age) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/flocks/${editingId}?userEmail=${userEmail}`, {
+      const response = await fetch(`${API_BASE_URL}/flocks/${editingId}?userEmail=${userEmail}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

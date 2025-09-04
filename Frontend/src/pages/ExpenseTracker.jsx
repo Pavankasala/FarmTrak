@@ -1,8 +1,7 @@
-//Frontend/src/pages/ExpenseTracker.jsx
+// Frontend/src/pages/ExpenseTracker.jsx
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { getCurrentUser } from "../utils/login";
-import { API_BASE_URL } from "../utils/api"; 
+import { api } from "../utils/api"; 
 
 export default function ExpenseTracker() {
   const userEmail = getCurrentUser();
@@ -21,7 +20,7 @@ export default function ExpenseTracker() {
   const fetchExpenses = async () => {
     if (!userEmail) return;
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/expenses`, { params: { userEmail } });
+      const res = await api.get("/expenses", { params: { userEmail } });
       setExpenses(res.data);
     } catch (err) {
       console.error("Failed to fetch expenses:", err);
@@ -51,11 +50,11 @@ export default function ExpenseTracker() {
 
     try {
       if (isEditing) {
-        await axios.put(`${API_BASE_URL}/api/expenses/${form.id}`, payload, {
+        await api.put(`/expenses/${form.id}`, payload, {
           headers: { "X-User-Email": userEmail },
         });
       } else {
-        await axios.post(`${API_BASE_URL}/api/expenses`, payload, {
+        await api.post("/expenses", payload, {
           headers: { "X-User-Email": userEmail },
         });
       }
@@ -70,7 +69,7 @@ export default function ExpenseTracker() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
-      await axios.delete(`${API_BASE_URL}/api/expenses/${id}`, { headers: { "X-User-Email": userEmail } });
+      await api.delete(`/expenses/${id}`, { headers: { "X-User-Email": userEmail } });
       fetchExpenses();
     } catch (err) {
       console.error("Failed to delete expense:", err);
@@ -84,8 +83,8 @@ export default function ExpenseTracker() {
 
   const handleTogglePaid = async (exp) => {
     try {
-      await axios.put(
-        `${API_BASE_URL}/api/expenses/${exp.id}`,
+      await api.put(
+        `/expenses/${exp.id}`,
         { ...exp, paid: !exp.paid },
         { headers: { "X-User-Email": userEmail } }
       );
