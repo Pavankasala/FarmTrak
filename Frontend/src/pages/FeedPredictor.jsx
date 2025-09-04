@@ -70,20 +70,35 @@ export default function FeedPredictor() {
   const saveRecord = async () => {
     if (!result) return;
 
+    const birds = parseInt(numBirds, 10);
+    const totalFeed = parseFloat(totalFeedGiven);
+    const days = parseInt(daysLasted, 10);
+
+    if (!birds || !totalFeed || !days) {
+      alert("Please enter valid numbers.");
+      return;
+    }
+
     const birdName = birdType === "other" ? customBird || "Other" : birdType;
+
+    // Ensure feed is in kg for backend
+    const totalFeedKg = feedUnit === "g" ? totalFeed / 1000 : totalFeed;
+    const feedPerDayKg = totalFeedKg / days;
+    const feedPerBirdKg = totalFeedKg / birds / days;
+
     const payload = {
-      numBirds: parseInt(numBirds, 10),
+      numBirds: birds,
       birdType,
       customBird: birdType === "other" ? customBird : "",
-      totalFeedGiven: parseFloat(totalFeedGiven),
-      unit: feedUnit,
-      daysLasted: parseInt(daysLasted, 10),
-      feedPerDay: parseFloat(result.total) / parseInt(daysLasted, 10),
-      feedPerBird: parseFloat(result.perBird),
+      totalFeedGiven: totalFeedKg,
+      unit: "kg", // always send kg to backend
+      daysLasted: days,
+      feedPerDay: feedPerDayKg,
+      feedPerBird: feedPerBirdKg,
       birdName,
-      date: new Date().toISOString(),
+      date: new Date().toISOString(), // current date/time
       userEmail,
-      flockId: 0, // dummy for backend compatibility
+      flockId: 0, // dummy for backend
     };
 
     try {
@@ -103,6 +118,7 @@ export default function FeedPredictor() {
       console.error("Error saving feed record:", err);
     }
   };
+
 
   const handleEdit = (record) => {
     setEditId(record.id);
@@ -148,18 +164,18 @@ export default function FeedPredictor() {
           {birdType === "other" && (
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Custom Bird Name</label>
-              <input type="text" value={customBird} onChange={e => setCustomBird(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" placeholder="Enter bird name"/>
+              <input type="text" value={customBird} onChange={e => setCustomBird(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" placeholder="Enter bird name" />
             </div>
           )}
 
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Number of Birds</label>
-            <input type="number" value={numBirds} onChange={e => setNumBirds(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"/>
+            <input type="number" value={numBirds} onChange={e => setNumBirds(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total Feed Given</label>
-            <input type="number" value={totalFeedGiven} onChange={e => setTotalFeedGiven(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"/>
+            <input type="number" value={totalFeedGiven} onChange={e => setTotalFeedGiven(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
           </div>
 
           <div>
@@ -172,7 +188,7 @@ export default function FeedPredictor() {
 
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Days Feed Lasted</label>
-            <input type="number" value={daysLasted} onChange={e => setDaysLasted(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"/>
+            <input type="number" value={daysLasted} onChange={e => setDaysLasted(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
           </div>
 
           <div>
