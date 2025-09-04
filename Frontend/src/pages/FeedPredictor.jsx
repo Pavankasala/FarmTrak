@@ -11,15 +11,15 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
     flockId: initialFlockId || "",
     numBirds: "",
     birdType: "",
+    customBird: "",
     totalFeedGiven: "",
     unit: "kg",
     daysLasted: "",
-    id: null, // null = new, not editing
+    id: null, // null = new
   });
 
   const userEmail = getCurrentUser();
 
-  // Fetch available flocks
   const fetchFlocks = async () => {
     if (!userEmail) return;
     try {
@@ -32,7 +32,6 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
     }
   };
 
-  // Fetch feed records
   const fetchRecords = async () => {
     if (!userEmail || !newRecord.flockId) return;
     try {
@@ -54,6 +53,19 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
   useEffect(() => { fetchFlocks(); }, [userEmail]);
   useEffect(() => { fetchRecords(); }, [newRecord.flockId, userEmail]);
 
+  // Auto-fill bird type if flock selected
+  useEffect(() => {
+    if (!newRecord.flockId) return;
+    const flock = flocks.find(f => f.id === parseInt(newRecord.flockId));
+    if (flock) {
+      setNewRecord(prev => ({
+        ...prev,
+        birdType: flock.birdType || "",
+        customBird: "",
+      }));
+    }
+  }, [newRecord.flockId, flocks]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewRecord({ ...newRecord, [name]: value });
@@ -64,6 +76,7 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
       flockId: initialFlockId || "",
       numBirds: "",
       birdType: "",
+      customBird: "",
       totalFeedGiven: "",
       unit: "kg",
       daysLasted: "",
@@ -74,12 +87,14 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
   const handleAddOrUpdate = async (e) => {
     e.preventDefault();
     if (!newRecord.flockId) return alert("Please select a flock");
-    if (!newRecord.numBirds || !newRecord.birdType || !newRecord.totalFeedGiven || !newRecord.daysLasted) return;
+    if (!newRecord.numBirds || (!newRecord.birdType && !newRecord.customBird) || !newRecord.totalFeedGiven || !newRecord.daysLasted) return;
+
+    const birdName = newRecord.birdType === "Other" ? newRecord.customBird : newRecord.birdType;
 
     const payload = {
       flockId: parseInt(newRecord.flockId, 10),
       numBirds: parseInt(newRecord.numBirds, 10),
-      birdType: newRecord.birdType.trim(),
+      birdType: birdName.trim(),
       totalFeedGiven: parseFloat(newRecord.totalFeedGiven),
       unit: newRecord.unit,
       daysLasted: parseInt(newRecord.daysLasted, 10),
@@ -91,13 +106,11 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
 
     try {
       if (newRecord.id) {
-        // Update existing record
         const res = await axios.put(`${API_BASE_URL}/feedRecords/${newRecord.id}`, payload, {
           headers: { "X-User-Email": userEmail },
         });
         setRecords(records.map(r => (r.id === newRecord.id ? res.data : r)));
       } else {
-        // Add new record
         const res = await axios.post(`${API_BASE_URL}/feedRecords`, payload, {
           headers: { "X-User-Email": userEmail },
         });
@@ -113,7 +126,8 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
     setNewRecord({
       flockId: record.flockId,
       numBirds: record.numBirds,
-      birdType: record.birdType,
+      birdType: flocks.find(f => f.id === record.flockId)?.birdType === record.birdType ? record.birdType : "Other",
+      customBird: flocks.find(f => f.id === record.flockId)?.birdType === record.birdType ? "" : record.birdType,
       totalFeedGiven: record.totalFeedGiven,
       unit: record.unit,
       daysLasted: record.daysLasted,
@@ -152,6 +166,7 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
             </option>
           ))}
         </select>
+
         <input
           type="number"
           name="numBirds"
@@ -161,15 +176,31 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
           className="border p-2 rounded dark:bg-gray-800 dark:text-white"
           required
         />
-        <input
-          type="text"
+
+        <select
           name="birdType"
-          placeholder="Bird Type"
-          value={newRecord.birdType}
+          value={newRecord.birdType || ""}
           onChange={handleChange}
           className="border p-2 rounded dark:bg-gray-800 dark:text-white"
-          required
-        />
+        >
+          <option value="">Select Bird Type</option>
+          {["Other", ...new Set(flocks.map(f => f.birdType).filter(Boolean))].map(bt => (
+            <option key={bt} value={bt}>{bt}</option>
+          ))}
+        </select>
+
+        {newRecord.birdType === "Other" && (
+          <input
+            type="text"
+            name="customBird"
+            placeholder="Enter Bird Name"
+            value={newRecord.customBird}
+            onChange={handleChange}
+            className="border p-2 rounded dark:bg-gray-800 dark:text-white"
+            required
+          />
+        )}
+
         <input
           type="number"
           name="totalFeedGiven"
@@ -179,6 +210,7 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
           className="border p-2 rounded dark:bg-gray-800 dark:text-white"
           required
         />
+
         <select
           name="unit"
           value={newRecord.unit}
@@ -188,6 +220,7 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
           <option value="kg">kg</option>
           <option value="g">g</option>
         </select>
+
         <input
           type="number"
           name="daysLasted"
@@ -197,6 +230,7 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
           className="border p-2 rounded dark:bg-gray-800 dark:text-white"
           required
         />
+
         <button
           type="submit"
           className="col-span-3 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
@@ -220,31 +254,29 @@ export default function FeedPredictor({ initialFlockId, onDataUpdate }) {
           </thead>
           <tbody>
             {records.length > 0 ? (
-              [...records]
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .map((r, index) => (
-                  <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="px-4 py-2">{index + 1}</td>
-                    <td className="px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
-                    <td className="px-4 py-2">{r.birdType}</td>
-                    <td className="px-4 py-2">{(r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)} {r.unit}</td>
-                    <td className="px-4 py-2">{(r.totalFeedGiven / r.daysLasted).toFixed(2)} {r.unit}</td>
-                    <td className="px-4 py-2 flex gap-2">
-                      <button
-                        onClick={() => handleEdit(r)}
-                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(r.id)}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
+              [...records].sort((a,b)=>new Date(b.date)-new Date(a.date)).map((r,index) => (
+                <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
+                  <td className="px-4 py-2">{index + 1}</td>
+                  <td className="px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
+                  <td className="px-4 py-2">{r.birdType}</td>
+                  <td className="px-4 py-2">{(r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)} {r.unit}</td>
+                  <td className="px-4 py-2">{(r.totalFeedGiven / r.daysLasted).toFixed(2)} {r.unit}</td>
+                  <td className="px-4 py-2 flex gap-2">
+                    <button
+                      onClick={() => handleEdit(r)}
+                      className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(r.id)}
+                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
                 <td colSpan="6" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
