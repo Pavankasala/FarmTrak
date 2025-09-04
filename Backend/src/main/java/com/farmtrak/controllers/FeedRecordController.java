@@ -1,9 +1,7 @@
-// Backend/src/main/java/com/farmtrak/controllers/FeedRecordController.java
 package com.farmtrak.controllers;
 
 import com.farmtrak.model.FeedRecord;
 import com.farmtrak.repository.FeedRecordRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,25 +28,35 @@ public class FeedRecordController {
 
     // Add record
     @PostMapping
-    public ResponseEntity<FeedRecord> addFeedRecord(
+    public ResponseEntity<?> addFeedRecord(
             @RequestHeader("X-User-Email") String userEmail,
             @RequestBody FeedRecord feedRecord) {
 
+        // Basic validation
+        if (feedRecord.getNumBirds() <= 0 || feedRecord.getTotalFeedGiven() <= 0 || feedRecord.getDaysLasted() <= 0) {
+            return ResponseEntity.badRequest().body("Invalid input values.");
+        }
+
         feedRecord.setUserEmail(userEmail);
         FeedRecord saved = feedRecordRepository.save(feedRecord);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     // Update record
-   @PutMapping("/{id}")
-    public ResponseEntity<FeedRecord> updateFeedRecord(
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateFeedRecord(
             @RequestHeader("X-User-Email") String userEmail,
             @PathVariable Long id,
             @RequestBody FeedRecord updatedRecord) {
 
         return feedRecordRepository.findById(id).map(record -> {
             if (!record.getUserEmail().equals(userEmail)) {
-                return new ResponseEntity<FeedRecord>(HttpStatus.FORBIDDEN);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not allowed");
+            }
+
+            // Basic validation
+            if (updatedRecord.getNumBirds() <= 0 || updatedRecord.getTotalFeedGiven() <= 0 || updatedRecord.getDaysLasted() <= 0) {
+                return ResponseEntity.badRequest().body("Invalid input values.");
             }
 
             record.setFlockId(updatedRecord.getFlockId());
@@ -62,6 +70,21 @@ public class FeedRecordController {
 
             FeedRecord saved = feedRecordRepository.save(record);
             return ResponseEntity.ok(saved);
-        }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        }
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Record not found"));
+    }
+
+    // Delete record
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteFeedRecord(
+            @RequestHeader("X-User-Email") String userEmail,
+            @PathVariable Long id) {
+
+        return feedRecordRepository.findById(id).map(record -> {
+            if (!record.getUserEmail().equals(userEmail)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not allowed");
+            }
+            feedRecordRepository.delete(record);
+            return ResponseEntity.ok().body("Deleted successfully");
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Record not found"));
+    }
 }
