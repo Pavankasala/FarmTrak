@@ -19,6 +19,8 @@ public class FeedRecord {
 
     private int numBirds;
     private String birdType;
+    private String customBird; // New field
+    private String birdName; // New field
     private double totalFeedGiven;
     private String unit;
     private int daysLasted;
@@ -42,6 +44,13 @@ public class FeedRecord {
 
     public String getBirdType() { return birdType; }
     public void setBirdType(String birdType) { this.birdType = birdType; }
+
+    // New getter and setter for customBird
+    public String getCustomBird() { return customBird; }
+    public void setCustomBird(String customBird) { this.customBird = customBird; }
+
+    public String getBirdName() { return birdName; }
+    public void setBirdName(String birdName) { this.birdName = birdName; }
 
     public double getTotalFeedGiven() { return totalFeedGiven; }
     public void setTotalFeedGiven(double totalFeedGiven) { this.totalFeedGiven = totalFeedGiven; }

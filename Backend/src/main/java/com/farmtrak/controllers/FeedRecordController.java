@@ -45,48 +45,36 @@ public class FeedRecordController {
 
     // Update record
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateFeedRecord(
-            @RequestHeader("X-User-Email") String userEmail,
-            @PathVariable Long id,
-            @RequestBody FeedRecord updatedRecord) {
+public ResponseEntity<?> updateFeedRecord(
+        @RequestHeader("X-User-Email") String userEmail,
+        @PathVariable Long id,
+        @RequestBody FeedRecord updatedRecord) {
 
-        return feedRecordRepository.findById(id).map(record -> {
-            if (!record.getUserEmail().equals(userEmail)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not allowed");
-            }
+    return feedRecordRepository.findById(id).map(record -> {
+        if (!record.getUserEmail().equals(userEmail)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not allowed");
+        }
 
-            // Basic validation
-            if (updatedRecord.getNumBirds() <= 0 || updatedRecord.getTotalFeedGiven() <= 0 || updatedRecord.getDaysLasted() <= 0) {
-                return ResponseEntity.badRequest().body("Invalid input values.");
-            }
+        // Basic validation
+        if (updatedRecord.getNumBirds() <= 0 || updatedRecord.getTotalFeedGiven() <= 0 || updatedRecord.getDaysLasted() <= 0) {
+            return ResponseEntity.badRequest().body("Invalid input values.");
+        }
 
-            record.setFlockId(updatedRecord.getFlockId());
-            record.setNumBirds(updatedRecord.getNumBirds());
-            record.setBirdType(updatedRecord.getBirdType());
-            record.setTotalFeedGiven(updatedRecord.getTotalFeedGiven());
-            record.setUnit(updatedRecord.getUnit());
-            record.setDaysLasted(updatedRecord.getDaysLasted());
-            record.setFeedPerDay(updatedRecord.getFeedPerDay());
-            record.setFeedPerBird(updatedRecord.getFeedPerBird());
-            record.setDate(updatedRecord.getDate());
+        record.setFlockId(updatedRecord.getFlockId());
+        record.setNumBirds(updatedRecord.getNumBirds());
+        record.setBirdType(updatedRecord.getBirdType());
+        record.setCustomBird(updatedRecord.getBirdType().equals("other") ? updatedRecord.getCustomBird() : "");
+        record.setBirdName(updatedRecord.getBirdType().equals("other") ? updatedRecord.getCustomBird() : updatedRecord.getBirdType());
+        record.setTotalFeedGiven(updatedRecord.getTotalFeedGiven());
+        record.setUnit(updatedRecord.getUnit());
+        record.setDaysLasted(updatedRecord.getDaysLasted());
+        record.setFeedPerDay(updatedRecord.getFeedPerDay());
+        record.setFeedPerBird(updatedRecord.getFeedPerBird());
+        record.setDate(updatedRecord.getDate());
 
-            FeedRecord saved = feedRecordRepository.save(record);
-            return ResponseEntity.ok(saved);
-        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Record not found"));
-    }
+        FeedRecord saved = feedRecordRepository.save(record);
+        return ResponseEntity.ok(saved);
+    }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Record not found"));
+}
 
-    // Delete record
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteFeedRecord(
-            @RequestHeader("X-User-Email") String userEmail,
-            @PathVariable Long id) {
-
-        return feedRecordRepository.findById(id).map(record -> {
-            if (!record.getUserEmail().equals(userEmail)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not allowed");
-            }
-            feedRecordRepository.delete(record);
-            return ResponseEntity.ok().body("Deleted successfully");
-        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Record not found"));
-    }
 }

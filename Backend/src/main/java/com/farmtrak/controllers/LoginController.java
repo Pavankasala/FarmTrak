@@ -1,4 +1,3 @@
-//Backend\src\main\java\com\farmtrak\controllers\LoginController.java
 package com.farmtrak.controllers;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;

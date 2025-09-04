@@ -1,4 +1,3 @@
-//Backend\src\main\java\com\farmtrak\controllers\ExpenseController.java
 package com.farmtrak.controllers;
 
 import com.farmtrak.model.Expense;
