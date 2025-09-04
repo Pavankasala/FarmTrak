@@ -14,10 +14,7 @@ export default function FeedPredictor() {
   // ✅ Sync with backend + localStorage
   const fetchRecords = async () => {
     try {
-      const res = await api.get("/feedRecords", {
-        params: { userEmail },
-        headers: { "X-User-Email": userEmail },
-      });
+      const res = await api.get(`/feedRecords?userEmail=${encodeURIComponent(userEmail)}`, payload);
       setFeedRecords(res.data);
       localStorage.setItem("feedRecords", JSON.stringify(res.data));
     } catch (err) {
@@ -41,13 +38,9 @@ export default function FeedPredictor() {
 
     try {
       if (editingId) {
-        await api.put(`/feedRecords/${editingId}`, payload, {
-          headers: { "X-User-Email": userEmail },
-        });
+        await api.put(`/feedRecords?userEmail=${encodeURIComponent(userEmail)}`, payload);
       } else {
-        await api.post("/feedRecords", payload, {
-          headers: { "X-User-Email": userEmail },
-        });
+        await api.post(`/feedRecords/${editingId}?userEmail=${encodeURIComponent(userEmail)}`, payload);
       }
       setFlockId("");
       setFeedAmount("");
@@ -62,9 +55,7 @@ export default function FeedPredictor() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this feed record?")) return;
     try {
-      await api.delete(`/feedRecords/${id}`, {
-        headers: { "X-User-Email": userEmail },
-      });
+      await api.delete(`/feedRecords/${id}?userEmail=${encodeURIComponent(userEmail)}`);
       fetchRecords();
     } catch (err) {
       console.error("Error deleting record:", err);
