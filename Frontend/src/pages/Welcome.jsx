@@ -12,7 +12,7 @@ function Welcome() {
 
   useEffect(() => {
     if (isLoggedIn()) navigate("/dashboard");
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -27,7 +27,7 @@ function Welcome() {
 
   function handleLogout() {
     logOut();
-    window.location.reload();
+    navigate("/");
   }
 
   const handleLoginSuccess = ({ token, email }) => {
@@ -38,6 +38,7 @@ function Welcome() {
 
   return (
     <div className="relative bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text min-h-screen">
+      {/* Top-right controls */}
       <div className="absolute top-4 right-8 flex items-center gap-3 z-10">
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
@@ -48,21 +49,32 @@ function Welcome() {
         </button>
 
         {isLoggedIn() ? (
-          <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+          <button
+            onClick={handleLogout}
+            aria-label="Logout"
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
             🔓 Logout
           </button>
         ) : (
-          <button onClick={() => setShowLogin(true)} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
+          <button
+            onClick={() => setShowLogin(true)}
+            aria-label="Login"
+            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500"
+          >
             🔐 Login
           </button>
         )}
       </div>
 
-      <div className="flex flex-col justify-center items-center min-h-screen">
-        <h1 className="text-5xl font-semibold sm:text-7xl">
+      {/* Hero Section */}
+      <div className="flex flex-col justify-center items-center min-h-screen text-center">
+        <h1 className="text-5xl font-semibold sm:text-7xl transition-transform duration-500 hover:scale-105">
           Welcome to <span className="text-light-primary dark:text-dark-primary">FarmTrak</span>
         </h1>
-        <p className="mt-6 text-lg text-light-subtext dark:text-dark-subtext">Manage your poultry with ease.</p>
+        <p className="mt-6 text-lg text-light-subtext dark:text-dark-subtext">
+          Manage your poultry with ease.
+        </p>
         <div className="mt-8 flex justify-center gap-x-6">
           <button
             onClick={() => {

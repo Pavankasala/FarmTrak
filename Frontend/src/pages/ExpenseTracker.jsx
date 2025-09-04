@@ -20,7 +20,8 @@ export default function ExpenseTracker() {
   const fetchExpenses = async () => {
     if (!userEmail) return;
     try {
-      const res = await api.get("/expenses", { params: { userEmail } });
+      // ✅ always use query param
+      const res = await api.get(`/expenses?userEmail=${encodeURIComponent(userEmail)}`);
       setExpenses(res.data);
     } catch (err) {
       console.error("Failed to fetch expenses:", err);
@@ -50,13 +51,9 @@ export default function ExpenseTracker() {
 
     try {
       if (isEditing) {
-        await api.put(`/expenses/${form.id}`, payload, {
-          headers: { "X-User-Email": userEmail },
-        });
+        await api.put(`/expenses/${form.id}?userEmail=${encodeURIComponent(userEmail)}`, payload);
       } else {
-        await api.post("/expenses", payload, {
-          headers: { "X-User-Email": userEmail },
-        });
+        await api.post(`/expenses?userEmail=${encodeURIComponent(userEmail)}`, payload);
       }
       setForm({ id: null, category: "", amount: "", date: "", notes: "", paid: false });
       setIsEditing(false);
@@ -69,7 +66,7 @@ export default function ExpenseTracker() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
-      await api.delete(`/expenses/${id}`, { headers: { "X-User-Email": userEmail } });
+      await api.delete(`/expenses/${id}?userEmail=${encodeURIComponent(userEmail)}`);
       fetchExpenses();
     } catch (err) {
       console.error("Failed to delete expense:", err);
@@ -84,9 +81,8 @@ export default function ExpenseTracker() {
   const handleTogglePaid = async (exp) => {
     try {
       await api.put(
-        `/expenses/${exp.id}`,
-        { ...exp, paid: !exp.paid },
-        { headers: { "X-User-Email": userEmail } }
+        `/expenses/${exp.id}?userEmail=${encodeURIComponent(userEmail)}`,
+        { ...exp, paid: !exp.paid }
       );
       fetchExpenses();
     } catch (err) {

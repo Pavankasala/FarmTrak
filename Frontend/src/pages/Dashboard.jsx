@@ -1,6 +1,5 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { getCurrentUser } from "../utils/login";
 import { api } from "../utils/api";
@@ -20,10 +19,11 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
+      // ✅ switched from headers to query params (?userEmail=...)
       const [flocksRes, expensesRes, eggsRes] = await Promise.all([
-        api.get("/flocks", { headers: { "X-User-Email": userEmail } }),
-        api.get("/expenses", { headers: { "X-User-Email": userEmail } }),
-        api.get("/eggs", { headers: { "X-User-Email": userEmail } }),
+        api.get(`/flocks?userEmail=${encodeURIComponent(userEmail)}`),
+        api.get(`/expenses?userEmail=${encodeURIComponent(userEmail)}`),
+        api.get(`/eggs?userEmail=${encodeURIComponent(userEmail)}`),
       ]);
 
       const flocks = flocksRes.data;
