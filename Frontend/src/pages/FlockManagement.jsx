@@ -13,7 +13,9 @@ export default function FlockManagement() {
   const fetchFlocks = async () => {
     if (!userEmail) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/flocks?userEmail=${userEmail}`);
+      const response = await fetch(`${API_BASE_URL}/flocks`, {
+        headers: { "X-User-Email": userEmail },
+      });
       if (!response.ok) throw new Error("Failed to fetch flocks");
       const data = await response.json();
       setFlocks(Array.isArray(data) ? data : []);
@@ -32,13 +34,15 @@ export default function FlockManagement() {
       type: finalType,
       quantity: parseInt(newFlock.quantity),
       age: parseInt(newFlock.age),
-      userEmail,
     };
 
     try {
       const response = await fetch(`${API_BASE_URL}/flocks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Email": userEmail,
+        },
         body: JSON.stringify(newEntry),
       });
       if (response.ok) {
@@ -53,7 +57,10 @@ export default function FlockManagement() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this flock?")) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/flocks/${id}?userEmail=${userEmail}`, { method: "DELETE" });
+      const response = await fetch(`${API_BASE_URL}/flocks/${id}`, {
+        method: "DELETE",
+        headers: { "X-User-Email": userEmail },
+      });
       if (response.ok) fetchFlocks();
     } catch (err) {
       console.error(err);
@@ -77,9 +84,12 @@ export default function FlockManagement() {
     if (!finalType || !editedFlock.quantity || !editedFlock.age) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/flocks/${editingId}?userEmail=${userEmail}`, {
+      const response = await fetch(`${API_BASE_URL}/flocks/${editingId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Email": userEmail,
+        },
         body: JSON.stringify({
           type: finalType,
           quantity: parseInt(editedFlock.quantity),
