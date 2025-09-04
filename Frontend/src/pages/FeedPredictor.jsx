@@ -216,7 +216,7 @@ export default function FeedPredictor() {
               {records.length > 0 ? (
                 [...records].sort((a, b) => new Date(b.date) - new Date(a.date)).map(r => (
                   <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-2">{r.date ? new Date(r.date).toLocaleDateString() : "-"}</td>
                     <td className="px-4 py-2">{r.birdName}</td>
                     <td className="px-4 py-2">{(r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)} {r.unit}</td>
                     <td className="px-4 py-2">{(r.totalFeedGiven / r.daysLasted).toFixed(2)} {r.unit}</td>
