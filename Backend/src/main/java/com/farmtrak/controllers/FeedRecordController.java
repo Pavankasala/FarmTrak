@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -67,6 +68,7 @@ public class FeedRecordController {
             record.setDaysLasted(updatedRecord.getDaysLasted());
             record.setFeedPerDay(updatedRecord.getFeedPerDay());
             record.setFeedPerBird(updatedRecord.getFeedPerBird());
+            record.setDate(updatedRecord.getDate());
 
             FeedRecord saved = feedRecordRepository.save(record);
             return ResponseEntity.ok(saved);

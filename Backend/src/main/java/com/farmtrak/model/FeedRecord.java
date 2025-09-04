@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @NoArgsConstructor @AllArgsConstructor
 public class FeedRecord {
@@ -20,6 +22,7 @@ public class FeedRecord {
     private double totalFeedGiven;
     private String unit;
     private int daysLasted;
+    private LocalDate date; // Date of the feed record
 
     private double feedPerDay;   // kg per day
     private double feedPerBird;  // g per bird
@@ -48,6 +51,9 @@ public class FeedRecord {
 
     public int getDaysLasted() { return daysLasted; }
     public void setDaysLasted(int daysLasted) { this.daysLasted = daysLasted; }
+
+    public LocalDate getDate() { return date; }
+    public void setDate(LocalDate date) { this.date = date; }
 
     public double getFeedPerDay() { return feedPerDay; }
     public void setFeedPerDay(double feedPerDay) { this.feedPerDay = feedPerDay; }

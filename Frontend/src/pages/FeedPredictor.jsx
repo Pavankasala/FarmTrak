@@ -127,12 +127,18 @@ export default function FeedPredictor() {
     setCustomBird(record.customBird || "");
     setNumBirds(record.numBirds);
     setTotalFeedGiven(record.totalFeedGiven);
-    setFeedUnit(record.unit);
+    setFeedUnit("kg");
     setDaysLasted(record.daysLasted);
+    const perBird =
+      resultUnit === "g" ? record.feedPerBird * 1000 : record.feedPerBird;
+    const total =
+      resultUnit === "g" ? record.feedPerDay * record.daysLasted * 1000 : record.feedPerDay * record.daysLasted;
+
     setResult({
-      perBird: record.feedPerBird,
-      total: record.feedPerDay * record.daysLasted,
-      unit: record.unit,
+      perBird: perBird.toFixed(2),
+      total: total.toFixed(2),
+      unit: resultUnit,
+      date: record.date,
     });
   };
 
@@ -210,12 +216,15 @@ export default function FeedPredictor() {
 
         {/* Result */}
         {typeof result === "string" && <div className="text-red-600 dark:text-red-400">{result}</div>}
-        {result && typeof result !== "string" && !editId && (
+        {result && typeof result !== "string" && (
           <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded">
             ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
+            {result.date && (
+              <> | Date: <b>{new Date(result.date).toLocaleDateString()}</b></>
+            )}
           </div>
         )}
-
+        
         {/* Saved Records */}
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">📋 Saved Records</h2>
         <div className="overflow-x-auto">
@@ -241,7 +250,7 @@ export default function FeedPredictor() {
                         : (r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)
                       } {resultUnit}
                     </td>
-                    <td className="px-4 py-2">{resultUnit === "g"? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(2): (r.totalFeedGiven / r.daysLasted).toFixed(2)} {resultUnit}</td>
+                    <td className="px-4 py-2">{resultUnit === "g" ? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(2) : (r.totalFeedGiven / r.daysLasted).toFixed(2)} {resultUnit}</td>
                     <td className="px-4 py-2 flex gap-2 flex-wrap">
                       <button onClick={() => handleEdit(r)} className="bg-yellow-500 hover:bg-yellow-400 text-white px-3 py-1 rounded">Edit</button>
                       <button onClick={() => handleDelete(r.id)} className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded">Delete</button>
