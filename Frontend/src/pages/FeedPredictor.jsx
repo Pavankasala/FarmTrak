@@ -15,30 +15,37 @@ export default function FeedPredictor({ flockId, userEmail }) {
 
   // Fetch feed records
   const fetchRecords = async () => {
+    if (!flockId || !userEmail) return;
     try {
       const res = await axios.get(`${API_BASE_URL}/feedRecords`, {
-        params: { flockId },
+        params: { flockId: parseInt(flockId) },
         headers: { "X-User-Email": userEmail },
       });
-      setRecords(res.data);
+      setRecords(res.data || []);
     } catch (err) {
       console.error("Error fetching feed records:", err);
     }
   };
 
   useEffect(() => {
-    if (flockId && userEmail) fetchRecords();
+    fetchRecords();
   }, [flockId, userEmail]);
 
   // Add new record
   const handleAdd = async (e) => {
     e.preventDefault();
-    try {
-      const payload = {
-        ...newRecord,
-        flockId,
-      };
+    if (!flockId || !newRecord.numBirds || !newRecord.birdType || !newRecord.totalFeedGiven || !newRecord.daysLasted) return;
 
+    const payload = {
+      flockId: parseInt(flockId),
+      numBirds: parseInt(newRecord.numBirds),
+      birdType: newRecord.birdType,
+      totalFeedGiven: parseFloat(newRecord.totalFeedGiven),
+      unit: newRecord.unit,
+      daysLasted: parseInt(newRecord.daysLasted),
+    };
+
+    try {
       const res = await axios.post(`${API_BASE_URL}/feedRecords`, payload, {
         headers: { "X-User-Email": userEmail },
       });
@@ -57,14 +64,18 @@ export default function FeedPredictor({ flockId, userEmail }) {
 
   // Update record
   const handleUpdate = async (id, updatedRecord) => {
+    const payload = {
+      ...updatedRecord,
+      numBirds: parseInt(updatedRecord.numBirds),
+      totalFeedGiven: parseFloat(updatedRecord.totalFeedGiven),
+      daysLasted: parseInt(updatedRecord.daysLasted),
+      flockId: parseInt(updatedRecord.flockId),
+    };
+
     try {
-      const res = await axios.put(
-        `${API_BASE_URL}/feedRecords/${id}`,
-        updatedRecord,
-        {
-          headers: { "X-User-Email": userEmail },
-        }
-      );
+      const res = await axios.put(`${API_BASE_URL}/feedRecords/${id}`, payload, {
+        headers: { "X-User-Email": userEmail },
+      });
       setRecords(records.map((r) => (r.id === id ? res.data : r)));
     } catch (err) {
       console.error("Error updating feed record:", err);
