@@ -17,8 +17,6 @@ export default function App() {
   const { theme } = useTheme() || {};
 
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <ThemeProvider>
         <Router>
           <Routes>
             <Route path="/" element={<Welcome />} />
@@ -38,7 +36,5 @@ export default function App() {
             </Route>
           </Routes>
         </Router>
-      </ThemeProvider>
-    </GoogleOAuthProvider>
   );
 }

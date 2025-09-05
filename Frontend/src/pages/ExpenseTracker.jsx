@@ -20,8 +20,7 @@ export default function ExpenseTracker() {
   const fetchExpenses = async () => {
     if (!userEmail) return;
     try {
-      // ✅ backend expects query param for GET
-      const res = await api.get(`/expenses?userEmail=${encodeURIComponent(userEmail)}`);
+      const res = await api.get("/expenses", { headers: { "X-User-Email": userEmail } });
       setExpenses(res.data);
     } catch (err) {
       console.error("Failed to fetch expenses:", err);
