@@ -16,15 +16,13 @@ public class FeedRecordController {
     @Autowired
     private FeedRecordRepository feedRecordRepository;
 
-    // ✅ Get records by flock (for a user)
+    // ✅ Get all feed records for a user
     @GetMapping
-    public List<FeedRecord> getFeedRecords(
-            @RequestHeader("X-User-Email") String userEmail,
-            @RequestParam Long flockId) {
-        return feedRecordRepository.findByUserEmailAndFlockId(userEmail, flockId);
+    public List<FeedRecord> getFeedRecords(@RequestHeader("X-User-Email") String userEmail) {
+        return feedRecordRepository.findByUserEmail(userEmail);
     }
 
-    // ✅ Add new record
+    // ✅ Add new feed record
     @PostMapping
     public FeedRecord addFeedRecord(
             @RequestHeader("X-User-Email") String userEmail,
@@ -34,11 +32,15 @@ public class FeedRecordController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid input values.");
         }
 
+        // Assign next prediction number
+        Integer maxPrediction = feedRecordRepository.findMaxPredictionNumberByUserEmail(userEmail).orElse(0);
+        feedRecord.setPredictionNumber(maxPrediction + 1);
+
         feedRecord.setUserEmail(userEmail);
         return feedRecordRepository.save(feedRecord);
     }
 
-    // ✅ Update record
+    // ✅ Update feed record
     @PutMapping("/{id}")
     public FeedRecord updateFeedRecord(
             @RequestHeader("X-User-Email") String userEmail,
@@ -54,7 +56,7 @@ public class FeedRecordController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid input values.");
             }
 
-            record.setFlockId(updatedRecord.getFlockId());
+            // Keep predictionNumber unchanged
             record.setNumBirds(updatedRecord.getNumBirds());
             record.setBirdType(updatedRecord.getBirdType());
             record.setCustomBird(updatedRecord.getBirdType().equals("other") ? updatedRecord.getCustomBird() : "");
@@ -70,7 +72,7 @@ public class FeedRecordController {
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Record not found"));
     }
 
-    // ✅ Delete record
+    // ✅ Delete feed record
     @DeleteMapping("/{id}")
     public String deleteFeedRecord(
             @RequestHeader("X-User-Email") String userEmail,

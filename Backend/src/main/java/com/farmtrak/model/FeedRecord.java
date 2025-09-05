@@ -8,36 +8,37 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class FeedRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long flockId;      // link to flock
     private String userEmail;  // owner
+    private int predictionNumber; // NEW: Track which prediction it is
 
     private int numBirds;
     private String birdType;
-    private String customBird; // New field
-    private String birdName; // New field
+    private String customBird;
+    private String birdName;
     private double totalFeedGiven;
     private String unit;
     private int daysLasted;
-    private LocalDate date; // Date of the feed record
+    private LocalDate date;
 
-    private double feedPerDay;   // kg per day
-    private double feedPerBird;  // g per bird
+    private double feedPerDay;
+    private double feedPerBird;
 
     // Getters & setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getFlockId() { return flockId; }
-    public void setFlockId(Long flockId) { this.flockId = flockId; }
-
     public String getUserEmail() { return userEmail; }
     public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
+
+    public int getPredictionNumber() { return predictionNumber; }
+    public void setPredictionNumber(int predictionNumber) { this.predictionNumber = predictionNumber; }
 
     public int getNumBirds() { return numBirds; }
     public void setNumBirds(int numBirds) { this.numBirds = numBirds; }
@@ -45,7 +46,6 @@ public class FeedRecord {
     public String getBirdType() { return birdType; }
     public void setBirdType(String birdType) { this.birdType = birdType; }
 
-    // New getter and setter for customBird
     public String getCustomBird() { return customBird; }
     public void setCustomBird(String customBird) { this.customBird = customBird; }
 
@@ -69,4 +69,8 @@ public class FeedRecord {
 
     public double getFeedPerBird() { return feedPerBird; }
     public void setFeedPerBird(double feedPerBird) { this.feedPerBird = feedPerBird; }
+
+    public void setFlockId(Long id) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
