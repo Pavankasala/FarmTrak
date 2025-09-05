@@ -1,12 +1,24 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
 import { api } from "../utils/api";
 import { useOutletContext } from "react-router-dom";
 
 export default function Dashboard() {
-  // ✅ Use context from DashboardLayout
-  const { dashboardStats, setDashboardStats } = useOutletContext();
+  // ✅ Safe fallback for GitHub Pages direct access
+  const outletContext = useOutletContext() || {};
+  const { dashboardStats = {}, setDashboardStats = () => {} } = outletContext;
 
   const [stats, setStats] = useState(dashboardStats);
   const [eggTrend, setEggTrend] = useState([]);
@@ -21,11 +33,14 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) return;
+
       const [flocksRes, expensesRes, eggsRes, feedRes] = await Promise.all([
-        api.get(`/flocks`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
-        api.get(`/expenses`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
-        api.get(`/eggs`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
-        api.get(`/feedRecords`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
+        api.get(`/flocks`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/feedRecords`, { headers: { "X-User-Email": userEmail } }),
       ]);
 
       const flocks = flocksRes.data;
@@ -46,7 +61,7 @@ export default function Dashboard() {
 
       const newStats = { totalBirds, totalExpenses, eggsToday, feedToday };
       setStats(newStats);
-      setDashboardStats(newStats); // ✅ update layout context
+      setDashboardStats(newStats);
 
       // ---------------- Trends ----------------
       const last7Days = Array.from({ length: 7 }).map((_, i) => {
@@ -57,14 +72,24 @@ export default function Dashboard() {
 
       const eggTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
-        const total = eggs.filter((e) => formatDate(e.date) === dayStr).reduce((sum, e) => sum + e.count, 0);
-        return { date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`, eggs: total };
+        const total = eggs
+          .filter((e) => formatDate(e.date) === dayStr)
+          .reduce((sum, e) => sum + e.count, 0);
+        return {
+          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
+          eggs: total,
+        };
       });
 
       const expenseTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
-        const total = expenses.filter((e) => formatDate(e.date) === dayStr).reduce((sum, e) => sum + e.amount, 0);
-        return { date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`, expenses: total };
+        const total = expenses
+          .filter((e) => formatDate(e.date) === dayStr)
+          .reduce((sum, e) => sum + e.amount, 0);
+        return {
+          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
+          expenses: total,
+        };
       });
 
       setEggTrend(eggTrendData);
@@ -90,7 +115,6 @@ export default function Dashboard() {
         return { name: f.birdType === "Other" ? f.customBird : f.birdType, value: totalFeed };
       });
       setFeedPerFlock(feedFlock);
-
     } catch (err) {
       console.error("Dashboard data load error:", err);
     }
@@ -98,7 +122,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
-    const interval = setInterval(loadDashboardData, 120000); // refresh every 2 mins
+    const interval = setInterval(loadDashboardData, 120000);
     return () => clearInterval(interval);
   }, []);
 
@@ -122,9 +146,8 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Charts */}
+      {/* Line Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Egg Trend */}
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🥚 Egg Production (Last 7 days)</h2>
           <ResponsiveContainer width="100%" height={200}>
@@ -137,7 +160,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Expense Trend */}
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">💸 Expenses (Last 7 days)</h2>
           <ResponsiveContainer width="100%" height={200}>
@@ -153,7 +175,6 @@ export default function Dashboard() {
 
       {/* Pie Charts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Expenses by Category */}
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">💰 Expenses by Category</h2>
           <ResponsiveContainer width="100%" height={200}>
@@ -168,7 +189,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Bird distribution */}
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🐓 Birds per Flock</h2>
           <ResponsiveContainer width="100%" height={200}>
@@ -183,7 +203,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Feed usage */}
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🧴 Feed Usage per Flock</h2>
           <ResponsiveContainer width="100%" height={200}>
