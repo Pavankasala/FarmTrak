@@ -2,6 +2,7 @@
 package com.farmtrak.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +17,7 @@ public class FeedRecord {
     private Long id;
 
     private String userEmail;  // owner
-    private int predictionNumber; // NEW: Track which prediction it is
+    private int predictionNumber; // Track which prediction it is
 
     private int numBirds;
     private String birdType;
@@ -25,10 +26,14 @@ public class FeedRecord {
     private double totalFeedGiven;
     private String unit;
     private int daysLasted;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
 
     private double feedPerDay;
     private double feedPerBird;
+
+    private Long flockId; // ✅ NEW: real flockId
 
     // Getters & setters
     public Long getId() { return id; }
@@ -70,7 +75,6 @@ public class FeedRecord {
     public double getFeedPerBird() { return feedPerBird; }
     public void setFeedPerBird(double feedPerBird) { this.feedPerBird = feedPerBird; }
 
-    public void setFlockId(Long id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public Long getFlockId() { return flockId; }
+    public void setFlockId(Long flockId) { this.flockId = flockId; }
 }

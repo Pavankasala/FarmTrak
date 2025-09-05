@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -22,7 +23,7 @@ public class FeedRecordController {
         return feedRecordRepository.findByUserEmail(userEmail);
     }
 
-    // ✅ Add new feed record
+    // ✅ Add new feed record with flockId
     @PostMapping
     public FeedRecord addFeedRecord(
             @RequestHeader("X-User-Email") String userEmail,
@@ -37,7 +38,22 @@ public class FeedRecordController {
         feedRecord.setPredictionNumber(maxPrediction + 1);
 
         feedRecord.setUserEmail(userEmail);
-        return feedRecordRepository.save(feedRecord);
+
+        // ✅ Set date to today if not provided
+        if (feedRecord.getDate() == null) {
+            feedRecord.setDate(LocalDate.now());
+        }
+
+        // ✅ Calculate feedPerDay & feedPerBird
+        feedRecord.setFeedPerDay(feedRecord.getTotalFeedGiven() / feedRecord.getDaysLasted());
+        feedRecord.setFeedPerBird(feedRecord.getTotalFeedGiven() / feedRecord.getNumBirds() / feedRecord.getDaysLasted());
+
+        // Save first to generate an ID
+        FeedRecord savedRecord = feedRecordRepository.save(feedRecord);
+
+        // Use the ID as flockId
+        savedRecord.setFlockId(savedRecord.getId());
+        return feedRecordRepository.save(savedRecord);
     }
 
     // ✅ Update feed record
@@ -56,7 +72,7 @@ public class FeedRecordController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid input values.");
             }
 
-            // Keep predictionNumber unchanged
+            // Keep predictionNumber & flockId unchanged
             record.setNumBirds(updatedRecord.getNumBirds());
             record.setBirdType(updatedRecord.getBirdType());
             record.setCustomBird(updatedRecord.getBirdType().equals("other") ? updatedRecord.getCustomBird() : "");
