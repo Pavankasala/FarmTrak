@@ -17,20 +17,23 @@ export default function Dashboard() {
   const [eggTrend, setEggTrend] = useState([]);
   const [expenseTrend, setExpenseTrend] = useState([]);
 
+  const formatDate = (isoStr) => new Date(isoStr).toISOString().split("T")[0];
+
   const loadDashboardData = async () => {
     try {
-      // ✅ switched from headers to query params (?userEmail=...)
-      const [flocksRes, expensesRes, eggsRes] = await Promise.all([
-        api.get(`/flocks?userEmail=${encodeURIComponent(userEmail)}`),
-        api.get(`/expenses?userEmail=${encodeURIComponent(userEmail)}`),
-        api.get(`/eggs?userEmail=${encodeURIComponent(userEmail)}`),
+      const [flocksRes, expensesRes, eggsRes, feedRes] = await Promise.all([
+        api.get(`/flocks`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/feedRecords`, { headers: { "X-User-Email": userEmail } }),
       ]);
 
       const flocks = flocksRes.data;
       const expenses = expensesRes.data;
       const eggs = eggsRes.data;
+      const feedRecords = feedRes.data;
 
-      const totalBirds = flocks.reduce((sum, f) => sum + f.quantity, 0);
+      const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || f.quantity || 0), 0);
       const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
       const todayStr = new Date().toISOString().split("T")[0];
@@ -43,7 +46,7 @@ export default function Dashboard() {
       const eggTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
         const total = eggs
-          .filter((e) => e.date.split("T")[0] === dayStr)
+          .filter((e) => formatDate(e.date) === dayStr)
           .reduce((sum, e) => sum + e.count, 0);
         return {
           date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
@@ -52,13 +55,13 @@ export default function Dashboard() {
       });
 
       const eggsToday = eggs
-        .filter((e) => e.date.split("T")[0] === todayStr)
+        .filter((e) => formatDate(e.date) === todayStr)
         .reduce((sum, e) => sum + e.count, 0);
 
       const expenseTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
         const total = expenses
-          .filter((e) => e.date.split("T")[0] === dayStr)
+          .filter((e) => formatDate(e.date) === dayStr)
           .reduce((sum, e) => sum + e.amount, 0);
         return {
           date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
@@ -66,10 +69,9 @@ export default function Dashboard() {
         };
       });
 
-      const allFeedRecords = JSON.parse(localStorage.getItem("feedRecords") || "[]");
-      const feedToday = allFeedRecords
-        .filter((r) => r.userEmail === userEmail && r.date.split("T")[0] === todayStr)
-        .reduce((sum, r) => sum + parseFloat(r.total || 0), 0);
+      const feedToday = feedRecords
+        .filter((r) => formatDate(r.date) === todayStr)
+        .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
 
       setStats({ totalBirds, totalExpenses, eggsToday, feedToday });
       setEggTrend(eggTrendData);
@@ -81,7 +83,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
-    const interval = setInterval(loadDashboardData, 10000);
+    const interval = setInterval(loadDashboardData, 120000); // refresh every 2 mins
     return () => clearInterval(interval);
   }, [userEmail]);
 
