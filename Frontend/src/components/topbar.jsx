@@ -25,17 +25,7 @@ export default function Topbar() {
         <span className="font-semibold text-gray-800 dark:text-white text-lg">
           {isLoggedIn() ? `Welcome, ${user} 👨‍🌾` : "Welcome to FarmTrak"}
         </span>
-
-        {/* ✅ Live dashboard stats */}
-        {isLoggedIn() && (
-          <div className="flex gap-4 mt-1 sm:mt-0 text-sm text-gray-600 dark:text-gray-300">
-            <span>🐓 {dashboardStats.totalBirds || 0} birds</span>
-            <span>🥚 {dashboardStats.eggsToday || 0} eggs today</span>
-            <span>💸 ₹{dashboardStats.totalExpenses || 0}</span>
-          </div>
-        )}
       </div>
-
       <div className="flex items-center gap-4">
         <button
           onClick={toggleTheme}

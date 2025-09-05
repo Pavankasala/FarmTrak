@@ -187,23 +187,6 @@ export default function FeedPredictor() {
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🧠 Feed Predictor</h1>
-
-      {/* Flock Selector */}
-      <div className="w-full">
-        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Select Flock</label>
-        <select
-          value={selectedFlockId || ""}
-          onChange={(e) => setSelectedFlockId(e.target.value)}
-          className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
-        >
-          {flocks.map(f => (
-            <option key={f.id} value={f.id}>
-              {f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)
-            </option>
-          ))}
-        </select>
-      </div>
-
       {/* Form */}
       <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
