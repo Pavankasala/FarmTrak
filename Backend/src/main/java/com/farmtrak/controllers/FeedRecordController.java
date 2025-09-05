@@ -23,7 +23,7 @@ public class FeedRecordController {
         return feedRecordRepository.findByUserEmail(userEmail);
     }
 
-    // ✅ Add new feed record with flockId
+    // ✅ Add new feed record
     @PostMapping
     public FeedRecord addFeedRecord(
             @RequestHeader("X-User-Email") String userEmail,
@@ -36,24 +36,19 @@ public class FeedRecordController {
         // Assign next prediction number
         Integer maxPrediction = feedRecordRepository.findMaxPredictionNumberByUserEmail(userEmail).orElse(0);
         feedRecord.setPredictionNumber(maxPrediction + 1);
-
         feedRecord.setUserEmail(userEmail);
 
-        // ✅ Set date to today if not provided
+        // Set date to today if not provided
         if (feedRecord.getDate() == null) {
             feedRecord.setDate(LocalDate.now());
         }
 
-        // ✅ Calculate feedPerDay & feedPerBird
+        // Calculate feedPerDay & feedPerBird
         feedRecord.setFeedPerDay(feedRecord.getTotalFeedGiven() / feedRecord.getDaysLasted());
         feedRecord.setFeedPerBird(feedRecord.getTotalFeedGiven() / feedRecord.getNumBirds() / feedRecord.getDaysLasted());
 
-        // Save first to generate an ID
-        FeedRecord savedRecord = feedRecordRepository.save(feedRecord);
-
-        // Use the ID as flockId
-        savedRecord.setFlockId(savedRecord.getId());
-        return feedRecordRepository.save(savedRecord);
+        // Save record
+        return feedRecordRepository.save(feedRecord);
     }
 
     // ✅ Update feed record
@@ -72,7 +67,7 @@ public class FeedRecordController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid input values.");
             }
 
-            // Keep predictionNumber & flockId unchanged
+            // Keep flockId & predictionNumber unchanged
             record.setNumBirds(updatedRecord.getNumBirds());
             record.setBirdType(updatedRecord.getBirdType());
             record.setCustomBird(updatedRecord.getBirdType().equals("other") ? updatedRecord.getCustomBird() : "");

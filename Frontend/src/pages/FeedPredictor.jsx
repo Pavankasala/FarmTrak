@@ -89,6 +89,7 @@ export default function FeedPredictor() {
     const feedPerBirdKg = totalFeedKg / birds / days;
 
     const payload = {
+      flockId: selectedFlockId || null, // <-- pass actual flock ID
       numBirds: birds,
       birdType,
       customBird: birdType === "other" ? customBird : "",
@@ -98,9 +99,10 @@ export default function FeedPredictor() {
       feedPerDay: feedPerDayKg,
       feedPerBird: feedPerBirdKg,
       birdName,
-      date: new Date().toISOString().split("T")[0], // ✅ send YYYY-MM-DD
+      date: new Date().toISOString().split("T")[0],
       userEmail,
     };
+
 
     try {
       if (editId) {

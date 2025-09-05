@@ -32,93 +32,98 @@ export default function Dashboard() {
   const formatDate = (isoStr) => new Date(isoStr).toISOString().split("T")[0];
 
   const loadDashboardData = async () => {
-    try {
-      const userEmail = localStorage.getItem("userEmail");
-      if (!userEmail) return;
+  try {
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) return;
 
-      const flocksRes = await api.get(`/flocks`, { headers: { "X-User-Email": userEmail } });
-      const flocks = flocksRes.data;
+    // 1️⃣ Fetch all flocks
+    const flocksRes = await api.get(`/flocks`, { headers: { "X-User-Email": userEmail } });
+    const flocks = flocksRes.data;
+    if (!flocks.length) return;
 
-      const flockId = flocks[0]?.id; 
-      if (!flockId) return; 
+    // 2️⃣ Pick the first flock for feed records
+    const flockId = flocks[0].id;
 
-      const [expensesRes, eggsRes, feedRes] = await Promise.all([
-        api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
-        api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
-        api.get(`/feedRecords?flockId=${flockId}`, { headers: { "X-User-Email": userEmail } }),
-      ]);
+    // 3️⃣ Fetch expenses, eggs, feed records in parallel
+    const [expensesRes, eggsRes, feedRes] = await Promise.all([
+      api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
+      api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
+      api.get(`/feedRecords?flockId=${flockId}`, { headers: { "X-User-Email": userEmail } }),
+    ]);
 
-      // ---------------- Stats ----------------
-      const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || 0), 0);
-      const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-      const todayStr = new Date().toISOString().split("T")[0];
-      const eggsToday = eggs
-        .filter((e) => formatDate(e.date) === todayStr)
-        .reduce((sum, e) => sum + e.count, 0);
-      const feedToday = feedRecords
-        .filter((r) => formatDate(r.date) === todayStr)
+    const expenses = expensesRes.data;
+    const eggs = eggsRes.data;
+    const feedRecords = feedRes.data;
+
+    // ---------------- Stats ----------------
+    const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || 0), 0);
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const todayStr = new Date().toISOString().split("T")[0];
+    const eggsToday = eggs
+      .filter((e) => e.date.startsWith(todayStr))
+      .reduce((sum, e) => sum + e.count, 0);
+    const feedToday = feedRecords
+      .filter((r) => r.date.startsWith(todayStr))
+      .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
+
+    const newStats = { totalBirds, totalExpenses, eggsToday, feedToday };
+    setStats(newStats);
+    setDashboardStats(newStats);
+
+    // ---------------- Trends ----------------
+    const last7Days = Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d;
+    });
+
+    const eggTrendData = last7Days.map((day) => {
+      const dayStr = day.toISOString().split("T")[0];
+      const total = eggs.filter((e) => e.date.startsWith(dayStr)).reduce((sum, e) => sum + e.count, 0);
+      return {
+        date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
+        eggs: total,
+      };
+    });
+
+    const expenseTrendData = last7Days.map((day) => {
+      const dayStr = day.toISOString().split("T")[0];
+      const total = expenses.filter((e) => e.date.startsWith(dayStr)).reduce((sum, e) => sum + e.amount, 0);
+      return {
+        date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
+        expenses: total,
+      };
+    });
+
+    setEggTrend(eggTrendData);
+    setExpenseTrend(expenseTrendData);
+
+    // ---------------- Pie Charts ----------------
+    const expenseByCat = ["Feed", "Medicine", "Labor", "Other"].map((cat) => ({
+      name: cat,
+      value: expenses.filter((e) => e.category === cat).reduce((sum, e) => sum + e.amount, 0),
+    }));
+    setExpensesByCategory(expenseByCat);
+
+    const birdsFlock = flocks.map((f) => ({
+      name: f.birdType === "Other" ? f.customBird : f.birdType,
+      value: f.numBirds,
+    }));
+    setBirdsPerFlock(birdsFlock);
+
+    const feedFlock = flocks.map((f) => {
+      const totalFeed = feedRecords
+        .filter((r) => r.flockId === f.id)
         .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
+      return { name: f.birdType === "Other" ? f.customBird : f.birdType, value: totalFeed };
+    });
+    setFeedPerFlock(feedFlock);
 
-      const newStats = { totalBirds, totalExpenses, eggsToday, feedToday };
-      setStats(newStats);
-      setDashboardStats(newStats);
+  } catch (err) {
+    console.error("Dashboard data load error:", err);
+  }
+};
 
-      // ---------------- Trends ----------------
-      const last7Days = Array.from({ length: 7 }).map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        return d;
-      });
-
-      const eggTrendData = last7Days.map((day) => {
-        const dayStr = day.toISOString().split("T")[0];
-        const total = eggs
-          .filter((e) => formatDate(e.date) === dayStr)
-          .reduce((sum, e) => sum + e.count, 0);
-        return {
-          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
-          eggs: total,
-        };
-      });
-
-      const expenseTrendData = last7Days.map((day) => {
-        const dayStr = day.toISOString().split("T")[0];
-        const total = expenses
-          .filter((e) => formatDate(e.date) === dayStr)
-          .reduce((sum, e) => sum + e.amount, 0);
-        return {
-          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
-          expenses: total,
-        };
-      });
-
-      setEggTrend(eggTrendData);
-      setExpenseTrend(expenseTrendData);
-
-      // ---------------- Pie Charts ----------------
-      const expenseByCat = ["Feed", "Medicine", "Labor", "Other"].map((cat) => ({
-        name: cat,
-        value: expenses.filter((e) => e.category === cat).reduce((sum, e) => sum + e.amount, 0),
-      }));
-      setExpensesByCategory(expenseByCat);
-
-      const birdsFlock = flocks.map((f) => ({
-        name: f.birdType === "Other" ? f.customBird : f.birdType,
-        value: f.numBirds,
-      }));
-      setBirdsPerFlock(birdsFlock);
-
-      const feedFlock = flocks.map((f) => {
-        const totalFeed = feedRecords
-          .filter((r) => r.flockId === f.id)
-          .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
-        return { name: f.birdType === "Other" ? f.customBird : f.birdType, value: totalFeed };
-      });
-      setFeedPerFlock(feedFlock);
-    } catch (err) {
-      console.error("Dashboard data load error:", err);
-    }
-  };
 
   useEffect(() => {
     loadDashboardData();
