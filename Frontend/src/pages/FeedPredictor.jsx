@@ -7,6 +7,9 @@ import { getCurrentUser } from "../utils/login";
 export default function FeedPredictor() {
   const userEmail = getCurrentUser(); // Logged-in user
 
+  const [flocks, setFlocks] = useState([]);
+  const [selectedFlockId, setSelectedFlockId] = useState(null);
+
   const [birdType, setBirdType] = useState("broiler");
   const [customBird, setCustomBird] = useState("");
   const [numBirds, setNumBirds] = useState("");
@@ -18,10 +21,26 @@ export default function FeedPredictor() {
   const [records, setRecords] = useState([]);
   const [editId, setEditId] = useState(null);
 
+  // ---------------- Fetch all flocks ----------------
+  const fetchFlocks = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/flocks`, {
+        headers: { "X-User-Email": userEmail },
+      });
+      setFlocks(res.data || []);
+      if (res.data.length > 0 && !selectedFlockId) {
+        setSelectedFlockId(res.data[0].id); // default first flock
+      }
+    } catch (err) {
+      console.error("Error fetching flocks:", err);
+    }
+  };
+
   // ---------------- Fetch all feed records ----------------
   const fetchRecords = async () => {
+    if (!selectedFlockId) return;
     try {
-      const res = await axios.get(`${API_BASE_URL}/feedRecords`, {
+      const res = await axios.get(`${API_BASE_URL}/feedRecords?flockId=${selectedFlockId}`, {
         headers: { "X-User-Email": userEmail },
       });
       setRecords(res.data || []);
@@ -30,7 +49,13 @@ export default function FeedPredictor() {
     }
   };
 
-  useEffect(() => { fetchRecords(); }, [userEmail]);
+  useEffect(() => {
+    fetchFlocks();
+  }, []);
+
+  useEffect(() => {
+    fetchRecords();
+  }, [selectedFlockId]);
 
   // ---------------- Calculate feed result ----------------
   const calculateFeed = () => {
@@ -71,7 +96,7 @@ export default function FeedPredictor() {
 
   // ---------------- Save or update record ----------------
   const saveRecord = async () => {
-    if (!result) return;
+    if (!result || !selectedFlockId) return;
 
     const birds = parseInt(numBirds, 10);
     const totalFeed = parseFloat(totalFeedGiven);
@@ -83,13 +108,12 @@ export default function FeedPredictor() {
     }
 
     const birdName = birdType === "other" ? customBird || "Other" : birdType;
-
     const totalFeedKg = feedUnit === "g" ? totalFeed / 1000 : totalFeed;
     const feedPerDayKg = totalFeedKg / days;
     const feedPerBirdKg = totalFeedKg / birds / days;
 
     const payload = {
-      flockId: selectedFlockId || null, // <-- pass actual flock ID
+      flockId: selectedFlockId,
       numBirds: birds,
       birdType,
       customBird: birdType === "other" ? customBird : "",
@@ -102,7 +126,6 @@ export default function FeedPredictor() {
       date: new Date().toISOString().split("T")[0],
       userEmail,
     };
-
 
     try {
       if (editId) {
@@ -164,6 +187,22 @@ export default function FeedPredictor() {
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🧠 Feed Predictor</h1>
+
+      {/* Flock Selector */}
+      <div className="w-full">
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Select Flock</label>
+        <select
+          value={selectedFlockId || ""}
+          onChange={(e) => setSelectedFlockId(e.target.value)}
+          className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+        >
+          {flocks.map(f => (
+            <option key={f.id} value={f.id}>
+              {f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Form */}
       <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
@@ -234,7 +273,6 @@ export default function FeedPredictor() {
         {result && typeof result !== "string" && (
           <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded">
             ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
-            {result.date && <> | Date: <b>{new Date(result.date).toLocaleDateString()}</b></>}
           </div>
         )}
 
