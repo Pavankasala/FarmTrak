@@ -220,7 +220,7 @@ export default function FlockManagement() {
                 ) : (
                   <tr key={flock.id} className="border-b dark:border-gray-700">
                     <td className="p-2 text-gray-900 dark:text-white">
-                      {flock.birdType === "Other" ? flock.customBird : flock.birdType}
+                      {flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}
                     </td>
                     <td className="p-2 text-gray-900 dark:text-white">{flock.numBirds}</td>
                     <td className="p-2 text-gray-900 dark:text-white">{flock.age}</td>

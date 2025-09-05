@@ -14,9 +14,9 @@ export default function ProductionTracker({ onDataUpdate }) {
     if (!userEmail) return;
     try {
       const [flockRes, prodRes] = await Promise.all([
-      api.get("/flocks", { headers: { "X-User-Email": userEmail } }),
-      api.get("/eggs", { headers: { "X-User-Email": userEmail } }),
-    ]);
+        api.get("/flocks", { headers: { "X-User-Email": userEmail } }),
+        api.get("/eggs", { headers: { "X-User-Email": userEmail } }),
+      ]);
 
 
       const flocksData = flockRes.data || [];
@@ -95,7 +95,7 @@ export default function ProductionTracker({ onDataUpdate }) {
             <option value="">Select Flock</option>
             {flocks.map((f) => (
               <option key={f.id} value={f.id}>
-                {f.type} ({f.quantity} birds)
+                {f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)
               </option>
             ))}
           </select>
@@ -150,7 +150,7 @@ export default function ProductionTracker({ onDataUpdate }) {
                   return (
                     <tr key={p.id} className="border-b dark:border-gray-700">
                       <td className="p-2 text-gray-900 dark:text-white">{p.date}</td>
-                      <td className="p-2 text-gray-900 dark:text-white">{flock?.type || "-"}</td>
+                      <td className="p-2 text-gray-900 dark:text-white">{flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}</td>
                       <td className="p-2 text-gray-900 dark:text-white">{p.count}</td>
                       <td className="p-2 flex gap-2">
                         <button
