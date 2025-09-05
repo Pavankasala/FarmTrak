@@ -100,7 +100,7 @@ export default function FlockManagement() {
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center">🐓 Flock Management</h1>
 
       {/* Add Flock Form */}
-      <div className="bg-light-bg dark:bg-dark-card shadow p-6 rounded-xl w-full transition-colors">
+      <div className="bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl w-full transition-colors">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
             <label className="font-semibold text-gray-900 dark:text-white">Bird Type</label>
@@ -156,7 +156,7 @@ export default function FlockManagement() {
       </div>
 
       {/* Flocks Table */}
-      <div className="bg-light-bg dark:bg-dark-card shadow p-4 rounded-xl overflow-x-auto transition-colors">
+      <div className="bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl overflow-x-auto transition-colors">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white text-center">📋 Current Flocks</h2>
         <table className="min-w-full text-left">
           <thead>

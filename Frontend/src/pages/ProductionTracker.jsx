@@ -1,5 +1,6 @@
 // src/components/ProductionTracker.jsx
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { getCurrentUser } from "../utils/login";
 import { api } from "../utils/api";
 
@@ -18,14 +19,13 @@ export default function ProductionTracker({ onDataUpdate }) {
         api.get("/eggs", { headers: { "X-User-Email": userEmail } }),
       ]);
 
-
       const flocksData = flockRes.data || [];
       const productionsData = prodRes.data || [];
 
       setFlocks(flocksData);
       setProductions(productionsData);
 
-      // Calculate today's total eggs
+      // ✅ Today's egg count
       const today = new Date().toISOString().split("T")[0];
       const todayRecords = productionsData.filter((p) => p.date.startsWith(today));
       const totalToday = todayRecords.reduce((sum, p) => sum + p.count, 0);
@@ -80,42 +80,88 @@ export default function ProductionTracker({ onDataUpdate }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center">🥚 Egg Production Tracker</h1>
+    <motion.div
+      className="max-w-5xl mx-auto px-4 py-10 space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+        🥚 Egg Production Tracker
+      </h1>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-light-bg dark:bg-dark-card shadow p-6 rounded-xl space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <select
-            name="flockId"
-            value={form.flockId}
-            onChange={handleChange}
-            className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
-          >
-            <option value="">Select Flock</option>
-            {flocks.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)
-              </option>
-            ))}
-          </select>
+      <motion.form
+        onSubmit={handleSubmit}
+        className="bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl space-y-6 transition-colors"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Flock
+              <span
+                className="ml-1 text-gray-500 cursor-pointer"
+                title="Select the flock for which you are recording egg production."
+              >
+                ℹ️
+              </span>
+            </label>
+            <select
+              name="flockId"
+              value={form.flockId}
+              onChange={handleChange}
+              className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
+            >
+              <option value="">Select Flock</option>
+              {flocks.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <input
-            type="number"
-            name="count"
-            value={form.count}
-            onChange={handleChange}
-            placeholder="Egg Count"
-            className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
-          />
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Egg Count
+              <span
+                className="ml-1 text-gray-500 cursor-pointer"
+                title="Enter the number of eggs collected for the selected flock."
+              >
+                ℹ️
+              </span>
+            </label>
+            <input
+              type="number"
+              name="count"
+              value={form.count}
+              onChange={handleChange}
+              placeholder="Egg Count"
+              className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
+            />
+          </div>
 
-          <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
-          />
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Date
+              <span
+                className="ml-1 text-gray-500 cursor-pointer"
+                title="Pick the date for which this egg production record applies."
+              >
+                ℹ️
+              </span>
+            </label>
+            <input
+              type="date"
+              name="date"
+              value={form.date}
+              onChange={handleChange}
+              className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
+            />
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -123,15 +169,24 @@ export default function ProductionTracker({ onDataUpdate }) {
             {form.id ? "✏️ Update" : "➕ Add"}
           </button>
           {form.id && (
-            <button type="button" onClick={resetForm} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            >
               Cancel
             </button>
           )}
         </div>
-      </form>
+      </motion.form>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-light-bg dark:bg-dark-card shadow p-4 rounded-xl">
+      <motion.div
+        className="overflow-x-auto bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl transition-colors"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
         <table className="min-w-full text-left">
           <thead>
             <tr className="border-b dark:border-gray-700">
@@ -148,9 +203,17 @@ export default function ProductionTracker({ onDataUpdate }) {
                 .map((p) => {
                   const flock = flocks.find((f) => f.id === p.flockId);
                   return (
-                    <tr key={p.id} className="border-b dark:border-gray-700">
+                    <motion.tr
+                      key={p.id}
+                      className="border-b dark:border-gray-700"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
                       <td className="p-2 text-gray-900 dark:text-white">{p.date}</td>
-                      <td className="p-2 text-gray-900 dark:text-white">{flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}</td>
+                      <td className="p-2 text-gray-900 dark:text-white">
+                        {flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}
+                      </td>
                       <td className="p-2 text-gray-900 dark:text-white">{p.count}</td>
                       <td className="p-2 flex gap-2">
                         <button
@@ -166,7 +229,7 @@ export default function ProductionTracker({ onDataUpdate }) {
                           Delete
                         </button>
                       </td>
-                    </tr>
+                    </motion.tr>
                   );
                 })
             ) : (
@@ -178,7 +241,7 @@ export default function ProductionTracker({ onDataUpdate }) {
             )}
           </tbody>
         </table>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

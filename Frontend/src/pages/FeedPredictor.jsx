@@ -1,6 +1,8 @@
 // src/pages/FeedPredictor.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
+import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { API_BASE_URL } from "../utils/api";
 import { getCurrentUser } from "../utils/login";
 
@@ -21,6 +23,16 @@ export default function FeedPredictor() {
   const [records, setRecords] = useState([]);
   const [editId, setEditId] = useState(null);
 
+  // ---------------- Tutorial Banner ----------------
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return localStorage.getItem("feedTutorialDismissed") !== "true";
+  });
+
+  const dismissTutorial = () => {
+    localStorage.setItem("feedTutorialDismissed", "true");
+    setShowTutorial(false);
+  };
+
   // ---------------- Fetch all flocks ----------------
   const fetchFlocks = async () => {
     try {
@@ -40,9 +52,12 @@ export default function FeedPredictor() {
   const fetchRecords = async () => {
     if (!selectedFlockId) return;
     try {
-      const res = await axios.get(`${API_BASE_URL}/feedRecords?flockId=${selectedFlockId}`, {
-        headers: { "X-User-Email": userEmail },
-      });
+      const res = await axios.get(
+        `${API_BASE_URL}/feedRecords?flockId=${selectedFlockId}`,
+        {
+          headers: { "X-User-Email": userEmail },
+        }
+      );
       setRecords(res.data || []);
     } catch (err) {
       console.error("Error fetching feed records:", err);
@@ -129,10 +144,12 @@ export default function FeedPredictor() {
 
     try {
       if (editId) {
-        const res = await axios.put(`${API_BASE_URL}/feedRecords/${editId}`, payload, {
-          headers: { "X-User-Email": userEmail },
-        });
-        setRecords(records.map(r => (r.id === editId ? res.data : r)));
+        const res = await axios.put(
+          `${API_BASE_URL}/feedRecords/${editId}`,
+          payload,
+          { headers: { "X-User-Email": userEmail } }
+        );
+        setRecords(records.map((r) => (r.id === editId ? res.data : r)));
       } else {
         const res = await axios.post(`${API_BASE_URL}/feedRecords`, payload, {
           headers: { "X-User-Email": userEmail },
@@ -162,8 +179,12 @@ export default function FeedPredictor() {
     setFeedUnit("kg");
     setDaysLasted(record.daysLasted);
 
-    const perBird = resultUnit === "g" ? record.feedPerBird * 1000 : record.feedPerBird;
-    const total = resultUnit === "g" ? record.feedPerDay * record.daysLasted * 1000 : record.feedPerDay * record.daysLasted;
+    const perBird =
+      resultUnit === "g" ? record.feedPerBird * 1000 : record.feedPerBird;
+    const total =
+      resultUnit === "g"
+        ? record.feedPerDay * record.daysLasted * 1000
+        : record.feedPerDay * record.daysLasted;
 
     setResult({
       perBird: perBird.toFixed(2),
@@ -177,23 +198,70 @@ export default function FeedPredictor() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
-      await axios.delete(`${API_BASE_URL}/feedRecords/${id}`, { headers: { "X-User-Email": userEmail } });
-      setRecords(records.filter(r => r.id !== id));
+      await axios.delete(`${API_BASE_URL}/feedRecords/${id}`, {
+        headers: { "X-User-Email": userEmail },
+      });
+      setRecords(records.filter((r) => r.id !== id));
     } catch (err) {
       console.error("Error deleting record:", err);
     }
   };
 
+  // ---------------- Tooltip Component ----------------
+  const Tooltip = ({ text }) => (
+    <span className="relative group cursor-pointer">
+      <InformationCircleIcon className="h-4 w-4 inline ml-1 text-gray-500 dark:text-gray-400" />
+      <span className="absolute left-6 top-0 w-48 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {text}
+      </span>
+    </span>
+  );
+
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🧠 Feed Predictor</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        🧠 Feed Predictor
+      </h1>
+
+      {/* Tutorial Banner */}
+      <AnimatePresence>
+        {showTutorial && (
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            className="w-full bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-200 px-4 py-3 rounded relative flex items-start"
+          >
+            <div>
+              <strong className="font-bold">💡 Quick Guide:</strong>
+              <p className="text-sm mt-1">
+                Enter your flock details → Click <b>Calculate</b> → Save the
+                record to track feeding patterns.
+              </p>
+            </div>
+            <button
+              onClick={dismissTutorial}
+              className="ml-auto text-blue-700 dark:text-blue-300 hover:text-blue-900"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Form */}
       <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {/* Bird Type */}
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Bird Type</label>
-            <select value={birdType} onChange={e => setBirdType(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white">
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Bird Type <Tooltip text="Select type of bird (Broiler, Layer, or Other)" />
+            </label>
+            <select
+              value={birdType}
+              onChange={(e) => setBirdType(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            >
               <option value="broiler">Broiler</option>
               <option value="layer">Layer</option>
               <option value="other">Other</option>
@@ -202,27 +270,58 @@ export default function FeedPredictor() {
 
           {birdType === "other" && (
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Custom Bird Name</label>
-              <input type="text" value={customBird} onChange={e => setCustomBird(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" placeholder="Enter bird name" />
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                Custom Bird Name{" "}
+                <Tooltip text="Enter the bird name if it's not Broiler or Layer" />
+              </label>
+              <input
+                type="text"
+                value={customBird}
+                onChange={(e) => setCustomBird(e.target.value)}
+                className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+                placeholder="Enter bird name"
+              />
             </div>
           )}
 
           {/* Number of Birds */}
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Number of Birds</label>
-            <input type="number" value={numBirds} onChange={e => setNumBirds(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Number of Birds{" "}
+              <Tooltip text="How many birds are in this flock?" />
+            </label>
+            <input
+              type="number"
+              value={numBirds}
+              onChange={(e) => setNumBirds(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            />
           </div>
 
           {/* Total Feed Given */}
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total Feed Given</label>
-            <input type="number" value={totalFeedGiven} onChange={e => setTotalFeedGiven(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Total Feed Given{" "}
+              <Tooltip text="Amount of feed provided in total (kg or g)" />
+            </label>
+            <input
+              type="number"
+              value={totalFeedGiven}
+              onChange={(e) => setTotalFeedGiven(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            />
           </div>
 
           {/* Feed Unit */}
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Feed Unit</label>
-            <select value={feedUnit} onChange={e => setFeedUnit(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white">
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Feed Unit <Tooltip text="Select unit of feed (kg or g)" />
+            </label>
+            <select
+              value={feedUnit}
+              onChange={(e) => setFeedUnit(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            >
               <option value="kg">Kilograms</option>
               <option value="g">Grams</option>
             </select>
@@ -230,14 +329,29 @@ export default function FeedPredictor() {
 
           {/* Days Lasted */}
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Days Feed Lasted</label>
-            <input type="number" value={daysLasted} onChange={e => setDaysLasted(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white" />
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Days Feed Lasted{" "}
+              <Tooltip text="Over how many days the feed was consumed" />
+            </label>
+            <input
+              type="number"
+              value={daysLasted}
+              onChange={(e) => setDaysLasted(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            />
           </div>
 
           {/* Result Unit */}
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Show Result In</label>
-            <select value={resultUnit} onChange={e => setResultUnit(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white">
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Show Result In{" "}
+              <Tooltip text="Choose whether to see results in grams or kilograms" />
+            </label>
+            <select
+              value={resultUnit}
+              onChange={(e) => setResultUnit(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            >
               <option value="kg">Kilograms</option>
               <option value="g">Grams</option>
             </select>
@@ -246,21 +360,59 @@ export default function FeedPredictor() {
 
         {/* Buttons */}
         <div className="flex flex-wrap gap-2">
-          <button onClick={calculateFeed} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow">Calculate</button>
-          {editId && <button onClick={resetForm} className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow">Cancel</button>}
-          {result && <button onClick={saveRecord} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">{editId ? "Update Record" : "Save Record"}</button>}
+          <button
+            onClick={calculateFeed}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow"
+          >
+            Calculate
+          </button>
+          {editId && (
+            <button
+              onClick={resetForm}
+              className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow"
+            >
+              Cancel
+            </button>
+          )}
+          {result && (
+            <button
+              onClick={saveRecord}
+              className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow"
+            >
+              {editId ? "Update Record" : "Save Record"}
+            </button>
+          )}
         </div>
 
         {/* Result Display */}
-        {typeof result === "string" && <div className="text-red-600 dark:text-red-400">{result}</div>}
-        {result && typeof result !== "string" && (
-          <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded">
-            ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
-          </div>
-        )}
+        <AnimatePresence>
+          {typeof result === "string" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-red-600 dark:text-red-400"
+            >
+              {result}
+            </motion.div>
+          )}
+          {result && typeof result !== "string" && (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-4 bg-green-100 dark:bg-green-900/20 rounded"
+            >
+              ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day:{" "}
+              <b>{result.total} {result.unit}</b>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Saved Records Table */}
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">📋 Saved Records</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">
+          📋 Saved Records
+        </h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
             <thead>
@@ -273,34 +425,70 @@ export default function FeedPredictor() {
               </tr>
             </thead>
             <tbody>
-              {records.length > 0 ? (
-                [...records].sort((a, b) => new Date(b.date) - new Date(a.date)).map(r => (
-                  <tr key={r.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="px-4 py-2">{r.flockId || r.id}</td>
-                    <td className="px-4 py-2">{r.birdType === "other" ? r.customBird : r.birdType}</td>
-                    <td className="px-4 py-2">
-                      {resultUnit === "g"
-                        ? ((r.totalFeedGiven / r.numBirds / r.daysLasted) * 1000).toFixed(2)
-                        : (r.totalFeedGiven / r.numBirds / r.daysLasted).toFixed(2)
-                      } {resultUnit}
-                    </td>
-                    <td className="px-4 py-2">
-                      {resultUnit === "g"
-                        ? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(2)
-                        : (r.totalFeedGiven / r.daysLasted).toFixed(2)
-                      } {resultUnit}
-                    </td>
-                    <td className="px-4 py-2 flex gap-2 flex-wrap">
-                      <button onClick={() => handleEdit(r)} className="bg-yellow-500 hover:bg-yellow-400 text-white px-3 py-1 rounded">Edit</button>
-                      <button onClick={() => handleDelete(r.id)} className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+              <AnimatePresence>
+                {records.length > 0 ? (
+                  [...records]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map((r) => (
+                      <motion.tr
+                        key={r.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="border-t border-gray-200 dark:border-gray-700"
+                      >
+                        <td className="px-4 py-2">{r.flockId || r.id}</td>
+                        <td className="px-4 py-2">
+                          {r.birdType === "other" ? r.customBird : r.birdType}
+                        </td>
+                        <td className="px-4 py-2">
+                          {resultUnit === "g"
+                            ? (
+                                (r.totalFeedGiven / r.numBirds / r.daysLasted) *
+                                1000
+                              ).toFixed(2)
+                            : (
+                                r.totalFeedGiven /
+                                r.numBirds /
+                                r.daysLasted
+                              ).toFixed(2)}{" "}
+                          {resultUnit}
+                        </td>
+                        <td className="px-4 py-2">
+                          {resultUnit === "g"
+                            ? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(
+                                2
+                              )
+                            : (r.totalFeedGiven / r.daysLasted).toFixed(2)}{" "}
+                          {resultUnit}
+                        </td>
+                        <td className="px-4 py-2 flex gap-2 flex-wrap">
+                          <button
+                            onClick={() => handleEdit(r)}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(r.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </motion.tr>
+                    ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-4 py-4 text-center text-gray-500 dark:text-gray-400"
+                    >
+                      No records found
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No feed records yet</td>
-                </tr>
-              )}
+                )}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>

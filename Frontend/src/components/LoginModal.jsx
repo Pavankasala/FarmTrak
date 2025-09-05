@@ -1,10 +1,15 @@
 // src/components/LoginModal.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { api } from "../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
-  if (!isOpen) return null;
+  useEffect(() => {
+    const handleEsc = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     if (!credentialResponse?.credential) return;
@@ -34,23 +39,45 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-dark-bg bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-light-bg dark:bg-dark-bg p-6 rounded-lg w-80 flex flex-col items-center">
-        <h2 className="text-lg font-semibold mb-4 text-light-text dark:text-dark-text text-center">
-          Login with Google
-        </h2>
-        <GoogleLogin
-          onSuccess={handleGoogleSuccess}
-          onError={() => alert("Google login failed")}
-          ux_mode="popup" // ✅ avoid COOP error
-        />
-        <button
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={onClose}
-          className="mt-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-light-bg dark:text-dark-text rounded hover:bg-light-primaryHover dark:hover:bg-dark-primaryHover"
         >
-          Cancel
-        </button>
-      </div>
-    </div>
+          <motion.div
+            className="bg-light-bg dark:bg-dark-card p-6 rounded-2xl w-80 flex flex-col items-center shadow-2xl relative"
+            initial={{ scale: 0.8, opacity: 0, y: -50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: 50 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-2 text-light-text dark:text-dark-text text-center">
+              Welcome Back 👋
+            </h2>
+            <p className="text-sm text-light-subtext dark:text-dark-subtext mb-4 text-center">
+              Sign in with Google to access your FarmTrak dashboard.
+            </p>
+
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => alert("Google login failed")}
+              ux_mode="popup"
+            />
+
+            <button
+              onClick={onClose}
+              className="mt-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-primaryHover dark:hover:bg-dark-primaryHover transition"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

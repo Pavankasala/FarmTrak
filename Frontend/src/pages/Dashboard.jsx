@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { useState, useEffect } from "react";
 import {
   LineChart,
@@ -14,6 +13,7 @@ import {
 } from "recharts";
 import { api } from "../utils/api";
 import { useOutletContext } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const outletContext = useOutletContext() || {};
@@ -40,7 +40,6 @@ export default function Dashboard() {
       const flocks = flocksRes.data;
       if (!flocks.length) return;
 
-      // Pick first flock for feed records
       const flockId = flocks[0].id;
 
       // Fetch expenses, eggs, feedRecords
@@ -71,7 +70,7 @@ export default function Dashboard() {
       setStats(newStats);
       setDashboardStats(newStats);
 
-      // Last 7 days for trends
+      // === Line Charts ===
       const last7Days = Array.from({ length: 7 }).map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -171,7 +170,12 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto px-4 py-10">
+    <motion.div
+      className="space-y-8 max-w-6xl mx-auto px-4 py-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
       <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">
         🌾 Farm Dashboard
       </h1>
@@ -193,11 +197,17 @@ export default function Dashboard() {
                 ? `${stats.feedToday.toFixed(2)} kg`
                 : "No feed predicted",
           },
-          { emoji: "💸", label: "Total Expenses", value: `₹${stats.totalExpenses}` },
+          {
+            emoji: "💸",
+            label: "Total Expenses",
+            value: `₹${stats.totalExpenses}`,
+          },
         ].map((card, idx) => (
-          <div
+          <motion.div
             key={idx}
             className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow text-center"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 200 }}
           >
             <div className="text-2xl">{card.emoji}</div>
             <div className="font-semibold text-light-text dark:text-dark-text mt-2">
@@ -206,57 +216,73 @@ export default function Dashboard() {
             <div className="text-light-subtext dark:text-dark-subtext mt-1">
               {card.value}
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {/* Line Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+        <motion.div
+          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
+          whileHover={{ scale: 1.02 }}
+        >
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
             🥚 Egg Production (Last 7 days)
           </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={eggTrend}>
-              <XAxis dataKey="date" stroke="#9CA3AF" />
-              <YAxis stroke="#9CA3AF" />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="eggs"
-                stroke="#10B981"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+          {eggTrend.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={eggTrend}>
+                <XAxis dataKey="date" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="eggs"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-gray-500 text-center py-10">No egg data</p>
+          )}
+        </motion.div>
 
-        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+        <motion.div
+          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
+          whileHover={{ scale: 1.02 }}
+        >
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
             💸 Expenses (Last 7 days)
           </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={expenseTrend}>
-              <XAxis dataKey="date" stroke="#9CA3AF" />
-              <YAxis stroke="#9CA3AF" />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="expenses"
-                stroke="#F59E0B"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+          {expenseTrend.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={expenseTrend}>
+                <XAxis dataKey="date" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="expenses"
+                  stroke="#F59E0B"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-gray-500 text-center py-10">No expense data</p>
+          )}
+        </motion.div>
       </div>
 
       {/* Pie Charts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Expenses */}
-        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+        <motion.div
+          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
+          whileHover={{ scale: 1.02 }}
+        >
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
             💰 Expenses by Category
           </h2>
@@ -281,10 +307,12 @@ export default function Dashboard() {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
 
-        {/* Birds */}
-        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+        <motion.div
+          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
+          whileHover={{ scale: 1.02 }}
+        >
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
             🐓 Birds per Flock
           </h2>
@@ -309,10 +337,12 @@ export default function Dashboard() {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
 
-        {/* Eggs */}
-        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+        <motion.div
+          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
+          whileHover={{ scale: 1.02 }}
+        >
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
             🥚 Eggs Produced by Bird Type
           </h2>
@@ -337,8 +367,8 @@ export default function Dashboard() {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

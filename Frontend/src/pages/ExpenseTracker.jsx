@@ -1,227 +1,274 @@
-// Frontend/src/pages/ExpenseTracker.jsx
+// src/pages/ExpenseTracker.jsx
 import { useState, useEffect } from "react";
+import axios from "axios";
+import { API_BASE_URL } from "../utils/api";
 import { getCurrentUser } from "../utils/login";
-import { api } from "../utils/api"; 
+import { motion, AnimatePresence } from "framer-motion";
+
+// ✅ Simple Tooltip Component
+function Tooltip({ text }) {
+  return (
+    <span className="relative group cursor-pointer ml-1">
+      ℹ️
+      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 
+        bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 
+        transition pointer-events-none z-10">
+        {text}
+      </span>
+    </span>
+  );
+}
 
 export default function ExpenseTracker() {
   const userEmail = getCurrentUser();
-
   const [expenses, setExpenses] = useState([]);
-  const [form, setForm] = useState({
-    id: null,
-    category: "",
-    amount: "",
-    date: "",
-    notes: "",
-    paid: false,
-  });
-  const [isEditing, setIsEditing] = useState(false);
+  const [category, setCategory] = useState("feed");
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [editId, setEditId] = useState(null);
 
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Tutorial banner only once
+  useEffect(() => {
+    const seen = localStorage.getItem("expenseTutorialSeen");
+    if (!seen) {
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const dismissTutorial = () => {
+    localStorage.setItem("expenseTutorialSeen", "true");
+    setShowTutorial(false);
+  };
+
+  // Fetch expenses
   const fetchExpenses = async () => {
-    if (!userEmail) return;
     try {
-      const res = await api.get("/expenses", { headers: { "X-User-Email": userEmail } });
-      setExpenses(res.data);
+      const res = await axios.get(`${API_BASE_URL}/expenses`, {
+        headers: { "X-User-Email": userEmail },
+      });
+      setExpenses(res.data || []);
     } catch (err) {
-      console.error("Failed to fetch expenses:", err);
+      console.error("Error fetching expenses:", err);
     }
   };
 
   useEffect(() => {
     fetchExpenses();
-  }, [userEmail]);
+  }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  const resetForm = () => {
+    setCategory("feed");
+    setAmount("");
+    setNote("");
+    setEditId(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.category || !form.amount || !form.date) return;
+  const saveExpense = async () => {
+    if (!amount || amount <= 0) {
+      alert("Please enter a valid amount.");
+      return;
+    }
 
     const payload = {
-      category: form.category,
-      amount: parseFloat(form.amount),
-      date: form.date,
-      notes: form.notes,
-      paid: form.paid,
+      category,
+      amount: parseFloat(amount),
+      note,
+      date: new Date().toISOString().split("T")[0],
+      userEmail,
     };
 
     try {
-      if (isEditing) {
-        // ✅ backend expects userEmail in header for PUT
-        await api.put(`/expenses/${form.id}`, payload, {
+      if (editId) {
+        const res = await axios.put(`${API_BASE_URL}/expenses/${editId}`, payload, {
           headers: { "X-User-Email": userEmail },
         });
+        setExpenses(expenses.map((e) => (e.id === editId ? res.data : e)));
       } else {
-        // ✅ backend expects userEmail in header for POST
-        await api.post("/expenses", payload, {
+        const res = await axios.post(`${API_BASE_URL}/expenses`, payload, {
           headers: { "X-User-Email": userEmail },
         });
+        setExpenses([res.data, ...expenses]);
       }
-      setForm({ id: null, category: "", amount: "", date: "", notes: "", paid: false });
-      setIsEditing(false);
-      fetchExpenses();
+      resetForm();
     } catch (err) {
-      console.error("Failed to save expense:", err);
+      console.error("Error saving expense:", err);
     }
+  };
+
+  const handleEdit = (expense) => {
+    setCategory(expense.category);
+    setAmount(expense.amount);
+    setNote(expense.note);
+    setEditId(expense.id);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this record?")) return;
+    if (!window.confirm("Delete this expense?")) return;
     try {
-      // ✅ backend expects userEmail in header for DELETE
-      await api.delete(`/expenses/${id}`, {
+      await axios.delete(`${API_BASE_URL}/expenses/${id}`, {
         headers: { "X-User-Email": userEmail },
       });
-      fetchExpenses();
+      setExpenses(expenses.filter((e) => e.id !== id));
     } catch (err) {
-      console.error("Failed to delete expense:", err);
+      console.error("Error deleting expense:", err);
     }
   };
-
-  const handleEdit = (exp) => {
-    setForm({ ...exp, amount: exp.amount.toString() });
-    setIsEditing(true);
-  };
-
-  const handleTogglePaid = async (exp) => {
-    try {
-      // ✅ backend expects userEmail in header for PUT
-      await api.put(`/expenses/${exp.id}`, { ...exp, paid: !exp.paid }, {
-        headers: { "X-User-Email": userEmail },
-      });
-      fetchExpenses();
-    } catch (err) {
-      console.error("Failed to toggle paid:", err);
-    }
-  };
-
-  const total = expenses.filter((exp) => !exp.paid).reduce((sum, exp) => sum + exp.amount, 0);
 
   return (
-    <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">💰 Expense Tracker</h1>
+    <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💰 Expense Tracker</h1>
+
+      {/* Tutorial banner */}
+      <AnimatePresence>
+        {showTutorial && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-xl w-full shadow"
+          >
+            <p className="text-sm text-blue-800 dark:text-blue-300">
+              📖 Track all your poultry-related expenses here.  
+              Choose a category, enter the amount, and add notes if needed.  
+              Records will help you calculate profits later.
+            </p>
+            <button
+              onClick={dismissTutorial}
+              className="mt-2 text-sm bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
+            >
+              Got it
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="w-full bg-light-bg dark:bg-dark-card shadow p-6 rounded-xl space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Category <Tooltip text="Select the type of expense (Feed, Medicine, Maintenance, etc.)" />
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            >
+              <option value="feed">Feed</option>
+              <option value="medicine">Medicine</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Amount (₹) <Tooltip text="Enter the expense amount in Indian Rupees." />
+            </label>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+              placeholder="Enter expense amount"
+            />
+          </div>
+        </div>
+
+        {/* Note */}
+        <div>
+          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Note (optional) <Tooltip text="Add extra details like shop name or bill reference." />
+          </label>
           <input
             type="text"
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            placeholder="Category"
-            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
-          />
-          <input
-            type="number"
-            step="0.01"
-            name="amount"
-            value={form.amount}
-            onChange={handleChange}
-            placeholder="Amount"
-            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
-          />
-          <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
-          />
-          <input
-            type="text"
-            name="notes"
-            value={form.notes}
-            onChange={handleChange}
-            placeholder="Notes (optional)"
-            className="w-full border p-2 rounded border-light-muted dark:border-dark-dim bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
+            placeholder="Enter details"
           />
         </div>
 
-        {isEditing && (
-          <div className="flex items-center gap-2">
-            <input type="checkbox" name="paid" checked={form.paid} onChange={handleChange} />
-            <label className="text-light-subtext dark:text-dark-subtext">Mark as Paid</label>
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-2">
-          <button type="submit" className="bg-primary text-white px-4 py-2 rounded hover:bg-primaryHover">
-            {isEditing ? "✏️ Update Expense" : "➕ Add Expense"}
+        {/* Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={saveExpense}
+            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow"
+          >
+            {editId ? "Update Expense" : "Save Expense"}
           </button>
-          {isEditing && (
+          {editId && (
             <button
-              type="button"
-              onClick={() => setIsEditing(false)}
-              className="bg-dark-dim text-white px-4 py-2 rounded hover:bg-gray-600"
+              onClick={resetForm}
+              className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow"
             >
               Cancel
             </button>
           )}
         </div>
-      </form>
+      </div>
 
-      {/* Expense Table */}
-      <div className="w-full overflow-x-auto">
-        <table className="min-w-full text-left bg-light-bg dark:bg-dark-card shadow rounded-xl">
+      {/* Expense Records */}
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">📋 Expense Records</h2>
+      <div className="overflow-x-auto w-full">
+        <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
           <thead>
-            <tr className="border-b border-light-muted dark:border-dark-dim">
-              <th className="p-2 text-light-text dark:text-dark-text">#</th>
-              <th className="p-2 text-light-text dark:text-dark-text">Date</th>
-              <th className="p-2 text-light-text dark:text-dark-text">Category</th>
-              <th className="p-2 text-light-text dark:text-dark-text">Notes</th>
-              <th className="p-2 text-light-text dark:text-dark-text">Amount</th>
-              <th className="p-2 text-light-text dark:text-dark-text">Paid</th>
-              <th className="p-2 text-light-text dark:text-dark-text">Actions</th>
+            <tr className="bg-gray-100 dark:bg-gray-800 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
+              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2">Category</th>
+              <th className="px-4 py-2">Amount</th>
+              <th className="px-4 py-2">Note</th>
+              <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {expenses.length > 0 ? (
-              [...expenses]
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .map((exp, index) => (
-                  <tr key={exp.id} className="border-b border-light-muted dark:border-dark-dim">
-                    <td className="p-2">{index + 1}</td>
-                    <td className="p-2">{new Date(exp.date).toLocaleDateString()}</td>
-                    <td className="p-2">{exp.category}</td>
-                    <td className="p-2">{exp.notes || "-"}</td>
-                    <td className="p-2">₹{exp.amount.toFixed(2)}</td>
-                    <td className="p-2 text-center">
-                      <input type="checkbox" checked={exp.paid} onChange={() => handleTogglePaid(exp)} />
-                    </td>
-                    <td className="p-2 space-x-2">
+            <AnimatePresence>
+              {expenses.length > 0 ? (
+                expenses.map((e) => (
+                  <motion.tr
+                    key={e.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="border-t border-gray-200 dark:border-gray-700"
+                  >
+                    <td className="px-4 py-2">{e.date}</td>
+                    <td className="px-4 py-2 capitalize">{e.category}</td>
+                    <td className="px-4 py-2">₹{e.amount.toFixed(2)}</td>
+                    <td className="px-4 py-2">{e.note || "-"}</td>
+                    <td className="px-4 py-2 flex gap-2 flex-wrap">
                       <button
-                        onClick={() => handleEdit(exp)}
-                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                        onClick={() => handleEdit(e)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(exp.id)}
-                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                        onClick={() => handleDelete(e.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                       >
                         Delete
                       </button>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))
-            ) : (
-              <tr>
-                <td colSpan="7" className="p-4 text-center text-light-subtext dark:text-dark-subtext">
-                  No expenses recorded yet
-                </td>
-              </tr>
-            )}
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-4 py-4 text-center text-gray-500 dark:text-gray-400"
+                  >
+                    No expenses recorded yet
+                  </td>
+                </tr>
+              )}
+            </AnimatePresence>
           </tbody>
         </table>
-      </div>
-
-      {/* Total */}
-      <div className="w-full p-4 bg-light-card dark:bg-dark-card/20 rounded-xl font-semibold text-light-text dark:text-dark-text text-center">
-        📊 Total Unpaid Expenses: ₹{total.toFixed(2)}
       </div>
     </div>
   );
