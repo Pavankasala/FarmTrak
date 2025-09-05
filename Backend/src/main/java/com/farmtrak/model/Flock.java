@@ -1,50 +1,61 @@
-//Backend\src\main\java\com\farmtrak\model\Flock.java
+// Backend/src/main/java/com/farmtrak/model/Flock.java
 package com.farmtrak.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 
 @Entity
-@NoArgsConstructor @AllArgsConstructor
 public class Flock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String type;      // Changed from 'name' to 'type'
-    private int quantity;     // Changed from 'count' to 'quantity'
-    private int age;          // Added age field
-    private String userEmail; // Added userEmail field
 
-    // Getters and Setters
+    private int numBirds;       // Number of birds
+    private String birdType;    // e.g., Broiler, Layer
+    private String customBird;  // "other" case
+    private LocalDate startDate; // When flock started
+    private int age;            // Age in days/weeks
+    private String userEmail;   // User who owns this flock
+
+    // ----- Getters & Setters -----
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
 
-    public String getType() {
-        return type;
+    public int getNumBirds() {
+        return numBirds;
+    }
+    public void setNumBirds(int numBirds) {
+        this.numBirds = numBirds;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public String getBirdType() {
+        return birdType;
+    }
+    public void setBirdType(String birdType) {
+        this.birdType = birdType;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public String getCustomBird() {
+        return customBird;
+    }
+    public void setCustomBird(String customBird) {
+        this.customBird = customBird;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 
     public int getAge() {
         return age;
     }
-
     public void setAge(int age) {
         this.age = age;
     }
@@ -52,7 +63,6 @@ public class Flock {
     public String getUserEmail() {
         return userEmail;
     }
-
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
     }

@@ -1,68 +1,78 @@
 package com.farmtrak.controllers;
 
-import com.farmtrak.exception.ResourceNotFoundException; // Import the custom exception
 import com.farmtrak.model.Flock;
 import com.farmtrak.repository.FlockRepository;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/flocks")
 public class FlockController {
 
-    private final FlockRepository repo;
+    @Autowired
+    private FlockRepository flockRepository;
 
-    public FlockController(FlockRepository repo) {
-        this.repo = repo;
-    }
-
-    // GET all flocks
+    // 🔹 Get all flocks for a user
     @GetMapping
-    public List<Flock> getAllFlocks(@RequestHeader("X-User-Email") String userEmail) {
-        return repo.findByUserEmail(userEmail);
+    public List<Flock> getFlocks(@RequestHeader("X-User-Email") String userEmail) {
+        return flockRepository.findByUserEmail(userEmail);
     }
 
-    // POST
+    // 🔹 Add new flock
     @PostMapping
     public Flock addFlock(@RequestHeader("X-User-Email") String userEmail, @RequestBody Flock flock) {
         flock.setUserEmail(userEmail);
-        return repo.save(flock);
-    }
 
-    // PUT
-    @PutMapping("/{id}")
-    public ResponseEntity<Flock> updateFlock(@PathVariable Long id,
-                                            @RequestHeader("X-User-Email") String userEmail,
-                                            @RequestBody Flock updatedFlock) {
-        Flock existingFlock = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flock not found with id: " + id));
-
-        if (!existingFlock.getUserEmail().equals(userEmail)) {
-            return ResponseEntity.status(403).build();
+        // Auto-set startDate if not provided
+        if (flock.getStartDate() == null) {
+            flock.setStartDate(LocalDate.now());
         }
 
-        existingFlock.setType(updatedFlock.getType());
-        existingFlock.setQuantity(updatedFlock.getQuantity());
-        existingFlock.setAge(updatedFlock.getAge());
-
-        final Flock savedFlock = repo.save(existingFlock);
-        return ResponseEntity.ok(savedFlock);
+        return flockRepository.save(flock);
     }
 
-    // DELETE
+    // 🔹 Update flock
+    @PutMapping("/{id}")
+    public Flock updateFlock(
+            @RequestHeader("X-User-Email") String userEmail,
+            @PathVariable Long id,
+            @RequestBody Flock updatedFlock) {
+
+        return flockRepository.findById(id).map(flock -> {
+            if (!flock.getUserEmail().equals(userEmail)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+            }
+
+            flock.setAge(updatedFlock.getAge());
+            flock.setNumBirds(updatedFlock.getNumBirds());
+            flock.setBirdType(updatedFlock.getBirdType());
+            flock.setCustomBird(updatedFlock.getCustomBird());
+
+            // Only update startDate if a new one is provided
+            if (updatedFlock.getStartDate() != null) {
+                flock.setStartDate(updatedFlock.getStartDate());
+            }
+
+            return flockRepository.save(flock);
+        }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flock not found"));
+    }
+
+    // 🔹 Delete flock
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFlock(@PathVariable Long id,
-                                            @RequestHeader("X-User-Email") String userEmail) {
-        Flock flock = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flock not found with id: " + id));
+    public String deleteFlock(@RequestHeader("X-User-Email") String userEmail, @PathVariable Long id) {
+        Flock flock = flockRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flock not found"));
 
         if (!flock.getUserEmail().equals(userEmail)) {
-            return ResponseEntity.status(403).build();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
         }
 
-        repo.delete(flock);
-        return ResponseEntity.noContent().build();
+        flockRepository.delete(flock);
+        return "Flock deleted successfully!";
     }
 }

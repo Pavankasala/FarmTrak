@@ -1,20 +1,20 @@
 // Frontend/src/pages/FlockManagement.jsx
 import { useEffect, useState } from "react";
-import { api } from "../utils/api"; // Using same api utility as ExpenseTracker
+import { api } from "../utils/api";
 import { getCurrentUser } from "../utils/login";
 
 export default function FlockManagement() {
   const userEmail = getCurrentUser();
 
   const [flocks, setFlocks] = useState([]);
-  const [newFlock, setNewFlock] = useState({ type: "Broiler", customType: "", quantity: "", age: "" });
+  const [newFlock, setNewFlock] = useState({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
   const [editingId, setEditingId] = useState(null);
-  const [editedFlock, setEditedFlock] = useState({ type: "Broiler", customType: "", quantity: "", age: "" });
+  const [editedFlock, setEditedFlock] = useState({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
 
   const fetchFlocks = async () => {
     if (!userEmail) return;
     try {
-      const res = await api.get("/flocks", {  headers: { "X-User-Email": userEmail }});
+      const res = await api.get("/flocks", { headers: { "X-User-Email": userEmail } });
       setFlocks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch flocks:", err);
@@ -24,18 +24,19 @@ export default function FlockManagement() {
   const handleAddFlock = async () => {
     if (!userEmail) return alert("User not logged in!");
 
-    const finalType = newFlock.type === "Other" ? newFlock.customType.trim() : newFlock.type;
-    if (!finalType || !newFlock.quantity || !newFlock.age) return;
-
+    const finalBirdType = newFlock.birdType === "Other" ? "Other" : newFlock.birdType;
     const payload = {
-      type: finalType,
-      quantity: parseInt(newFlock.quantity),
+      birdType: finalBirdType,
+      customBird: newFlock.birdType === "Other" ? newFlock.customBird.trim() : null,
+      numBirds: parseInt(newFlock.numBirds),
       age: parseInt(newFlock.age),
     };
 
+    if (!payload.birdType || !payload.numBirds || !payload.age) return;
+
     try {
       await api.post("/flocks", payload, { headers: { "X-User-Email": userEmail } });
-      setNewFlock({ type: "Broiler", customType: "", quantity: "", age: "" });
+      setNewFlock({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
       fetchFlocks();
     } catch (err) {
       console.error("Failed to add flock:", err);
@@ -54,30 +55,36 @@ export default function FlockManagement() {
 
   const startEditing = (flock) => {
     setEditingId(flock.id);
-    setEditedFlock({ type: flock.type, customType: "", quantity: flock.quantity, age: flock.age });
+    setEditedFlock({
+      birdType: flock.birdType,
+      customBird: flock.customBird || "",
+      numBirds: flock.numBirds,
+      age: flock.age,
+    });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditedFlock({ type: "Broiler", customType: "", quantity: "", age: "" });
+    setEditedFlock({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
   };
 
   const handleUpdate = async () => {
     if (!userEmail) return alert("User not logged in!");
 
-    const finalType = editedFlock.type === "Other" ? editedFlock.customType.trim() : editedFlock.type;
-    if (!finalType || !editedFlock.quantity || !editedFlock.age) return;
-
+    const finalBirdType = editedFlock.birdType === "Other" ? "Other" : editedFlock.birdType;
     const payload = {
-      type: finalType,
-      quantity: parseInt(editedFlock.quantity),
+      birdType: finalBirdType,
+      customBird: editedFlock.birdType === "Other" ? editedFlock.customBird.trim() : null,
+      numBirds: parseInt(editedFlock.numBirds),
       age: parseInt(editedFlock.age),
     };
+
+    if (!payload.birdType || !payload.numBirds || !payload.age) return;
 
     try {
       await api.put(`/flocks/${editingId}`, payload, { headers: { "X-User-Email": userEmail } });
       setEditingId(null);
-      setEditedFlock({ type: "Broiler", customType: "", quantity: "", age: "" });
+      setEditedFlock({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
       fetchFlocks();
     } catch (err) {
       console.error("Failed to update flock:", err);
@@ -98,19 +105,19 @@ export default function FlockManagement() {
           <div>
             <label className="font-semibold text-gray-900 dark:text-white">Bird Type</label>
             <select
-              value={newFlock.type}
-              onChange={(e) => setNewFlock({ ...newFlock, type: e.target.value })}
+              value={newFlock.birdType}
+              onChange={(e) => setNewFlock({ ...newFlock, birdType: e.target.value })}
               className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             >
               <option value="Broiler">Broiler</option>
               <option value="Layer">Layer</option>
               <option value="Other">Other</option>
             </select>
-            {newFlock.type === "Other" && (
+            {newFlock.birdType === "Other" && (
               <input
                 type="text"
-                value={newFlock.customType}
-                onChange={(e) => setNewFlock({ ...newFlock, customType: e.target.value })}
+                value={newFlock.customBird}
+                onChange={(e) => setNewFlock({ ...newFlock, customBird: e.target.value })}
                 placeholder="Custom name"
                 className="mt-1 w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
               />
@@ -121,8 +128,8 @@ export default function FlockManagement() {
             <label className="font-semibold text-gray-900 dark:text-white">Quantity</label>
             <input
               type="number"
-              value={newFlock.quantity}
-              onChange={(e) => setNewFlock({ ...newFlock, quantity: e.target.value })}
+              value={newFlock.numBirds}
+              onChange={(e) => setNewFlock({ ...newFlock, numBirds: e.target.value })}
               className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             />
           </div>
@@ -167,19 +174,19 @@ export default function FlockManagement() {
                   <tr key={flock.id} className="border-b dark:border-gray-700">
                     <td className="p-2">
                       <select
-                        value={editedFlock.type}
-                        onChange={(e) => setEditedFlock({ ...editedFlock, type: e.target.value })}
+                        value={editedFlock.birdType}
+                        onChange={(e) => setEditedFlock({ ...editedFlock, birdType: e.target.value })}
                         className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
                       >
                         <option value="Broiler">Broiler</option>
                         <option value="Layer">Layer</option>
                         <option value="Other">Other</option>
                       </select>
-                      {editedFlock.type === "Other" && (
+                      {editedFlock.birdType === "Other" && (
                         <input
                           type="text"
-                          value={editedFlock.customType}
-                          onChange={(e) => setEditedFlock({ ...editedFlock, customType: e.target.value })}
+                          value={editedFlock.customBird}
+                          onChange={(e) => setEditedFlock({ ...editedFlock, customBird: e.target.value })}
                           placeholder="Enter species name"
                           className="mt-1 w-full border p-1 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
@@ -188,8 +195,8 @@ export default function FlockManagement() {
                     <td className="p-2">
                       <input
                         type="number"
-                        value={editedFlock.quantity}
-                        onChange={(e) => setEditedFlock({ ...editedFlock, quantity: e.target.value })}
+                        value={editedFlock.numBirds}
+                        onChange={(e) => setEditedFlock({ ...editedFlock, numBirds: e.target.value })}
                         className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
                       />
                     </td>
@@ -212,8 +219,10 @@ export default function FlockManagement() {
                   </tr>
                 ) : (
                   <tr key={flock.id} className="border-b dark:border-gray-700">
-                    <td className="p-2 text-gray-900 dark:text-white">{flock.type}</td>
-                    <td className="p-2 text-gray-900 dark:text-white">{flock.quantity}</td>
+                    <td className="p-2 text-gray-900 dark:text-white">
+                      {flock.birdType === "Other" ? flock.customBird : flock.birdType}
+                    </td>
+                    <td className="p-2 text-gray-900 dark:text-white">{flock.numBirds}</td>
                     <td className="p-2 text-gray-900 dark:text-white">{flock.age}</td>
                     <td className="p-2 flex flex-wrap gap-2">
                       <button onClick={() => startEditing(flock)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors">

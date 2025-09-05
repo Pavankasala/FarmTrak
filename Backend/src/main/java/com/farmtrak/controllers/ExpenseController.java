@@ -25,10 +25,10 @@ public class ExpenseController {
 
     // Get all expenses for a user
     @GetMapping
-    public List<Expense> getAllExpenses(@RequestParam("userEmail") String userEmail) {
+    public List<Expense> getAllExpenses(@RequestHeader("X-User-Email") String userEmail) {
         return expenseRepository.findByUserEmail(userEmail);
     }
-
+    
     // ✅ Update an expense by ID
     @PutMapping("/{id}")
     public Expense updateExpense(@PathVariable Long id, @RequestHeader("X-User-Email") String userEmail, @RequestBody Expense updatedExpense) {

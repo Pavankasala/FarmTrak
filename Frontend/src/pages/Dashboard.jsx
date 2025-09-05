@@ -1,31 +1,31 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { getCurrentUser } from "../utils/login";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { api } from "../utils/api";
+import { useOutletContext } from "react-router-dom";
 
 export default function Dashboard() {
-  const userEmail = getCurrentUser();
+  // ✅ Use context from DashboardLayout
+  const { dashboardStats, setDashboardStats } = useOutletContext();
 
-  const [stats, setStats] = useState({
-    totalBirds: 0,
-    eggsToday: 0,
-    totalExpenses: 0,
-    feedToday: 0,
-  });
-
+  const [stats, setStats] = useState(dashboardStats);
   const [eggTrend, setEggTrend] = useState([]);
   const [expenseTrend, setExpenseTrend] = useState([]);
+  const [expensesByCategory, setExpensesByCategory] = useState([]);
+  const [birdsPerFlock, setBirdsPerFlock] = useState([]);
+  const [feedPerFlock, setFeedPerFlock] = useState([]);
+
+  const COLORS = ["#10B981", "#F59E0B", "#3B82F6", "#EF4444", "#8B5CF6"];
 
   const formatDate = (isoStr) => new Date(isoStr).toISOString().split("T")[0];
 
   const loadDashboardData = async () => {
     try {
       const [flocksRes, expensesRes, eggsRes, feedRes] = await Promise.all([
-        api.get(`/flocks`, { headers: { "X-User-Email": userEmail } }),
-        api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
-        api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
-        api.get(`/feedRecords`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/flocks`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
+        api.get(`/expenses`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
+        api.get(`/eggs`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
+        api.get(`/feedRecords`, { headers: { "X-User-Email": localStorage.getItem("userEmail") } }),
       ]);
 
       const flocks = flocksRes.data;
@@ -33,10 +33,22 @@ export default function Dashboard() {
       const eggs = eggsRes.data;
       const feedRecords = feedRes.data;
 
-      const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || f.quantity || 0), 0);
-      const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-
+      // ---------------- Stats ----------------
+      const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || 0), 0);
+      const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
       const todayStr = new Date().toISOString().split("T")[0];
+      const eggsToday = eggs
+        .filter((e) => formatDate(e.date) === todayStr)
+        .reduce((sum, e) => sum + e.count, 0);
+      const feedToday = feedRecords
+        .filter((r) => formatDate(r.date) === todayStr)
+        .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
+
+      const newStats = { totalBirds, totalExpenses, eggsToday, feedToday };
+      setStats(newStats);
+      setDashboardStats(newStats); // ✅ update layout context
+
+      // ---------------- Trends ----------------
       const last7Days = Array.from({ length: 7 }).map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -45,37 +57,40 @@ export default function Dashboard() {
 
       const eggTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
-        const total = eggs
-          .filter((e) => formatDate(e.date) === dayStr)
-          .reduce((sum, e) => sum + e.count, 0);
-        return {
-          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
-          eggs: total,
-        };
+        const total = eggs.filter((e) => formatDate(e.date) === dayStr).reduce((sum, e) => sum + e.count, 0);
+        return { date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`, eggs: total };
       });
-
-      const eggsToday = eggs
-        .filter((e) => formatDate(e.date) === todayStr)
-        .reduce((sum, e) => sum + e.count, 0);
 
       const expenseTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
-        const total = expenses
-          .filter((e) => formatDate(e.date) === dayStr)
-          .reduce((sum, e) => sum + e.amount, 0);
-        return {
-          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
-          expenses: total,
-        };
+        const total = expenses.filter((e) => formatDate(e.date) === dayStr).reduce((sum, e) => sum + e.amount, 0);
+        return { date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`, expenses: total };
       });
 
-      const feedToday = feedRecords
-        .filter((r) => formatDate(r.date) === todayStr)
-        .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
-
-      setStats({ totalBirds, totalExpenses, eggsToday, feedToday });
       setEggTrend(eggTrendData);
       setExpenseTrend(expenseTrendData);
+
+      // ---------------- Pie Charts ----------------
+      const expenseByCat = ["Feed", "Medicine", "Labor", "Other"].map((cat) => ({
+        name: cat,
+        value: expenses.filter((e) => e.category === cat).reduce((sum, e) => sum + e.amount, 0),
+      }));
+      setExpensesByCategory(expenseByCat);
+
+      const birdsFlock = flocks.map((f) => ({
+        name: f.birdType === "Other" ? f.customBird : f.birdType,
+        value: f.numBirds,
+      }));
+      setBirdsPerFlock(birdsFlock);
+
+      const feedFlock = flocks.map((f) => {
+        const totalFeed = feedRecords
+          .filter((r) => r.flockId === f.id)
+          .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
+        return { name: f.birdType === "Other" ? f.customBird : f.birdType, value: totalFeed };
+      });
+      setFeedPerFlock(feedFlock);
+
     } catch (err) {
       console.error("Dashboard data load error:", err);
     }
@@ -85,16 +100,11 @@ export default function Dashboard() {
     loadDashboardData();
     const interval = setInterval(loadDashboardData, 120000); // refresh every 2 mins
     return () => clearInterval(interval);
-  }, [userEmail]);
+  }, []);
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto px-4 py-10">
-      <div>
-        <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">🌾 Farm Dashboard</h1>
-        <p className="text-light-subtext dark:text-dark-subtext mt-2">
-          Quick overview of your farm stats and today’s performance
-        </p>
-      </div>
+      <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">🌾 Farm Dashboard</h1>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -114,6 +124,7 @@ export default function Dashboard() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Egg Trend */}
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🥚 Egg Production (Last 7 days)</h2>
           <ResponsiveContainer width="100%" height={200}>
@@ -126,6 +137,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
+        {/* Expense Trend */}
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
           <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">💸 Expenses (Last 7 days)</h2>
           <ResponsiveContainer width="100%" height={200}>
@@ -135,6 +147,54 @@ export default function Dashboard() {
               <Tooltip />
               <Line type="monotone" dataKey="expenses" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Pie Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Expenses by Category */}
+        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">💰 Expenses by Category</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={expensesByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
+                {expensesByCategory.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Bird distribution */}
+        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🐓 Birds per Flock</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={birdsPerFlock} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
+                {birdsPerFlock.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Feed usage */}
+        <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
+          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🧴 Feed Usage per Flock</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={feedPerFlock} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
+                {feedPerFlock.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Legend />
+            </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
