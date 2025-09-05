@@ -9,8 +9,9 @@ export default function Topbar() {
   const { theme, toggleTheme } = useTheme();
   const user = getCurrentUser();
 
-  // ✅ Get dashboard stats from context
-  const { dashboardStats } = useOutletContext();
+  // ✅ Safe fallback for outletContext
+  const outletContext = useOutletContext() || {};
+  const { dashboardStats = {} } = outletContext;
 
   const handleLogout = () => {
     logOut(); 
@@ -26,11 +27,11 @@ export default function Topbar() {
         </span>
 
         {/* ✅ Live dashboard stats */}
-        {isLoggedIn() && dashboardStats && (
+        {isLoggedIn() && (
           <div className="flex gap-4 mt-1 sm:mt-0 text-sm text-gray-600 dark:text-gray-300">
-            <span>🐓 {dashboardStats.totalBirds} birds</span>
-            <span>🥚 {dashboardStats.eggsToday} eggs today</span>
-            <span>💸 ₹{dashboardStats.totalExpenses}</span>
+            <span>🐓 {dashboardStats.totalBirds || 0} birds</span>
+            <span>🥚 {dashboardStats.eggsToday || 0} eggs today</span>
+            <span>💸 ₹{dashboardStats.totalExpenses || 0}</span>
           </div>
         )}
       </div>
