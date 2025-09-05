@@ -16,114 +16,104 @@ import { api } from "../utils/api";
 import { useOutletContext } from "react-router-dom";
 
 export default function Dashboard() {
-  // ✅ Safe fallback for GitHub Pages direct access
   const outletContext = useOutletContext() || {};
-  const { dashboardStats = {}, setDashboardStats = () => { } } = outletContext;
+  const { dashboardStats = {}, setDashboardStats = () => {} } = outletContext;
 
   const [stats, setStats] = useState(dashboardStats);
   const [eggTrend, setEggTrend] = useState([]);
   const [expenseTrend, setExpenseTrend] = useState([]);
   const [expensesByCategory, setExpensesByCategory] = useState([]);
   const [birdsPerFlock, setBirdsPerFlock] = useState([]);
-  const [feedPerFlock, setFeedPerFlock] = useState([]);
+  const [eggsByBirdType, setEggsByBirdType] = useState([]);
 
   const COLORS = ["#10B981", "#F59E0B", "#3B82F6", "#EF4444", "#8B5CF6"];
 
-  const formatDate = (isoStr) => new Date(isoStr).toISOString().split("T")[0];
-
   const loadDashboardData = async () => {
-  try {
-    const userEmail = localStorage.getItem("userEmail");
-    if (!userEmail) return;
+    try {
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) return;
 
-    // 1️⃣ Fetch all flocks
-    const flocksRes = await api.get(`/flocks`, { headers: { "X-User-Email": userEmail } });
-    const flocks = flocksRes.data;
-    if (!flocks.length) return;
+      // Fetch flocks
+      const flocksRes = await api.get(`/flocks`, { headers: { "X-User-Email": userEmail } });
+      const flocks = flocksRes.data;
+      if (!flocks.length) return;
 
-    // 2️⃣ Pick the first flock for feed records
-    const flockId = flocks[0].id;
+      // Pick first flock for feed records
+      const flockId = flocks[0].id;
 
-    // 3️⃣ Fetch expenses, eggs, feed records in parallel
-    const [expensesRes, eggsRes, feedRes] = await Promise.all([
-      api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
-      api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
-      api.get(`/feedRecords?flockId=${flockId}`, { headers: { "X-User-Email": userEmail } }),
-    ]);
+      // Fetch expenses, eggs, feedRecords
+      const [expensesRes, eggsRes, feedRes] = await Promise.all([
+        api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
+        api.get(`/feedRecords?flockId=${flockId}`, { headers: { "X-User-Email": userEmail } }),
+      ]);
 
-    const expenses = expensesRes.data;
-    const eggs = eggsRes.data;
-    const feedRecords = feedRes.data;
+      const expenses = expensesRes.data;
+      const eggs = eggsRes.data;
+      const feedRecords = feedRes.data;
 
-    // ---------------- Stats ----------------
-    const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || 0), 0);
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const todayStr = new Date().toISOString().split("T")[0];
-    const eggsToday = eggs
-      .filter((e) => e.date.startsWith(todayStr))
-      .reduce((sum, e) => sum + e.count, 0);
-    const feedToday = feedRecords
-      .filter((r) => r.date.startsWith(todayStr))
-      .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
+      // Stats
+      const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || 0), 0);
+      const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+      const todayStr = new Date().toISOString().split("T")[0];
+      const eggsToday = eggs.filter(e => e.date.startsWith(todayStr)).reduce((sum, e) => sum + e.count, 0);
+      const feedToday = feedRecords.filter(r => r.date.startsWith(todayStr)).reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
 
-    const newStats = { totalBirds, totalExpenses, eggsToday, feedToday };
-    setStats(newStats);
-    setDashboardStats(newStats);
+      const newStats = { totalBirds, totalExpenses, eggsToday, feedToday };
+      setStats(newStats);
+      setDashboardStats(newStats);
 
-    // ---------------- Trends ----------------
-    const last7Days = Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
-      return d;
-    });
+      // Last 7 days for trends
+      const last7Days = Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return d;
+      });
 
-    const eggTrendData = last7Days.map((day) => {
-      const dayStr = day.toISOString().split("T")[0];
-      const total = eggs.filter((e) => e.date.startsWith(dayStr)).reduce((sum, e) => sum + e.count, 0);
-      return {
-        date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
-        eggs: total,
-      };
-    });
+      const eggTrendData = last7Days.map(day => {
+        const dayStr = day.toISOString().split("T")[0];
+        const total = eggs.filter(e => e.date.startsWith(dayStr)).reduce((sum, e) => sum + e.count, 0);
+        return {
+          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
+          eggs: total,
+        };
+      });
 
-    const expenseTrendData = last7Days.map((day) => {
-      const dayStr = day.toISOString().split("T")[0];
-      const total = expenses.filter((e) => e.date.startsWith(dayStr)).reduce((sum, e) => sum + e.amount, 0);
-      return {
-        date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
-        expenses: total,
-      };
-    });
+      const expenseTrendData = last7Days.map(day => {
+        const dayStr = day.toISOString().split("T")[0];
+        const total = expenses.filter(e => e.date.startsWith(dayStr)).reduce((sum, e) => sum + e.amount, 0);
+        return {
+          date: `${day.getDate()} ${day.toLocaleString("default", { month: "short" })}`,
+          expenses: total,
+        };
+      });
 
-    setEggTrend(eggTrendData);
-    setExpenseTrend(expenseTrendData);
+      setEggTrend(eggTrendData);
+      setExpenseTrend(expenseTrendData);
 
-    // ---------------- Pie Charts ----------------
-    const expenseByCat = ["Feed", "Medicine", "Labor", "Other"].map((cat) => ({
-      name: cat,
-      value: expenses.filter((e) => e.category === cat).reduce((sum, e) => sum + e.amount, 0),
-    }));
-    setExpensesByCategory(expenseByCat);
+      // Pie Charts
+      const expenseByCat = ["Feed", "Medicine", "Labor", "Other"].map(cat => ({
+        name: cat,
+        value: expenses.filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0),
+      }));
+      setExpensesByCategory(expenseByCat);
 
-    const birdsFlock = flocks.map((f) => ({
-      name: f.birdType === "Other" ? f.customBird : f.birdType,
-      value: f.numBirds,
-    }));
-    setBirdsPerFlock(birdsFlock);
+      const birdsFlock = flocks.map(f => ({
+        name: f.birdType === "Other" ? f.customBird : f.birdType,
+        value: f.numBirds,
+      }));
+      setBirdsPerFlock(birdsFlock);
 
-    const feedFlock = flocks.map((f) => {
-      const totalFeed = feedRecords
-        .filter((r) => r.flockId === f.id)
-        .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
-      return { name: f.birdType === "Other" ? f.customBird : f.birdType, value: totalFeed };
-    });
-    setFeedPerFlock(feedFlock);
+      const eggsByTypeData = flocks.map(f => {
+        const totalEggs = eggs.filter(e => e.flockId === f.id).reduce((sum, e) => sum + e.count, 0);
+        return { name: f.birdType === "Other" ? f.customBird : f.birdType, value: totalEggs };
+      });
+      setEggsByBirdType(eggsByTypeData);
 
-  } catch (err) {
-    console.error("Dashboard data load error:", err);
-  }
-};
-
+    } catch (err) {
+      console.error("Dashboard data load error:", err);
+    }
+  };
 
   useEffect(() => {
     loadDashboardData();
@@ -209,11 +199,11 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow">
-          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🧴 Feed Usage per Flock</h2>
+          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">🥚 Eggs Produced by Bird Type</h2>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={feedPerFlock} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
-                {feedPerFlock.map((entry, index) => (
+              <Pie data={eggsByBirdType} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label>
+                {eggsByBirdType.map((entry, index) => (
                   <Cell key={index} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
