@@ -6,20 +6,6 @@ import { logOut, isLoggedIn, logIn } from "../utils/login";
 import LoginModal from "../components/LoginModal";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ✅ Reusable Tooltip Component
-function Tooltip({ text, children }) {
-  return (
-    <span className="relative group cursor-pointer">
-      {children}
-      <span className="absolute right-0 bottom-full mb-2 w-max max-w-xs 
-        bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 
-        transition pointer-events-none z-20">
-        {text}
-      </span>
-    </span>
-  );
-}
-
 function Welcome() {
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
   const [showLogin, setShowLogin] = useState(false);
@@ -69,7 +55,6 @@ function Welcome() {
     <div className="relative bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text min-h-screen">
       {/* Top-right controls */}
       <div className="absolute top-4 right-8 flex items-center gap-3 z-10">
-        <Tooltip text={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}>
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
             className="p-2 rounded-full hover:bg-light-muted dark:hover:bg-dark-dim transition"
@@ -77,10 +62,8 @@ function Welcome() {
           >
             {isDarkMode ? <SunIcon className="h-6 w-6 text-yellow-400" /> : <MoonIcon className="h-6 w-6 text-gray-700" />}
           </button>
-        </Tooltip>
 
         {isLoggedIn() ? (
-          <Tooltip text="Logout and end your session">
             <button
               onClick={handleLogout}
               aria-label="Logout"
@@ -88,9 +71,7 @@ function Welcome() {
             >
               🔓 Logout
             </button>
-          </Tooltip>
         ) : (
-          <Tooltip text="Login to access your FarmTrak dashboard">
             <button
               onClick={() => setShowLogin(true)}
               aria-label="Login"
@@ -98,7 +79,6 @@ function Welcome() {
             >
               🔐 Login
             </button>
-          </Tooltip>
         )}
       </div>
 
