@@ -55,30 +55,30 @@ function Welcome() {
     <div className="relative bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text min-h-screen">
       {/* Top-right controls */}
       <div className="absolute top-4 right-8 flex items-center gap-3 z-10">
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-2 rounded-full hover:bg-light-muted dark:hover:bg-dark-dim transition"
-            aria-label="Toggle theme"
-          >
-            {isDarkMode ? <SunIcon className="h-6 w-6 text-yellow-400" /> : <MoonIcon className="h-6 w-6 text-gray-700" />}
-          </button>
+        <button
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className="p-2 rounded-full hover:bg-light-muted dark:hover:bg-dark-dim transition"
+          aria-label="Toggle theme"
+        >
+          {isDarkMode ? <SunIcon className="h-6 w-6 text-yellow-400" /> : <MoonIcon className="h-6 w-6 text-gray-700" />}
+        </button>
 
         {isLoggedIn() ? (
-            <button
-              onClick={handleLogout}
-              aria-label="Logout"
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              🔓 Logout
-            </button>
+          <button
+            onClick={handleLogout}
+            aria-label="Logout"
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            🔓 Logout
+          </button>
         ) : (
-            <button
-              onClick={() => setShowLogin(true)}
-              aria-label="Login"
-              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500"
-            >
-              🔐 Login
-            </button>
+          <button
+            onClick={() => setShowLogin(true)}
+            aria-label="Login"
+            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500"
+          >
+            🔐 Login
+          </button>
         )}
       </div>
 
@@ -91,17 +91,15 @@ function Welcome() {
           Manage your poultry with ease. Track flocks, expenses, health, and more.
         </p>
         <div className="mt-8 flex justify-center gap-x-6">
-          <Tooltip text="Take me to my dashboard or sign in if not logged in yet">
-            <button
-              onClick={() => {
-                if (isLoggedIn()) navigate("/dashboard");
-                else setShowLogin(true);
-              }}
-              className="bg-light-primary hover:bg-light-primaryHover dark:bg-dark-primary dark:hover:bg-dark-primaryHover px-4 py-2 rounded text-white"
-            >
-              🧠 Get Started
-            </button>
-          </Tooltip>
+          <button
+            onClick={() => {
+              if (isLoggedIn()) navigate("/dashboard");
+              else setShowLogin(true);
+            }}
+            className="bg-light-primary hover:bg-light-primaryHover dark:bg-dark-primary dark:hover:bg-dark-primaryHover px-4 py-2 rounded text-white"
+          >
+            🧠 Get Started
+          </button>
         </div>
       </div>
 
