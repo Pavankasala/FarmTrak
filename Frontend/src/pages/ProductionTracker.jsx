@@ -11,6 +11,7 @@ export default function ProductionTracker({ onDataUpdate }) {
 
   const userEmail = getCurrentUser();
 
+  // 🔄 Load Data
   const loadData = async () => {
     if (!userEmail) return;
     try {
@@ -28,7 +29,7 @@ export default function ProductionTracker({ onDataUpdate }) {
       // ✅ Today's egg count
       const today = new Date().toISOString().split("T")[0];
       const todayRecords = productionsData.filter((p) => p.date.startsWith(today));
-      const totalToday = todayRecords.reduce((sum, p) => sum + p.count, 0);
+      const totalToday = todayRecords.reduce((sum, p) => sum + Number(p.count), 0);
       onDataUpdate?.({ eggsToday: totalToday });
     } catch (err) {
       console.error("Error loading data:", err);
@@ -39,6 +40,7 @@ export default function ProductionTracker({ onDataUpdate }) {
     if (userEmail) loadData();
   }, [userEmail]);
 
+  // 🔧 Form handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
@@ -50,7 +52,11 @@ export default function ProductionTracker({ onDataUpdate }) {
     e.preventDefault();
     if (!form.flockId || !form.count || !form.date) return;
 
-    const payload = { flockId: parseInt(form.flockId), count: parseInt(form.count), date: form.date };
+    const payload = {
+      flockId: Number(form.flockId),
+      count: Number(form.count),
+      date: form.date,
+    };
 
     try {
       if (form.id) {
@@ -66,7 +72,12 @@ export default function ProductionTracker({ onDataUpdate }) {
   };
 
   const handleEdit = (prod) => {
-    setForm({ id: prod.id, flockId: prod.flockId.toString(), count: prod.count.toString(), date: prod.date });
+    setForm({
+      id: prod.id,
+      flockId: prod.flockId.toString(),
+      count: prod.count.toString(),
+      date: prod.date,
+    });
   };
 
   const handleDelete = async (id) => {
@@ -78,6 +89,10 @@ export default function ProductionTracker({ onDataUpdate }) {
       console.error("Error deleting production:", err);
     }
   };
+
+  // 🎨 Reusable button styles
+  const baseBtn =
+    "px-4 py-2 rounded text-white font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2";
 
   return (
     <motion.div
@@ -99,12 +114,14 @@ export default function ProductionTracker({ onDataUpdate }) {
         transition={{ duration: 0.4 }}
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          {/* Flock Select */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Flock
               <span
                 className="ml-1 text-gray-500 cursor-pointer"
                 title="Select the flock for which you are recording egg production."
+                aria-label="Help: Select flock"
               >
                 ℹ️
               </span>
@@ -124,12 +141,14 @@ export default function ProductionTracker({ onDataUpdate }) {
             </select>
           </div>
 
+          {/* Count Input */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Egg Count
               <span
                 className="ml-1 text-gray-500 cursor-pointer"
                 title="Enter the number of eggs collected for the selected flock."
+                aria-label="Help: Egg count"
               >
                 ℹ️
               </span>
@@ -144,12 +163,14 @@ export default function ProductionTracker({ onDataUpdate }) {
             />
           </div>
 
+          {/* Date Input */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Date
               <span
                 className="ml-1 text-gray-500 cursor-pointer"
                 title="Pick the date for which this egg production record applies."
+                aria-label="Help: Date selection"
               >
                 ℹ️
               </span>
@@ -164,15 +185,19 @@ export default function ProductionTracker({ onDataUpdate }) {
           </div>
         </div>
 
+        {/* Buttons */}
         <div className="flex flex-wrap gap-2">
-          <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          <button
+            type="submit"
+            className={`${baseBtn} bg-green-600 hover:bg-green-700 focus:ring-green-400`}
+          >
             {form.id ? "✏️ Update" : "➕ Add"}
           </button>
           {form.id && (
             <button
               type="button"
               onClick={resetForm}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className={`${baseBtn} bg-gray-500 hover:bg-gray-600 focus:ring-gray-400`}
             >
               Cancel
             </button>
@@ -180,67 +205,121 @@ export default function ProductionTracker({ onDataUpdate }) {
         </div>
       </motion.form>
 
-      {/* Table */}
+      {/* Table / Mobile Cards */}
       <motion.div
         className="overflow-x-auto bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl transition-colors"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <table className="min-w-full text-left">
-          <thead>
-            <tr className="border-b dark:border-gray-700">
-              <th className="p-2 text-gray-900 dark:text-white">Date</th>
-              <th className="p-2 text-gray-900 dark:text-white">Flock</th>
-              <th className="p-2 text-gray-900 dark:text-white">Egg Count</th>
-              <th className="p-2 text-gray-900 dark:text-white">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productions.length > 0 ? (
-              [...productions]
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .map((p) => {
-                  const flock = flocks.find((f) => f.id === p.flockId);
-                  return (
-                    <motion.tr
-                      key={p.id}
-                      className="border-b dark:border-gray-700"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <td className="p-2 text-gray-900 dark:text-white">{p.date}</td>
-                      <td className="p-2 text-gray-900 dark:text-white">
-                        {flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}
-                      </td>
-                      <td className="p-2 text-gray-900 dark:text-white">{p.count}</td>
-                      <td className="p-2 flex gap-2">
-                        <button
-                          onClick={() => handleEdit(p)}
-                          className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(p.id)}
-                          className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </motion.tr>
-                  );
-                })
-            ) : (
-              <tr>
-                <td colSpan="4" className="p-4 text-center text-gray-500 dark:text-gray-400">
-                  No production records yet
-                </td>
+        {/* Desktop Table */}
+        <div className="hidden md:block">
+          <table className="min-w-full text-left">
+            <thead>
+              <tr className="border-b dark:border-gray-700">
+                <th className="p-2 text-gray-900 dark:text-white">Date</th>
+                <th className="p-2 text-gray-900 dark:text-white">Flock</th>
+                <th className="p-2 text-gray-900 dark:text-white">Egg Count</th>
+                <th className="p-2 text-gray-900 dark:text-white">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {productions.length > 0 ? (
+                [...productions]
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .map((p) => {
+                    const flock = flocks.find((f) => f.id === p.flockId);
+                    return (
+                      <motion.tr
+                        key={p.id}
+                        className="border-b dark:border-gray-700"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <td className="p-2 text-gray-900 dark:text-white">{p.date}</td>
+                        <td className="p-2 text-gray-900 dark:text-white">
+                          {flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}
+                        </td>
+                        <td className="p-2 text-gray-900 dark:text-white">{p.count}</td>
+                        <td className="p-2 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(p)}
+                            className={`${baseBtn} bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400 px-3 py-1`}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(p.id)}
+                            className={`${baseBtn} bg-red-600 hover:bg-red-700 focus:ring-red-400 px-3 py-1`}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </motion.tr>
+                    );
+                  })
+              ) : (
+                <tr>
+                  <td colSpan="4" className="p-4 text-center text-gray-500 dark:text-gray-400">
+                    No production records yet
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="space-y-4 md:hidden">
+          {productions.length > 0 ? (
+            [...productions]
+              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .map((p) => {
+                const flock = flocks.find((f) => f.id === p.flockId);
+                return (
+                  <motion.div
+                    key={p.id}
+                    className="border dark:border-gray-700 rounded-lg p-4 space-y-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p className="text-gray-900 dark:text-white">
+                      <strong>Date:</strong> {p.date}
+                    </p>
+                    <p className="text-gray-900 dark:text-white">
+                      <strong>Flock:</strong>{" "}
+                      {flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}
+                    </p>
+                    <p className="text-gray-900 dark:text-white">
+                      <strong>Egg Count:</strong> {p.count}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(p)}
+                        className={`${baseBtn} bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400 px-3 py-1`}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(p.id)}
+                        className={`${baseBtn} bg-red-600 hover:bg-red-700 focus:ring-red-400 px-3 py-1`}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })
+          ) : (
+            <p className="text-center text-gray-500 dark:text-gray-400">No production records yet</p>
+          )}
+        </div>
       </motion.div>
     </motion.div>
   );
