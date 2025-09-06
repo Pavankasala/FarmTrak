@@ -1,42 +1,26 @@
 // src/components/LoginModal.jsx
-import React, { useEffect } from "react";
-import { GoogleLogin } from "@react-oauth/google";
+import { AnimatePresence, motion } from "framer-motion";
+import { useGoogleLogin } from "@react-oauth/google";
 import { api } from "../utils/api";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
-  useEffect(() => {
-    const handleEsc = (e) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
-
+  // ✅ handle the Google login response
   const handleGoogleSuccess = async (credentialResponse) => {
-    if (!credentialResponse?.credential) return;
-
     try {
       const res = await api.post("/google-login", {
-        token: credentialResponse.credential,
+        token: credentialResponse.access_token,
       });
-
-      if (res.data.status === "success") {
-        localStorage.setItem("userEmail", res.data.email);
-        localStorage.setItem("token", res.data.token);
-
-        onSuccess({
-          token: res.data.token,
-          email: res.data.email,
-        });
-
-        onClose();
-      } else {
-        alert("Google login failed: " + res.data.message);
-      }
+      onSuccess(res.data); // pass token + email back to parent (Welcome.jsx)
     } catch (err) {
-      console.error("Login error:", err);
-      alert("Login error: " + err.message);
+      console.error("Google login failed:", err);
+      alert("Google login failed. Please try again.");
     }
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => alert("Google login failed"),
+  });
 
   return (
     <AnimatePresence>
@@ -63,11 +47,18 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
               Sign in with Google to access your FarmTrak dashboard.
             </p>
 
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => alert("Google login failed")}
-              ux_mode="popup"
-            />
+            {/* ✅ Custom Google Styled Button */}
+            <button
+              onClick={() => googleLogin()}
+              className="flex items-center gap-2 w-full justify-center px-4 py-2 bg-white border rounded-lg shadow-md hover:bg-gray-100 transition"
+            >
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="Google"
+                className="h-5 w-5"
+              />
+              <span className="text-sm font-medium text-gray-700">Sign in with Google</span>
+            </button>
 
             <button
               onClick={onClose}
