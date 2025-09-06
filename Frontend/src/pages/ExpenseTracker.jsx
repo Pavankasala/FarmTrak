@@ -130,8 +130,8 @@ export default function ExpenseTracker() {
             className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-xl w-full shadow"
           >
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              📖 Track all your poultry-related expenses here.  
-              Choose a category, enter the amount, and add notes if needed.  
+              📖 Track all your poultry-related expenses here.
+              Choose a category, enter the amount, and add notes if needed.
               Records will help you calculate profits later.
             </p>
             <button
@@ -145,6 +145,13 @@ export default function ExpenseTracker() {
       </AnimatePresence>
 
       {/* Form */}
+      <motion.div
+        className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 250, damping: 20 }}
+        whileHover={{ scale: 1.02 }}
+      ></motion.div>
       <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Category */}
@@ -213,6 +220,13 @@ export default function ExpenseTracker() {
       </div>
 
       {/* Expense Records */}
+      <motion.div
+        className="overflow-x-auto w-full"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 250, damping: 20, delay: 0.1 }}
+        whileHover={{ scale: 1.02 }}
+      ></motion.div>
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">📋 Expense Records</h2>
       <div className="overflow-x-auto w-full">
         <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">

@@ -209,11 +209,19 @@ export default function FeedPredictor() {
 
   // ---------------- Tooltip Component ----------------
   const Tooltip = ({ text }) => (
-    <span className="relative group cursor-pointer">
-      <InformationCircleIcon className="h-4 w-4 inline ml-1 text-gray-500 dark:text-gray-400" />
-      <span className="absolute left-6 top-0 w-48 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+    <span className="relative group cursor-pointer inline-flex items-center">
+      <InformationCircleIcon className="h-4 w-4 ml-1 text-gray-500 dark:text-gray-400" />
+      <motion.span
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.2 }}
+        className="absolute left-1/2 -translate-x-1/2 -top-8 w-max max-w-xs px-2 py-1 rounded-md 
+                 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 text-xs shadow-md 
+                 opacity-0 group-hover:opacity-100 pointer-events-none"
+      >
         {text}
-      </span>
+      </motion.span>
     </span>
   );
 
@@ -444,21 +452,21 @@ export default function FeedPredictor() {
                         <td className="px-4 py-2">
                           {resultUnit === "g"
                             ? (
-                                (r.totalFeedGiven / r.numBirds / r.daysLasted) *
-                                1000
-                              ).toFixed(2)
+                              (r.totalFeedGiven / r.numBirds / r.daysLasted) *
+                              1000
+                            ).toFixed(2)
                             : (
-                                r.totalFeedGiven /
-                                r.numBirds /
-                                r.daysLasted
-                              ).toFixed(2)}{" "}
+                              r.totalFeedGiven /
+                              r.numBirds /
+                              r.daysLasted
+                            ).toFixed(2)}{" "}
                           {resultUnit}
                         </td>
                         <td className="px-4 py-2">
                           {resultUnit === "g"
                             ? ((r.totalFeedGiven / r.daysLasted) * 1000).toFixed(
-                                2
-                              )
+                              2
+                            )
                             : (r.totalFeedGiven / r.daysLasted).toFixed(2)}{" "}
                           {resultUnit}
                         </td>

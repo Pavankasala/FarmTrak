@@ -1,3 +1,4 @@
+// src/pages/Dashboard.jsx
 import { useState, useEffect } from "react";
 import {
   LineChart,
@@ -33,16 +34,14 @@ export default function Dashboard() {
       const userEmail = localStorage.getItem("userEmail");
       if (!userEmail) return;
 
-      // Fetch flocks
       const flocksRes = await api.get(`/flocks`, {
         headers: { "X-User-Email": userEmail },
       });
-      const flocks = flocksRes.data;
+      const flocks = flocksRes.data || [];
       if (!flocks.length) return;
 
       const flockId = flocks[0].id;
 
-      // Fetch expenses, eggs, feedRecords
       const [expensesRes, eggsRes, feedRes] = await Promise.all([
         api.get(`/expenses`, { headers: { "X-User-Email": userEmail } }),
         api.get(`/eggs`, { headers: { "X-User-Email": userEmail } }),
@@ -51,26 +50,24 @@ export default function Dashboard() {
         }),
       ]);
 
-      const expenses = expensesRes.data;
-      const eggs = eggsRes.data;
-      const feedRecords = feedRes.data;
+      const expenses = expensesRes.data || [];
+      const eggs = eggsRes.data || [];
+      const feedRecords = feedRes.data || [];
 
-      // Stats
       const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || 0), 0);
-      const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+      const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
       const todayStr = new Date().toISOString().split("T")[0];
       const eggsToday = eggs
-        .filter((e) => e.date.startsWith(todayStr))
-        .reduce((sum, e) => sum + e.count, 0);
+        .filter((e) => e.date?.startsWith(todayStr))
+        .reduce((sum, e) => sum + (e.count || 0), 0);
       const feedToday = feedRecords
-        .filter((r) => r.date.startsWith(todayStr))
+        .filter((r) => r.date?.startsWith(todayStr))
         .reduce((sum, r) => sum + parseFloat(r.totalFeedGiven || 0), 0);
 
       const newStats = { totalBirds, totalExpenses, eggsToday, feedToday };
       setStats(newStats);
       setDashboardStats(newStats);
 
-      // === Line Charts ===
       const last7Days = Array.from({ length: 7 }).map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -80,8 +77,8 @@ export default function Dashboard() {
       const eggTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
         const total = eggs
-          .filter((e) => e.date.startsWith(dayStr))
-          .reduce((sum, e) => sum + e.count, 0);
+          .filter((e) => e.date?.startsWith(dayStr))
+          .reduce((sum, e) => sum + (e.count || 0), 0);
         return {
           date: `${day.getDate()} ${day.toLocaleString("default", {
             month: "short",
@@ -93,8 +90,8 @@ export default function Dashboard() {
       const expenseTrendData = last7Days.map((day) => {
         const dayStr = day.toISOString().split("T")[0];
         const total = expenses
-          .filter((e) => e.date.startsWith(dayStr))
-          .reduce((sum, e) => sum + e.amount, 0);
+          .filter((e) => e.date?.startsWith(dayStr))
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
         return {
           date: `${day.getDate()} ${day.toLocaleString("default", {
             month: "short",
@@ -106,22 +103,20 @@ export default function Dashboard() {
       setEggTrend(eggTrendData);
       setExpenseTrend(expenseTrendData);
 
-      // === Pie: Expenses by Category ===
       const knownCats = ["feed", "medicine", "labor"];
       let expenseByCat = knownCats.map((cat) => ({
         name: cat.charAt(0).toUpperCase() + cat.slice(1),
         value:
           expenses
-            .filter((e) => e.category.toLowerCase() === cat)
-            .reduce((sum, e) => sum + e.amount, 0) || 0,
+            .filter((e) => e.category?.toLowerCase() === cat)
+            .reduce((sum, e) => sum + (e.amount || 0), 0) || 0,
       }));
       const otherTotal = expenses
-        .filter((e) => !knownCats.includes(e.category.toLowerCase()))
-        .reduce((sum, e) => sum + e.amount, 0);
+        .filter((e) => !knownCats.includes(e.category?.toLowerCase()))
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
       expenseByCat.push({ name: "Other", value: otherTotal || 0.01 });
       setExpensesByCategory(expenseByCat);
 
-      // === Pie: Birds per Flock ===
       const knownBirds = ["Broiler", "Layer"];
       let birdsFlock = knownBirds.map((type) => {
         const flock = flocks.find((f) => f.birdType === type);
@@ -129,11 +124,10 @@ export default function Dashboard() {
       });
       const otherBirds = flocks
         .filter((f) => !knownBirds.includes(f.birdType))
-        .reduce((sum, f) => sum + f.numBirds, 0);
+        .reduce((sum, f) => sum + (f.numBirds || 0), 0);
       birdsFlock.push({ name: "Other", value: otherBirds || 0.01 });
       setBirdsPerFlock(birdsFlock);
 
-      // === Pie: Eggs by Bird Type ===
       let eggsByTypeData = knownBirds.map((type) => {
         const flocksOfType = flocks.filter((f) => f.birdType === type);
         const totalEggs = flocksOfType.reduce((sum, f) => {
@@ -141,7 +135,7 @@ export default function Dashboard() {
             sum +
             eggs
               .filter((e) => e.flockId === f.id)
-              .reduce((s, e) => s + e.count, 0)
+              .reduce((s, e) => s + (e.count || 0), 0)
           );
         }, 0);
         return { name: type, value: totalEggs };
@@ -153,7 +147,7 @@ export default function Dashboard() {
             sum +
             eggs
               .filter((e) => e.flockId === f.id)
-              .reduce((s, e) => s + e.count, 0),
+              .reduce((s, e) => s + (e.count || 0), 0),
           0
         );
       eggsByTypeData.push({ name: "Other", value: otherEggs || 0.01 });
@@ -183,7 +177,7 @@ export default function Dashboard() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {[
-          { emoji: "🐓", label: "Total Birds", value: stats.totalBirds },
+          { emoji: "🐓", label: "Total Birds", value: stats.totalBirds ?? 0 },
           {
             emoji: "🥚",
             label: "Eggs Produced Today",
@@ -200,14 +194,16 @@ export default function Dashboard() {
           {
             emoji: "💸",
             label: "Total Expenses",
-            value: `₹${stats.totalExpenses}`,
+            value: `₹${stats.totalExpenses ?? 0}`,
           },
         ].map((card, idx) => (
           <motion.div
             key={idx}
             className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow text-center"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: "spring", stiffness: 200 }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 250, damping: 20, delay: idx * 0.1 }}
+            whileHover={{ scale: 1.05 }}
           >
             <div className="text-2xl">{card.emoji}</div>
             <div className="font-semibold text-light-text dark:text-dark-text mt-2">
@@ -222,152 +218,81 @@ export default function Dashboard() {
 
       {/* Line Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <motion.div
-          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
-          whileHover={{ scale: 1.02 }}
-        >
-          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
-            🥚 Egg Production (Last 7 days)
-          </h2>
-          {eggTrend.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={eggTrend}>
-                <XAxis dataKey="date" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="eggs"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-gray-500 text-center py-10">No egg data</p>
-          )}
-        </motion.div>
-
-        <motion.div
-          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
-          whileHover={{ scale: 1.02 }}
-        >
-          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
-            💸 Expenses (Last 7 days)
-          </h2>
-          {expenseTrend.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={expenseTrend}>
-                <XAxis dataKey="date" stroke="#9CA3AF" />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="expenses"
-                  stroke="#F59E0B"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-gray-500 text-center py-10">No expense data</p>
-          )}
-        </motion.div>
+        {[
+          { title: "🥚 Egg Production (Last 7 days)", data: eggTrend, key: "eggs", stroke: "#10B981", empty: "No egg data" },
+          { title: "💸 Expenses (Last 7 days)", data: expenseTrend, key: "expenses", stroke: "#F59E0B", empty: "No expense data" }
+        ].map((chart, idx) => (
+          <motion.div
+            key={idx}
+            className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 250, damping: 20, delay: idx * 0.15 }}
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
+              {chart.title}
+            </h2>
+            {chart.data.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={chart.data}>
+                  <XAxis dataKey="date" stroke="#9CA3AF" />
+                  <YAxis stroke="#9CA3AF" />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey={chart.key}
+                    stroke={chart.stroke}
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-gray-500 text-center py-10">{chart.empty}</p>
+            )}
+          </motion.div>
+        ))}
       </div>
 
       {/* Pie Charts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <motion.div
-          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
-          whileHover={{ scale: 1.02 }}
-        >
-          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
-            💰 Expenses by Category
-          </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={expensesByCategory}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={70}
-                label
-              >
-                {expensesByCategory.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        <motion.div
-          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
-          whileHover={{ scale: 1.02 }}
-        >
-          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
-            🐓 Birds per Flock
-          </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={birdsPerFlock}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={70}
-                label
-              >
-                {birdsPerFlock.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        <motion.div
-          className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
-          whileHover={{ scale: 1.02 }}
-        >
-          <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
-            🥚 Eggs Produced by Bird Type
-          </h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={eggsByBirdType}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={70}
-                label
-              >
-                {eggsByBirdType.map((entry, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </motion.div>
+        {[
+          { title: "💰 Expenses by Category", data: expensesByCategory },
+          { title: "🐓 Birds per Flock", data: birdsPerFlock },
+          { title: "🥚 Eggs Produced by Bird Type", data: eggsByBirdType }
+        ].map((pie, idx) => (
+          <motion.div
+            key={idx}
+            className="bg-light-bg dark:bg-dark-card p-4 rounded-2xl shadow"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 250, damping: 20, delay: idx * 0.2 }}
+            whileHover={{ scale: 1.05 }}
+          >
+            <h2 className="font-semibold text-light-text dark:text-dark-text mb-2">
+              {pie.title}
+            </h2>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={pie.data}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={70}
+                  label
+                >
+                  {pie.data.map((entry, i) => (
+                    <Cell key={`cell-${idx}-${i}`} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </motion.div>
+        ))}
       </div>
     </motion.div>
   );
