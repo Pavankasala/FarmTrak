@@ -26,14 +26,14 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50"
+          className="fixed inset-0 bg-blue bg-opacity-50 flex justify-center items-center z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
-            className="bg-light-bg dark:bg-dark-card p-6 rounded-2xl w-80 flex flex-col items-center shadow-2xl relative"
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl w-80 flex flex-col items-center shadow-2xl relative"
             initial={{ scale: 0.8, opacity: 0, y: -50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 50 }}
