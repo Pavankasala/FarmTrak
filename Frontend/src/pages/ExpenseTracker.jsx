@@ -151,7 +151,7 @@ export default function ExpenseTracker() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 250, damping: 20 }}
         whileHover={{ scale: 1.02 }}
-      ></motion.div>
+      >
       <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Category */}
@@ -278,6 +278,7 @@ export default function ExpenseTracker() {
           </tbody>
         </table>
       </div>
+      </motion.div>
     </div>
   );
 }
