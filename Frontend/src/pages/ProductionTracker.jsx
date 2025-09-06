@@ -1,8 +1,35 @@
 // src/components/ProductionTracker.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { motion } from "framer-motion";
+import { Popover, Transition } from "@headlessui/react"; // 🆕 Tooltip
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { getCurrentUser } from "../utils/login";
 import { api } from "../utils/api";
+
+// 🆕 Reusable Tooltip Component
+function Tooltip({ text }) {
+  return (
+    <Popover className="relative inline-block">
+      <Popover.Button className="ml-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
+        <InformationCircleIcon className="w-4 h-4" />
+      </Popover.Button>
+
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-150"
+        enterFrom="opacity-0 translate-y-1"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition ease-in duration-100"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-1"
+      >
+        <Popover.Panel className="absolute z-10 w-56 px-3 py-2 mt-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+          {text}
+        </Popover.Panel>
+      </Transition>
+    </Popover>
+  );
+}
 
 export default function ProductionTracker({ onDataUpdate }) {
   const [flocks, setFlocks] = useState([]);
@@ -108,102 +135,81 @@ export default function ProductionTracker({ onDataUpdate }) {
       {/* Form */}
       <motion.form
         onSubmit={handleSubmit}
-        className="bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl space-y-6 transition-colors"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
+        className="bg-white dark:bg-white/5 shadow-inner p-6 rounded-2xl space-y-6 transition-colors"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-          {/* Flock Select */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Flock
-              <span
-                className="ml-1 text-gray-500 cursor-pointer"
-                title="Select the flock for which you are recording egg production."
-                aria-label="Help: Select flock"
+        <div className="bg-white/10 dark:bg-gray-800 p-4 rounded-2xl shadow-inner space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            {/* Flock Select */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Flock <Tooltip text="Select the flock for which you are recording egg production." />
+              </label>
+              <select
+                name="flockId"
+                value={form.flockId}
+                onChange={handleChange}
+                className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
               >
-                ℹ️
-              </span>
-            </label>
-            <select
-              name="flockId"
-              value={form.flockId}
-              onChange={handleChange}
-              className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
-            >
-              <option value="">Select Flock</option>
-              {flocks.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)
-                </option>
-              ))}
-            </select>
+                <option value="">Select Flock</option>
+                {flocks.map(f => (
+                  <option key={f.id} value={f.id}>
+                    {f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Egg Count */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Egg Count <Tooltip text="Enter the number of eggs collected for the selected flock." />
+              </label>
+              <input
+                type="number"
+                name="count"
+                value={form.count}
+                onChange={handleChange}
+                placeholder="Egg Count"
+                className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
+              />
+            </div>
+
+            {/* Date */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Date <Tooltip text="Pick the date for which this egg production record applies." />
+              </label>
+              <input
+                type="date"
+                name="date"
+                value={form.date}
+                onChange={handleChange}
+                className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
+              />
+            </div>
           </div>
 
-          {/* Count Input */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Egg Count
-              <span
-                className="ml-1 text-gray-500 cursor-pointer"
-                title="Enter the number of eggs collected for the selected flock."
-                aria-label="Help: Egg count"
-              >
-                ℹ️
-              </span>
-            </label>
-            <input
-              type="number"
-              name="count"
-              value={form.count}
-              onChange={handleChange}
-              placeholder="Egg Count"
-              className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-
-          {/* Date Input */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Date
-              <span
-                className="ml-1 text-gray-500 cursor-pointer"
-                title="Pick the date for which this egg production record applies."
-                aria-label="Help: Date selection"
-              >
-                ℹ️
-              </span>
-            </label>
-            <input
-              type="date"
-              name="date"
-              value={form.date}
-              onChange={handleChange}
-              className="w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="submit"
-            className={`${baseBtn} bg-green-600 hover:bg-green-700 focus:ring-green-400`}
-          >
-            {form.id ? "✏️ Update" : "➕ Add"}
-          </button>
-          {form.id && (
+          {/* Buttons */}
+          <div className="flex flex-wrap gap-2">
             <button
-              type="button"
-              onClick={resetForm}
-              className={`${baseBtn} bg-gray-500 hover:bg-gray-600 focus:ring-gray-400`}
+              type="submit"
+              className={`${baseBtn} bg-green-600 hover:bg-green-700 focus:ring-green-400`}
             >
-              Cancel
+              {form.id ? "✏️ Update" : "➕ Add"}
             </button>
-          )}
+            {form.id && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className={`${baseBtn} bg-gray-500 hover:bg-gray-600 focus:ring-gray-400`}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
       </motion.form>
+
 
       {/* Table / Mobile Cards */}
       <motion.div
