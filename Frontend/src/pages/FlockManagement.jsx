@@ -1,75 +1,64 @@
-// Frontend/src/pages/FlockManagement.jsx
+// src/pages/FlockManagement.jsx
 import { useEffect, useState } from "react";
-import { api } from "../utils/api";
+import { apiClient } from "../utils/apiClient"; // <-- shared API client (must exist and use Render URL)
 import { getCurrentUser } from "../utils/login";
-import { motion, AnimatePresence } from "framer-motion"; // 🆕 for animation
-import { InformationCircleIcon } from "@heroicons/react/24/outline"; // 🆕 for tooltips
-
-// 🆕 Tooltip Component
-const Tooltip = ({ text }) => (
-  <span className="relative group cursor-pointer inline-flex items-center">
-    <InformationCircleIcon className="h-4 w-4 ml-1 text-gray-500 dark:text-gray-400" />
-    <motion.span
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.2 }}
-      className="absolute left-1/2 -translate-x-1/2 -top-8 w-max max-w-xs px-2 py-1 rounded-md 
-                 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 text-xs shadow-md 
-                 opacity-0 group-hover:opacity-100 pointer-events-none"
-    >
-      {text}
-    </motion.span>
-  </span>
-);
+import { motion, AnimatePresence } from "framer-motion";
+import TableCard from "../components/TableCard";
+import Tooltip from "../components/Tooltip";
 
 export default function FlockManagement() {
   const userEmail = getCurrentUser();
-
   const [flocks, setFlocks] = useState([]);
   const [newFlock, setNewFlock] = useState({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
   const [editingId, setEditingId] = useState(null);
   const [editedFlock, setEditedFlock] = useState({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
+  const [loading, setLoading] = useState(false);
 
   const fetchFlocks = async () => {
     if (!userEmail) return;
+    setLoading(true);
     try {
-      const res = await api.get("/flocks", { headers: { "X-User-Email": userEmail } });
+      const res = await apiClient.getFlocks();
       setFlocks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch flocks:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (userEmail) fetchFlocks();
+  }, [userEmail]);
+
   const handleAddFlock = async () => {
     if (!userEmail) return alert("User not logged in!");
-
     const finalBirdType = newFlock.birdType === "Other" ? "Other" : newFlock.birdType;
     const payload = {
       birdType: finalBirdType,
-      customBird: newFlock.birdType === "Other" ? newFlock.customBird.trim() : null,
-      numBirds: parseInt(newFlock.numBirds),
-      age: parseInt(newFlock.age),
+      customBird: newFlock.birdType === "Other" ? (newFlock.customBird || null) : null,
+      numBirds: parseInt(newFlock.numBirds, 10) || 0,
+      age: parseInt(newFlock.age, 10) || 0,
     };
-
-    if (!payload.birdType || !payload.numBirds || !payload.age) return;
-
+    if (!payload.birdType || payload.numBirds <= 0 || payload.age < 0) return alert("Please fill valid flock details.");
     try {
-      await api.post("/flocks", payload, { headers: { "X-User-Email": userEmail } });
+      await apiClient.saveFlock(payload);
       setNewFlock({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
       fetchFlocks();
     } catch (err) {
       console.error("Failed to add flock:", err);
+      alert("Failed to add flock.");
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this flock?")) return;
     try {
-      await api.delete(`/flocks/${id}`, { headers: { "X-User-Email": userEmail } });
+      await apiClient.deleteFlock(id);
       fetchFlocks();
     } catch (err) {
       console.error("Failed to delete flock:", err);
+      alert("Failed to delete flock.");
     }
   };
 
@@ -90,44 +79,38 @@ export default function FlockManagement() {
 
   const handleUpdate = async () => {
     if (!userEmail) return alert("User not logged in!");
-
     const finalBirdType = editedFlock.birdType === "Other" ? "Other" : editedFlock.birdType;
     const payload = {
       birdType: finalBirdType,
-      customBird: editedFlock.birdType === "Other" ? editedFlock.customBird.trim() : null,
-      numBirds: parseInt(editedFlock.numBirds),
-      age: parseInt(editedFlock.age),
+      customBird: editedFlock.birdType === "Other" ? (editedFlock.customBird || null) : null,
+      numBirds: parseInt(editedFlock.numBirds, 10) || 0,
+      age: parseInt(editedFlock.age, 10) || 0,
     };
-
-    if (!payload.birdType || !payload.numBirds || !payload.age) return;
-
+    if (!payload.birdType || payload.numBirds <= 0 || payload.age < 0) return alert("Please fill valid flock details.");
     try {
-      await api.put(`/flocks/${editingId}`, payload, { headers: { "X-User-Email": userEmail } });
-      setEditingId(null);
-      setEditedFlock({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
+      await apiClient.updateFlock(editingId, payload);
+      cancelEdit();
       fetchFlocks();
     } catch (err) {
       console.error("Failed to update flock:", err);
+      alert("Failed to update flock.");
     }
   };
-
-  useEffect(() => {
-    if (userEmail) fetchFlocks();
-  }, [userEmail]);
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center">🐓 Flock Management</h1>
 
-      {/* Add Flock Form */}
-      <div className="bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl w-full transition-colors">
+      <div className="bg-white dark:bg-white/5 shadow-lg p-6 rounded-2xl w-full transition-colors">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
-            <label className="font-semibold text-gray-900 dark:text-white">Bird Type<Tooltip text="Select bird type: Broiler, Layer, or Other species" /></label>
+            <label className="font-semibold text-gray-900 dark:text-white">
+              Bird Type <Tooltip text="Select bird type: Broiler, Layer, or Other species" />
+            </label>
             <select
               value={newFlock.birdType}
               onChange={(e) => setNewFlock({ ...newFlock, birdType: e.target.value })}
-              className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:text-white"
             >
               <option value="Broiler">Broiler</option>
               <option value="Layer">Layer</option>
@@ -139,28 +122,32 @@ export default function FlockManagement() {
                 value={newFlock.customBird}
                 onChange={(e) => setNewFlock({ ...newFlock, customBird: e.target.value })}
                 placeholder="Custom name"
-                className="mt-1 w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                className="mt-1 w-full border p-2 rounded dark:bg-gray-800 dark:text-white"
               />
             )}
           </div>
 
           <div>
-            <label className="font-semibold text-gray-900 dark:text-white">Quantity<Tooltip text="Number of birds in this flock" /></label>
+            <label className="font-semibold text-gray-900 dark:text-white">
+              Quantity <Tooltip text="Number of birds in this flock" />
+            </label>
             <input
               type="number"
               value={newFlock.numBirds}
               onChange={(e) => setNewFlock({ ...newFlock, numBirds: e.target.value })}
-              className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="font-semibold text-gray-900 dark:text-white">Age (weeks)<Tooltip text="Enter the flock's age in weeks" /></label>
+            <label className="font-semibold text-gray-900 dark:text-white">
+              Age (weeks) <Tooltip text="Enter the flock's age in weeks" />
+            </label>
             <input
               type="number"
               value={newFlock.age}
               onChange={(e) => setNewFlock({ ...newFlock, age: e.target.value })}
-              className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              className="w-full border p-2 rounded mt-1 dark:bg-gray-800 dark:text-white"
             />
           </div>
 
@@ -175,8 +162,7 @@ export default function FlockManagement() {
         </div>
       </div>
 
-      {/* Flocks Table */}
-      <div className="bg-light-bg dark:bg-dark-card shadow-lg p-6 rounded-2xl overflow-x-auto transition-colors">
+      <TableCard className="overflow-x-auto bg-white dark:bg-white/5 shadow-lg p-6 rounded-2xl transition-colors">
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white text-center">📋 Current Flocks</h2>
         <table className="min-w-full text-left">
           <thead>
@@ -188,99 +174,85 @@ export default function FlockManagement() {
             </tr>
           </thead>
           <tbody>
-            {flocks.length > 0 ? (
+            {loading ? (
+              <tr><td colSpan="4" className="p-4 text-center">Loading...</td></tr>
+            ) : flocks.length === 0 ? (
+              <tr><td colSpan="4" className="p-4 text-center text-gray-500 dark:text-gray-400">No flocks recorded yet</td></tr>
+            ) : (
               flocks.map((flock) =>
                 editingId === flock.id ? (
                   <motion.tr
                     key={flock.id}
-                    initial={{ scale: 0.9, opacity: 0 }}
+                    initial={{ scale: 0.98, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 250, damping: 20 }}
+                    transition={{ duration: 0.15 }}
                     className="border-b dark:border-gray-700"
                   >
-                    <tr key={flock.id} className="border-b dark:border-gray-700">
-                      <td className="p-2">
-                        <select
-                          value={editedFlock.birdType}
-                          onChange={(e) => setEditedFlock({ ...editedFlock, birdType: e.target.value })}
-                          className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
-                        >
-                          <option value="Broiler">Broiler</option>
-                          <option value="Layer">Layer</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        {editedFlock.birdType === "Other" && (
-                          <input
-                            type="text"
-                            value={editedFlock.customBird}
-                            onChange={(e) => setEditedFlock({ ...editedFlock, customBird: e.target.value })}
-                            placeholder="Enter species name"
-                            className="mt-1 w-full border p-1 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                          />
-                        )}
-                      </td>
-                      <td className="p-2">
+                    <td className="p-2">
+                      <select
+                        value={editedFlock.birdType}
+                        onChange={(e) => setEditedFlock({ ...editedFlock, birdType: e.target.value })}
+                        className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
+                      >
+                        <option value="Broiler">Broiler</option>
+                        <option value="Layer">Layer</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      {editedFlock.birdType === "Other" && (
                         <input
-                          type="number"
-                          value={editedFlock.numBirds}
-                          onChange={(e) => setEditedFlock({ ...editedFlock, numBirds: e.target.value })}
-                          className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
+                          type="text"
+                          value={editedFlock.customBird}
+                          onChange={(e) => setEditedFlock({ ...editedFlock, customBird: e.target.value })}
+                          placeholder="Enter species name"
+                          className="mt-1 w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
                         />
-                      </td>
-                      <td className="p-2">
-                        <input
-                          type="number"
-                          value={editedFlock.age}
-                          onChange={(e) => setEditedFlock({ ...editedFlock, age: e.target.value })}
-                          className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
-                        />
-                      </td>
-                      <td className="p-2 flex flex-wrap gap-2">
-                        <button onClick={handleUpdate} className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors">
-                          Save
-                        </button>
-                        <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition-colors">
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                    </motion.tr>
-                    ) : (
-                    <motion.tr
-                      key={flock.id}
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: "spring", stiffness: 250, damping: 20, delay: 0.05 }}
-                      className="border-b dark:border-gray-700"
-                    >
-                      <tr key={flock.id} className="border-b dark:border-gray-700">
-                        <td className="p-2 text-gray-900 dark:text-white">
-                          {flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "-"}
-                        </td>
-                        <td className="p-2 text-gray-900 dark:text-white">{flock.numBirds}</td>
-                        <td className="p-2 text-gray-900 dark:text-white">{flock.age}</td>
-                        <td className="p-2 flex flex-wrap gap-2">
-                          <button onClick={() => startEditing(flock)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition-colors">
-                            Edit
-                          </button>
-                          <button onClick={() => handleDelete(flock.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors">
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    </motion.tr>
-                    )
-                    )
-                    ) : (
-                    <tr>
-                      <td colSpan="4" className="p-4 text-center text-gray-500 dark:text-gray-400">
-                        No flocks recorded yet
-                      </td>
-                    </tr>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editedFlock.numBirds}
+                        onChange={(e) => setEditedFlock({ ...editedFlock, numBirds: e.target.value })}
+                        className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editedFlock.age}
+                        onChange={(e) => setEditedFlock({ ...editedFlock, age: e.target.value })}
+                        className="w-full border p-1 rounded dark:bg-gray-800 dark:text-white"
+                      />
+                    </td>
+                    <td className="p-2 flex gap-2">
+                      <button onClick={handleUpdate} className="bg-green-600 text-white px-3 py-1 rounded">Save</button>
+                      <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded">Cancel</button>
+                    </td>
+                  </motion.tr>
+                ) : (
+                  <motion.tr
+                    key={flock.id}
+                    initial={{ scale: 0.98, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.15 }}
+                    className="border-b dark:border-gray-700"
+                  >
+                    <td className="p-2 text-gray-900 dark:text-white">
+                      {flock.birdType === "Other" ? flock.customBird || "Other" : flock.birdType}
+                    </td>
+                    <td className="p-2 text-gray-900 dark:text-white">{flock.numBirds}</td>
+                    <td className="p-2 text-gray-900 dark:text-white">{flock.age}</td>
+                    <td className="p-2 flex gap-2">
+                      <button onClick={() => startEditing(flock)} className="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+                      <button onClick={() => handleDelete(flock.id)} className="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+                    </td>
+                  </motion.tr>
+                )
+              )
             )}
-                  </tbody>
+          </tbody>
         </table>
-      </div>
+        </TableCard>
     </div>
   );
 }

@@ -7,96 +7,49 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/feedRecords")
+@RequestMapping("/api/feed-records")
+@CrossOrigin(origins = "https://pavankasala.github.io") // More specific CORS
 public class FeedRecordController {
 
     @Autowired
-    private FeedRecordRepository feedRecordRepository;
+    private FeedRecordRepository repo;
 
-    // ✅ Get all feed records for a user
     @GetMapping
-    public List<FeedRecord> getFeedRecords(@RequestHeader("X-User-Email") String userEmail) {
-        return feedRecordRepository.findByUserEmail(userEmail);
+    public List<FeedRecord> getAllRecords(@RequestHeader("X-User-Email") String userEmail) {
+        return repo.findByUserEmail(userEmail);
     }
 
-    // ✅ Add new feed record
     @PostMapping
-    public FeedRecord addFeedRecord(
-            @RequestHeader("X-User-Email") String userEmail,
-            @RequestBody FeedRecord feedRecord) {
-
-        if (feedRecord.getNumBirds() <= 0 || feedRecord.getTotalFeedGiven() <= 0 || feedRecord.getDaysLasted() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid input values.");
-        }
-
-        // Assign next prediction number
-        Integer maxPrediction = feedRecordRepository.findMaxPredictionNumberByUserEmail(userEmail).orElse(0);
-        feedRecord.setPredictionNumber(maxPrediction + 1);
-        feedRecord.setUserEmail(userEmail);
-
-        // Set date to today if not provided
-        if (feedRecord.getDate() == null) {
-            feedRecord.setDate(LocalDate.now());
-        }
-
-        // Calculate feedPerDay & feedPerBird
-        feedRecord.setFeedPerDay(feedRecord.getTotalFeedGiven() / feedRecord.getDaysLasted());
-        feedRecord.setFeedPerBird(feedRecord.getTotalFeedGiven() / feedRecord.getNumBirds() / feedRecord.getDaysLasted());
-
-        // Save record
-        return feedRecordRepository.save(feedRecord);
+    public FeedRecord createRecord(@RequestBody FeedRecord record, @RequestHeader("X-User-Email") String userEmail) {
+        record.setUserEmail(userEmail);
+        return repo.save(record);
     }
 
-    // ✅ Update feed record
     @PutMapping("/{id}")
-    public FeedRecord updateFeedRecord(
-            @RequestHeader("X-User-Email") String userEmail,
-            @PathVariable Long id,
-            @RequestBody FeedRecord updatedRecord) {
-
-        return feedRecordRepository.findById(id).map(record -> {
+    public FeedRecord updateRecord(@PathVariable Long id, @RequestBody FeedRecord updatedRecord, @RequestHeader("X-User-Email") String userEmail) {
+        return repo.findById(id).map(record -> {
             if (!record.getUserEmail().equals(userEmail)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this record.");
             }
-
-            if (updatedRecord.getNumBirds() <= 0 || updatedRecord.getTotalFeedGiven() <= 0 || updatedRecord.getDaysLasted() <= 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid input values.");
-            }
-
-            // Keep flockId & predictionNumber unchanged
+            record.setBirdName(updatedRecord.getBirdName());
             record.setNumBirds(updatedRecord.getNumBirds());
-            record.setBirdType(updatedRecord.getBirdType());
-            record.setCustomBird(updatedRecord.getBirdType().equals("other") ? updatedRecord.getCustomBird() : "");
-            record.setBirdName(updatedRecord.getBirdType().equals("other") ? updatedRecord.getCustomBird() : updatedRecord.getBirdType());
             record.setTotalFeedGiven(updatedRecord.getTotalFeedGiven());
-            record.setUnit(updatedRecord.getUnit());
             record.setDaysLasted(updatedRecord.getDaysLasted());
-            record.setFeedPerDay(updatedRecord.getFeedPerDay());
-            record.setFeedPerBird(updatedRecord.getFeedPerBird());
-            record.setDate(updatedRecord.getDate());
-
-            return feedRecordRepository.save(record);
+            return repo.save(record);
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Record not found"));
     }
 
-    // ✅ Delete feed record
     @DeleteMapping("/{id}")
-    public String deleteFeedRecord(
-            @RequestHeader("X-User-Email") String userEmail,
-            @PathVariable Long id) {
-
-        FeedRecord record = feedRecordRepository.findById(id)
+    public void deleteRecord(@PathVariable Long id, @RequestHeader("X-User-Email") String userEmail) {
+        FeedRecord record = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Record not found"));
 
         if (!record.getUserEmail().equals(userEmail)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this record.");
         }
-
-        feedRecordRepository.delete(record);
-        return "Feed record deleted successfully!";
+        repo.deleteById(id);
     }
 }

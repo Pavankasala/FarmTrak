@@ -1,3 +1,4 @@
+// src/main/java/com/farmtrak/controllers/FlockController.java
 package com.farmtrak.controllers;
 
 import com.farmtrak.model.Flock;
@@ -12,31 +13,26 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/flocks")
+@CrossOrigin(origins = "https://pavankasala.github.io")
 public class FlockController {
 
     @Autowired
     private FlockRepository flockRepository;
 
-    // 🔹 Get all flocks for a user
     @GetMapping
     public List<Flock> getFlocks(@RequestHeader("X-User-Email") String userEmail) {
         return flockRepository.findByUserEmail(userEmail);
     }
 
-    // 🔹 Add new flock
     @PostMapping
     public Flock addFlock(@RequestHeader("X-User-Email") String userEmail, @RequestBody Flock flock) {
         flock.setUserEmail(userEmail);
-
-        // Auto-set startDate if not provided
         if (flock.getStartDate() == null) {
             flock.setStartDate(LocalDate.now());
         }
-
         return flockRepository.save(flock);
     }
 
-    // 🔹 Update flock
     @PutMapping("/{id}")
     public Flock updateFlock(
             @RequestHeader("X-User-Email") String userEmail,
@@ -47,22 +43,17 @@ public class FlockController {
             if (!flock.getUserEmail().equals(userEmail)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed");
             }
-
             flock.setAge(updatedFlock.getAge());
             flock.setNumBirds(updatedFlock.getNumBirds());
             flock.setBirdType(updatedFlock.getBirdType());
             flock.setCustomBird(updatedFlock.getCustomBird());
-
-            // Only update startDate if a new one is provided
             if (updatedFlock.getStartDate() != null) {
                 flock.setStartDate(updatedFlock.getStartDate());
             }
-
             return flockRepository.save(flock);
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flock not found"));
     }
 
-    // 🔹 Delete flock
     @DeleteMapping("/{id}")
     public String deleteFlock(@RequestHeader("X-User-Email") String userEmail, @PathVariable Long id) {
         Flock flock = flockRepository.findById(id)

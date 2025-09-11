@@ -1,9 +1,7 @@
-//Backend\src\main\java\com\farmtrak\model\EggProduction.java
 package com.farmtrak.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
@@ -16,6 +14,7 @@ public class EggProduction {
     private Long flockId;
 
     private int count;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
 

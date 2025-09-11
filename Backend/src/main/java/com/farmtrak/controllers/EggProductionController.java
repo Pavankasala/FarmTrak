@@ -1,4 +1,5 @@
 package com.farmtrak.controllers;
+
 import com.farmtrak.model.EggProduction;
 import com.farmtrak.repository.EggProductionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/eggs")
+@CrossOrigin(origins = "https://pavankasala.github.io") // allow your deployed frontend
 public class EggProductionController {
 
     private final EggProductionRepository eggRepo;
@@ -34,7 +36,8 @@ public class EggProductionController {
         }
         eggProduction.setUserEmail(userEmail);
 
-        Optional<EggProduction> existing = eggRepo.findByFlockIdAndDateAndUserEmail(eggProduction.getFlockId(), eggProduction.getDate(), userEmail);
+        Optional<EggProduction> existing = eggRepo.findByFlockIdAndDateAndUserEmail(
+                eggProduction.getFlockId(), eggProduction.getDate(), userEmail);
 
         EggProduction result;
         if (existing.isPresent()) {
@@ -67,7 +70,6 @@ public class EggProductionController {
                     prod.setFlockId(updated.getFlockId());
                     prod.setCount(updated.getCount());
                     prod.setDate(updated.getDate());
-                    // Do not allow userEmail to be changed
                     return eggRepo.save(prod);
                 })
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "EggProduction not found"));
@@ -92,10 +94,11 @@ public class EggProductionController {
     public List<EggProduction> getAll(@RequestHeader("X-User-Email") String userEmail) {
         return eggRepo.findByUserEmail(userEmail);
     }
-        // Check if record exists for given flockId + date + userEmail
+
+    // Check if record exists for given flockId + date + userEmail
     @GetMapping("/exists")
     public boolean checkIfExists(@RequestParam Long flockId, @RequestParam String date,
-                                @RequestHeader("X-User-Email") String userEmail) {
+                                 @RequestHeader("X-User-Email") String userEmail) {
         LocalDate localDate = LocalDate.parse(date);
         return eggRepo.findByFlockIdAndDateAndUserEmail(flockId, localDate, userEmail).isPresent();
     }

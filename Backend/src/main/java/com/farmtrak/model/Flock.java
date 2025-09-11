@@ -10,13 +10,12 @@ public class Flock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int numBirds;       // Number of birds
-    private String birdType;    // e.g., Broiler, Layer
-    private String customBird;  // "other" case
-    private LocalDate startDate; // When flock started
-    private int age;            // Age in days/weeks
-    private String userEmail;   // User who owns this flock
-
+    private int numBirds;
+    private String birdType;
+    private String customBird;
+    private LocalDate startDate;
+    private int age;
+    private String userEmail;
     // ----- Getters & Setters -----
     public Long getId() {
         return id;

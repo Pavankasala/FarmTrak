@@ -1,37 +1,34 @@
-// src/components/LoginModal.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { api } from "../utils/api";
+import { apiClient } from "../utils/apiClient";
+import { logIn } from "../utils/login";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
-  // ✅ Close modal on ESC key
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [verifyCode, setVerifyCode] = useState("");
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
+
+  // Close modal on ESC key
   useEffect(() => {
     const handleEsc = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // ✅ Handle Google success
   const handleGoogleSuccess = async (credentialResponse) => {
     if (!credentialResponse?.credential) return;
 
     try {
-      const res = await api.post("/google-login", {
-        token: credentialResponse.credential,
-      });
+      const res = await apiClient.googleLogin(credentialResponse.credential);
 
       if (res.data.status === "success") {
-        // Save session in localStorage
-        localStorage.setItem("userEmail", res.data.email);
-        localStorage.setItem("token", res.data.token);
-
-        // Notify parent
+        logIn(res.data.token, res.data.email);
         onSuccess({
           token: res.data.token,
           email: res.data.email,
         });
-
         onClose();
       } else {
         alert("Google login failed: " + res.data.message);
@@ -39,6 +36,31 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     } catch (err) {
       console.error("Login error:", err);
       alert("Login error: " + err.message);
+    }
+  };
+
+  const handleSendVerification = async () => {
+    try {
+      await apiClient.sendVerification(email, username);
+      setIsVerificationSent(true);
+    } catch (err) {
+      console.error("Verification sending error:", err);
+      alert("Failed to send verification code");
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    try {
+      const res = await apiClient.verifyEmail(email, verifyCode);
+      if (res.data.success) {
+        alert("Email verified successfully!");
+        onClose();
+      } else {
+        alert("Invalid verification code.");
+      }
+    } catch (err) {
+      console.error("Verification failed:", err);
+      alert("Verification failed");
     }
   };
 
@@ -63,20 +85,63 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
             <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100 text-center">
               Welcome Back 👋
             </h2>
+
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
-              Sign in with Google to access your FarmTrak dashboard.
+              Sign in with Google or verify your email manually.
             </p>
 
-            {/* ✅ Google Login Button */}
+            {/* Google Login */}
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => alert("Google login failed")}
               ux_mode="popup"
             />
 
+            {/* Manual Email Verification */}
+            {!isVerificationSent ? (
+              <>
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="my-2 p-2 w-full rounded border"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Your username"
+                  className="my-2 p-2 w-full rounded border"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                <button
+                  onClick={handleSendVerification}
+                  className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  Send Verification Code
+                </button>
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="Enter verification code"
+                  className="my-2 p-2 w-full rounded border"
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value)}
+                />
+                <button
+                  onClick={handleVerifyEmail}
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg"
+                >
+                  Verify Email
+                </button>
+              </>
+            )}
+
             <button
               onClick={onClose}
-              className="mt-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-primaryHover dark:hover:bg-dark-primaryHover transition"
+              className="mt-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded-lg"
             >
               Cancel
             </button>

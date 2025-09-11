@@ -1,11 +1,10 @@
 // src/pages/ExpenseTracker.jsx
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_BASE_URL } from "../utils/api";
-import { getCurrentUser } from "../utils/login";
+import { apiClient } from "../utils/apiClient";
+import { getCurrentUser } from "../utils/login"; // keep your existing helper
 import { motion, AnimatePresence } from "framer-motion";
+import TableCard from "../components/TableCard";
 
-// ✅ Simple Tooltip Component
 function Tooltip({ text }) {
   return (
     <span className="relative group cursor-pointer ml-1">
@@ -26,15 +25,10 @@ export default function ExpenseTracker() {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [editId, setEditId] = useState(null);
-
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Tutorial banner only once
   useEffect(() => {
-    const seen = localStorage.getItem("expenseTutorialSeen");
-    if (!seen) {
-      setShowTutorial(true);
-    }
+    if (!localStorage.getItem("expenseTutorialSeen")) setShowTutorial(true);
   }, []);
 
   const dismissTutorial = () => {
@@ -42,12 +36,9 @@ export default function ExpenseTracker() {
     setShowTutorial(false);
   };
 
-  // Fetch expenses
   const fetchExpenses = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/expenses`, {
-        headers: { "X-User-Email": userEmail },
-      });
+      const res = await apiClient.getExpenses();
       setExpenses(res.data || []);
     } catch (err) {
       console.error("Error fetching expenses:", err);
@@ -81,19 +72,16 @@ export default function ExpenseTracker() {
 
     try {
       if (editId) {
-        const res = await axios.put(`${API_BASE_URL}/expenses/${editId}`, payload, {
-          headers: { "X-User-Email": userEmail },
-        });
+        const res = await apiClient.updateExpense(editId, payload);
         setExpenses(expenses.map((e) => (e.id === editId ? res.data : e)));
       } else {
-        const res = await axios.post(`${API_BASE_URL}/expenses`, payload, {
-          headers: { "X-User-Email": userEmail },
-        });
+        const res = await apiClient.saveExpense(payload);
         setExpenses([res.data, ...expenses]);
       }
       resetForm();
     } catch (err) {
       console.error("Error saving expense:", err);
+      alert("Failed to save expense.");
     }
   };
 
@@ -107,12 +95,11 @@ export default function ExpenseTracker() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this expense?")) return;
     try {
-      await axios.delete(`${API_BASE_URL}/expenses/${id}`, {
-        headers: { "X-User-Email": userEmail },
-      });
+      await apiClient.deleteExpense(id);
       setExpenses(expenses.filter((e) => e.id !== id));
     } catch (err) {
       console.error("Error deleting expense:", err);
+      alert("Failed to delete expense.");
     }
   };
 
@@ -120,7 +107,6 @@ export default function ExpenseTracker() {
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💰 Expense Tracker</h1>
 
-      {/* Tutorial banner */}
       <AnimatePresence>
         {showTutorial && (
           <motion.div
@@ -130,9 +116,7 @@ export default function ExpenseTracker() {
             className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-xl w-full shadow"
           >
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              📖 Track all your poultry-related expenses here.
-              Choose a category, enter the amount, and add notes if needed.
-              Records will help you calculate profits later.
+              📖 Track all poultry-related expenses. Records help you calculate profits.
             </p>
             <button
               onClick={dismissTutorial}
@@ -144,20 +128,11 @@ export default function ExpenseTracker() {
         )}
       </AnimatePresence>
 
-      {/* Form */}
-      <motion.div
-        className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 250, damping: 20 }}
-        whileHover={{ scale: 1.02 }}
-      ></motion.div>
       <div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Category */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Category <Tooltip text="Select the type of expense (Feed, Medicine, Maintenance, etc.)" />
+              Category <Tooltip text="Select expense type" />
             </label>
             <select
               value={category}
@@ -170,59 +145,50 @@ export default function ExpenseTracker() {
               <option value="other">Other</option>
             </select>
           </div>
-
-          {/* Amount */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Amount (₹) <Tooltip text="Enter the expense amount in Indian Rupees." />
+              Amount (₹) <Tooltip text="Enter amount" />
             </label>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount"
               className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
-              placeholder="Enter expense amount"
             />
           </div>
         </div>
 
-        {/* Note */}
         <div>
           <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-            Note (optional) <Tooltip text="Add extra details like shop name or bill reference." />
+            Note <Tooltip text="Optional details" />
           </label>
           <input
             type="text"
             value={note}
             onChange={(e) => setNote(e.target.value)}
+            placeholder="Enter note"
             className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white"
-            placeholder="Enter details"
           />
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-2">
           <button
             onClick={saveExpense}
             className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow"
           >
-            {editId ? "Update Expense" : "Save Expense"}
+            {editId ? "Update" : "Save"}
           </button>
           {editId && (
-            <button
-              onClick={resetForm}
-              className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow"
-            >
+            <button onClick={resetForm} className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow">
               Cancel
             </button>
           )}
         </div>
       </div>
 
-      {/* Expense Records */}
-      
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">📋 Expense Records</h2>
-      <div className="overflow-x-auto w-full">
+      <TableCard className="overflow-x-auto w-full p-0">
         <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-800 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
@@ -249,16 +215,10 @@ export default function ExpenseTracker() {
                     <td className="px-4 py-2">₹{e.amount.toFixed(2)}</td>
                     <td className="px-4 py-2">{e.note || "-"}</td>
                     <td className="px-4 py-2 flex gap-2 flex-wrap">
-                      <button
-                        onClick={() => handleEdit(e)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                      >
+                      <button onClick={() => handleEdit(e)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
                         Edit
                       </button>
-                      <button
-                        onClick={() => handleDelete(e.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                      >
+                      <button onClick={() => handleDelete(e.id)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">
                         Delete
                       </button>
                     </td>
@@ -266,10 +226,7 @@ export default function ExpenseTracker() {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="5"
-                    className="px-4 py-4 text-center text-gray-500 dark:text-gray-400"
-                  >
+                  <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
                     No expenses recorded yet
                   </td>
                 </tr>
@@ -277,7 +234,7 @@ export default function ExpenseTracker() {
             </AnimatePresence>
           </tbody>
         </table>
-      </div>
+      </TableCard>
     </div>
   );
 }
