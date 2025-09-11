@@ -17,7 +17,6 @@ function Tooltip({ text }) {
 }
 
 export default function FeedPredictor() {
-  const userEmail = getCurrentUser();
   const [birdType, setBirdType] = useState("broiler");
   const [customBird, setCustomBird] = useState("");
   const [numBirds, setNumBirds] = useState("");
@@ -27,6 +26,7 @@ export default function FeedPredictor() {
   const [resultUnit, setResultUnit] = useState("g");
   const [result, setResult] = useState(null);
   const [records, setRecords] = useState([]);
+  const [editingId, setEditingId] = useState(null); // track editing record id
 
   const fetchRecords = async () => {
     try {
@@ -46,12 +46,12 @@ export default function FeedPredictor() {
     if (!numBirds || !totalFeedGiven || !daysLasted) return;
 
     let total = parseFloat(totalFeedGiven);
-    if (feedUnit === "kg") total *= 1000; // convert to grams
+    if (feedUnit === "kg") total *= 1000;
 
     const perDay = total / parseFloat(daysLasted);
     const perBird = perDay / parseFloat(numBirds);
 
-    let displayTotal = total / parseFloat(daysLasted);
+    let displayTotal = perDay;
     let displayPerBird = perBird;
 
     if (resultUnit === "kg") {
@@ -66,6 +66,18 @@ export default function FeedPredictor() {
     });
   };
 
+  const resetForm = () => {
+    setBirdType("broiler");
+    setCustomBird("");
+    setNumBirds("");
+    setTotalFeedGiven("");
+    setFeedUnit("kg");
+    setDaysLasted("10");
+    setResultUnit("g");
+    setResult(null);
+    setEditingId(null);
+  };
+
   const saveRecord = async () => {
     try {
       const payload = {
@@ -74,8 +86,16 @@ export default function FeedPredictor() {
         totalFeedGiven: parseFloat(totalFeedGiven),
         daysLasted: parseInt(daysLasted),
       };
-      await apiClient.saveFeedRecord(payload);
-      fetchRecords();
+
+      if (editingId) {
+        // update existing
+        await apiClient.updateFeedRecord(editingId, payload);
+      } else {
+        // create new
+        await apiClient.saveFeedRecord(payload);
+      }
+      await fetchRecords();
+      resetForm();
     } catch (err) {
       console.error("Error saving record:", err);
     }
@@ -90,6 +110,17 @@ export default function FeedPredictor() {
     }
   };
 
+  const handleEdit = (record) => {
+    setEditingId(record.id);
+    setBirdType(record.birdName === "broiler" || record.birdName === "layer" ? record.birdName : "other");
+    setCustomBird(record.birdName !== "broiler" && record.birdName !== "layer" ? record.birdName : "");
+    setNumBirds(record.numBirds);
+    setTotalFeedGiven(record.totalFeedGiven);
+    setDaysLasted(record.daysLasted);
+    setFeedUnit("kg"); // assume entered in kg, adjust if needed
+    setResultUnit("g");
+  };
+
   useEffect(() => {
     fetchRecords();
   }, []);
@@ -101,6 +132,7 @@ export default function FeedPredictor() {
       </h1>
 
       <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-6">
+        {/* Form Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {/* Bird Type */}
           <div>
@@ -218,8 +250,16 @@ export default function FeedPredictor() {
             onClick={saveRecord}
             className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow"
           >
-            Save Record
+            {editingId ? "Update Record" : "Save Record"}
           </button>
+          {editingId && (
+            <button
+              onClick={resetForm}
+              className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow"
+            >
+              Cancel Edit
+            </button>
+          )}
         </div>
 
         {/* Result Box */}
@@ -253,8 +293,16 @@ export default function FeedPredictor() {
                     <td className="px-4 py-2">{r.feedPerBird.toFixed(2)} {resultUnit}</td>
                     <td className="px-4 py-2">{r.feedPerDay.toFixed(2)} {resultUnit}</td>
                     <td className="px-4 py-2 flex gap-2">
-                      <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                        onClick={() => handleDelete(r.id)}>
+                      <button
+                        onClick={() => handleEdit(r)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(r.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      >
                         Delete
                       </button>
                     </td>
