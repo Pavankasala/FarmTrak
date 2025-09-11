@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
 import { getCurrentUser } from "../utils/login";
-import { motion, AnimatePresence } from "framer-motion";
 
 function Tooltip({ text }) {
   return (
@@ -19,100 +18,291 @@ function Tooltip({ text }) {
 
 export default function FeedPredictor() {
   const userEmail = getCurrentUser();
-  const [flocks, setFlocks] = useState([]);
-  const [selectedFlockId, setSelectedFlockId] = useState("");
-  const [predictedFeed, setPredictedFeed] = useState(null);
-  const [savedRecords, setSavedRecords] = useState([]);
+  const [birdType, setBirdType] = useState("broiler");
+  const [customBird, setCustomBird] = useState("");
+  const [numBirds, setNumBirds] = useState("");
+  const [totalFeedGiven, setTotalFeedGiven] = useState("");
+  const [feedUnit, setFeedUnit] = useState("kg");
+  const [daysLasted, setDaysLasted] = useState("10");
+  const [resultUnit, setResultUnit] = useState("g");
+  const [result, setResult] = useState(null);
+  const [records, setRecords] = useState([]);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await apiClient.getFlocks();
-        setFlocks(res.data || []);
-        const recs = await apiClient.getFeedRecords();
-        setSavedRecords(recs.data || []);
-      } catch (err) {
-        console.error("Error loading feed data:", err);
-      }
-    };
-    load();
-  }, []);
-
-  const handlePredict = () => {
-    if (!selectedFlockId) return alert("Please select a flock");
-    // Simple deterministic calculation for predict demo
-    const pred = (Math.random() * 2 + 0.5).toFixed(2); // kg per bird/day sample
-    setPredictedFeed(pred);
+  // fetch saved records from backend
+  const fetchRecords = async () => {
+    try {
+      const res = await apiClient.get(`/api/feed-records`, {
+        headers: { "X-User-Email": userEmail },
+      });
+      setRecords(res.data);
+    } catch (err) {
+      console.error("Error fetching records:", err);
+    }
   };
 
-  const handleSaveRecord = async () => {
-    if (!predictedFeed || !selectedFlockId) return alert("Predict first");
-    const payload = {
-      flockId: selectedFlockId,
-      predictedFeed: parseFloat(predictedFeed),
-      date: new Date().toISOString().split("T")[0],
-      userEmail,
+  useEffect(() => { fetchRecords(); }, []);
+
+  // --- Calculate ---
+  const calculateResult = () => {
+    if (!numBirds || !totalFeedGiven || !daysLasted) return;
+
+    let total = parseFloat(totalFeedGiven);
+    if (feedUnit === "kg") total = total * 1000; // convert kg → g
+
+    const totalPerDay = total / daysLasted;
+    const perBird = totalPerDay / numBirds;
+
+    let unit = "g";
+    let displayPerBird = perBird;
+    let displayTotal = totalPerDay;
+
+    if (resultUnit === "kg") {
+      displayPerBird = perBird / 1000;
+      displayTotal = totalPerDay / 1000;
+      unit = "kg";
+    }
+
+    setResult({
+      perBird: displayPerBird.toFixed(2),
+      total: displayTotal.toFixed(2),
+      unit,
+    });
+  };
+
+  // --- Save record to backend ---
+  const saveRecord = async () => {
+    if (!result) {
+      calculateResult();
+      if (!result) return;
+    }
+
+    const record = {
+      birdName: birdType === "other" ? customBird : birdType,
+      numBirds: parseInt(numBirds),
+      totalFeedGiven: parseFloat(totalFeedGiven),
+      daysLasted: parseInt(daysLasted),
     };
+
     try {
-      const res = await apiClient.saveFeedRecord(payload);
-      setSavedRecords([res.data, ...savedRecords]);
-      setPredictedFeed(null);
-      setSelectedFlockId("");
+      await apiClient.post(`/api/feed-records`, record, {
+        headers: { "X-User-Email": userEmail },
+      });
+      fetchRecords();
     } catch (err) {
-      console.error("Error saving feed record:", err);
-      alert("Failed to save prediction");
+      console.error("Error saving record:", err);
+    }
+  };
+
+  const deleteRecord = async (id) => {
+    try {
+      await apiClient.delete(`/api/feed-records/${id}`, {
+        headers: { "X-User-Email": userEmail },
+      });
+      fetchRecords();
+    } catch (err) {
+      console.error("Error deleting record:", err);
     }
   };
 
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🐔 Feed Predictor</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        🧠 Feed Predictor
+      </h1>
 
-      <motion.div className="w-full bg-white dark:bg-white/5 p-6 rounded-2xl shadow space-y-6"
-        initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 250, damping: 20 }}>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Select Flock <Tooltip text="Choose a flock to predict feed consumption" />
-        </label>
-        <select value={selectedFlockId} onChange={(e)=>setSelectedFlockId(e.target.value)} className="w-full border rounded p-2 dark:bg-gray-800 dark:text-white">
-          <option value="">-- Select Flock --</option>
-          {flocks.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-        </select>
+      <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-6">
+        {/* Input grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Bird Type */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Bird Type <Tooltip text="Select type of bird (Broiler, Layer, or Other)" />
+            </label>
+            <select
+              value={birdType}
+              onChange={(e) => setBirdType(e.target.value)}
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 
+                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+            >
+              <option value="broiler">Broiler</option>
+              <option value="layer">Layer</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
 
-        <div className="flex gap-2">
-          <button onClick={handlePredict} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow">Predict Feed</button>
-          <button onClick={handleSaveRecord} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save Record</button>
+          {birdType === "other" && (
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                Custom Bird Name <Tooltip text="Enter the bird name if it's not Broiler or Layer" />
+              </label>
+              <input
+                type="text"
+                value={customBird}
+                onChange={(e) => setCustomBird(e.target.value)}
+                placeholder="Enter bird name"
+                className="w-full p-2 border rounded-lg bg-white text-gray-900 
+                  dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              />
+            </div>
+          )}
+
+          {/* Number of Birds */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Number of Birds <Tooltip text="How many birds are in this flock?" />
+            </label>
+            <input
+              type="number"
+              value={numBirds}
+              onChange={(e) => setNumBirds(e.target.value)}
+              placeholder="Enter number of birds"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 
+                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+            />
+          </div>
+
+          {/* Total Feed Given */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Total Feed Given <Tooltip text="Amount of feed provided in total (kg or g)" />
+            </label>
+            <input
+              type="number"
+              value={totalFeedGiven}
+              onChange={(e) => setTotalFeedGiven(e.target.value)}
+              placeholder="Enter feed amount"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 
+                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+            />
+          </div>
+
+          {/* Feed Unit */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Feed Unit <Tooltip text="Select unit of feed (kg or g)" />
+            </label>
+            <select
+              value={feedUnit}
+              onChange={(e) => setFeedUnit(e.target.value)}
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 
+                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+            >
+              <option value="kg">Kilograms</option>
+              <option value="g">Grams</option>
+            </select>
+          </div>
+
+          {/* Days Lasted */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Days Feed Lasted <Tooltip text="Over how many days the feed was consumed" />
+            </label>
+            <input
+              type="number"
+              value={daysLasted}
+              onChange={(e) => setDaysLasted(e.target.value)}
+              placeholder="Enter days"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 
+                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+            />
+          </div>
+
+          {/* Result Unit */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Show Result In <Tooltip text="Choose whether to see results in grams or kilograms" />
+            </label>
+            <select
+              value={resultUnit}
+              onChange={(e) => setResultUnit(e.target.value)}
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 
+                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+            >
+              <option value="kg">Kilograms</option>
+              <option value="g">Grams</option>
+            </select>
+          </div>
         </div>
 
-        {predictedFeed && <div className="mt-4 text-lg font-semibold">Predicted Feed: <span className="text-blue-700">{predictedFeed} kg</span></div>}
-      </motion.div>
+        {/* Buttons */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={calculateResult}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow"
+          >
+            Calculate
+          </button>
+          <button
+            onClick={saveRecord}
+            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow"
+          >
+            Save Record
+          </button>
+        </div>
 
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">📋 Saved Predictions</h2>
-      <div className="overflow-x-auto w-full">
-        <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
-          <thead>
-            <tr className="bg-gray-100 dark:bg-gray-800 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
-              <th className="px-4 py-2">Date</th>
-              <th className="px-4 py-2">Flock</th>
-              <th className="px-4 py-2">Predicted Feed (kg)</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence>
-              {savedRecords.length > 0 ? savedRecords.map(rec => (
-                <motion.tr key={rec.id} initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} className="border-t border-gray-200 dark:border-gray-700">
-                  <td className="px-4 py-2">{rec.date}</td>
-                  <td className="px-4 py-2">{rec.flockId}</td>
-                  <td className="px-4 py-2">{rec.predictedFeed}</td>
-                  <td className="px-4 py-2">
-                    {/* Optionally add edit/delete using apiClient.updateFeedRecord/deleteFeedRecord */}
+        {/* Result Box */}
+        {result && (
+          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded">
+            ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
+          </div>
+        )}
+
+        {/* Records Table */}
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">
+          📋 Saved Records
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+            <thead>
+              <tr className="bg-gray-100 dark:bg-gray-700 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
+                <th className="px-4 py-2">ID</th>
+                <th className="px-4 py-2">Bird</th>
+                <th className="px-4 py-2">Per Bird/Day</th>
+                <th className="px-4 py-2">Total/Day</th>
+                <th className="px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.length > 0 ? (
+                records.map((r) => {
+                  let total = r.totalFeedGiven;
+                  if (feedUnit === "kg") total = total * 1000;
+                  const perDay = total / r.daysLasted;
+                  const perBird = perDay / r.numBirds;
+
+                  let displayPerBird = resultUnit === "kg" ? perBird / 1000 : perBird;
+                  let displayTotal = resultUnit === "kg" ? perDay / 1000 : perDay;
+
+                  return (
+                    <tr key={r.id} className="border-t border-gray-200 dark:border-gray-600">
+                      <td className="px-4 py-2">{r.id}</td>
+                      <td className="px-4 py-2">{r.birdName}</td>
+                      <td className="px-4 py-2">{displayPerBird.toFixed(2)} {resultUnit}</td>
+                      <td className="px-4 py-2">{displayTotal.toFixed(2)} {resultUnit}</td>
+                      <td className="px-4 py-2 flex gap-2">
+                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteRecord(r.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+                    No records found
                   </td>
-                </motion.tr>
-              )) : <tr><td colSpan="4" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No predictions saved yet</td></tr>}
-            </AnimatePresence>
-          </tbody>
-        </table>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
