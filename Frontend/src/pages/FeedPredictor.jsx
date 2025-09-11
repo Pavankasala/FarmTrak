@@ -28,81 +28,71 @@ export default function FeedPredictor() {
   const [result, setResult] = useState(null);
   const [records, setRecords] = useState([]);
 
-  // fetch saved records from backend
   const fetchRecords = async () => {
     try {
-      const res = await apiClient.get(`/api/feed-records`, {
-        headers: { "X-User-Email": userEmail },
-      });
-      setRecords(res.data);
+      const res = await apiClient.getFeedRecords();
+      const processed = res.data.map((r) => ({
+        ...r,
+        feedPerDay: r.totalFeedGiven / r.daysLasted,
+        feedPerBird: r.totalFeedGiven / r.numBirds / r.daysLasted,
+      }));
+      setRecords(processed);
     } catch (err) {
       console.error("Error fetching records:", err);
     }
   };
 
-  useEffect(() => { fetchRecords(); }, []);
-
-  // --- Calculate ---
   const calculateResult = () => {
     if (!numBirds || !totalFeedGiven || !daysLasted) return;
 
     let total = parseFloat(totalFeedGiven);
-    if (feedUnit === "kg") total = total * 1000; // convert kg → g
+    if (feedUnit === "kg") total *= 1000; // convert to grams
 
-    const totalPerDay = total / daysLasted;
-    const perBird = totalPerDay / numBirds;
+    const perDay = total / parseFloat(daysLasted);
+    const perBird = perDay / parseFloat(numBirds);
 
-    let unit = "g";
+    let displayTotal = total / parseFloat(daysLasted);
     let displayPerBird = perBird;
-    let displayTotal = totalPerDay;
 
     if (resultUnit === "kg") {
-      displayPerBird = perBird / 1000;
-      displayTotal = totalPerDay / 1000;
-      unit = "kg";
+      displayTotal /= 1000;
+      displayPerBird /= 1000;
     }
 
     setResult({
       perBird: displayPerBird.toFixed(2),
       total: displayTotal.toFixed(2),
-      unit,
+      unit: resultUnit,
     });
   };
 
-  // --- Save record to backend ---
   const saveRecord = async () => {
-    if (!result) {
-      calculateResult();
-      if (!result) return;
-    }
-
-    const record = {
-      birdName: birdType === "other" ? customBird : birdType,
-      numBirds: parseInt(numBirds),
-      totalFeedGiven: parseFloat(totalFeedGiven),
-      daysLasted: parseInt(daysLasted),
-    };
-
     try {
-      await apiClient.post(`/api/feed-records`, record, {
-        headers: { "X-User-Email": userEmail },
-      });
+      const payload = {
+        birdName: birdType === "other" ? customBird : birdType,
+        numBirds: parseInt(numBirds),
+        totalFeedGiven: parseFloat(totalFeedGiven),
+        daysLasted: parseInt(daysLasted),
+      };
+      await apiClient.saveFeedRecord(payload);
       fetchRecords();
     } catch (err) {
       console.error("Error saving record:", err);
     }
   };
 
-  const deleteRecord = async (id) => {
+  const handleDelete = async (id) => {
     try {
-      await apiClient.delete(`/api/feed-records/${id}`, {
-        headers: { "X-User-Email": userEmail },
-      });
+      await apiClient.deleteFeedRecord(id);
       fetchRecords();
     } catch (err) {
       console.error("Error deleting record:", err);
     }
   };
+
+  useEffect(() => {
+    fetchRecords();
+  }, []);
 
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
@@ -111,7 +101,6 @@ export default function FeedPredictor() {
       </h1>
 
       <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-6">
-        {/* Input grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {/* Bird Type */}
           <div>
@@ -121,8 +110,7 @@ export default function FeedPredictor() {
             <select
               value={birdType}
               onChange={(e) => setBirdType(e.target.value)}
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 
-                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
             >
               <option value="broiler">Broiler</option>
               <option value="layer">Layer</option>
@@ -140,8 +128,7 @@ export default function FeedPredictor() {
                 value={customBird}
                 onChange={(e) => setCustomBird(e.target.value)}
                 placeholder="Enter bird name"
-                className="w-full p-2 border rounded-lg bg-white text-gray-900 
-                  dark:bg-gray-800 dark:text-white dark:border-gray-600"
+                className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
               />
             </div>
           )}
@@ -156,8 +143,7 @@ export default function FeedPredictor() {
               value={numBirds}
               onChange={(e) => setNumBirds(e.target.value)}
               placeholder="Enter number of birds"
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 
-                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
             />
           </div>
 
@@ -171,8 +157,7 @@ export default function FeedPredictor() {
               value={totalFeedGiven}
               onChange={(e) => setTotalFeedGiven(e.target.value)}
               placeholder="Enter feed amount"
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 
-                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
             />
           </div>
 
@@ -184,8 +169,7 @@ export default function FeedPredictor() {
             <select
               value={feedUnit}
               onChange={(e) => setFeedUnit(e.target.value)}
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 
-                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
             >
               <option value="kg">Kilograms</option>
               <option value="g">Grams</option>
@@ -202,8 +186,7 @@ export default function FeedPredictor() {
               value={daysLasted}
               onChange={(e) => setDaysLasted(e.target.value)}
               placeholder="Enter days"
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 
-                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
             />
           </div>
 
@@ -215,8 +198,7 @@ export default function FeedPredictor() {
             <select
               value={resultUnit}
               onChange={(e) => setResultUnit(e.target.value)}
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 
-                dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
             >
               <option value="kg">Kilograms</option>
               <option value="g">Grams</option>
@@ -264,35 +246,20 @@ export default function FeedPredictor() {
             </thead>
             <tbody>
               {records.length > 0 ? (
-                records.map((r) => {
-                  let total = r.totalFeedGiven;
-                  if (feedUnit === "kg") total = total * 1000;
-                  const perDay = total / r.daysLasted;
-                  const perBird = perDay / r.numBirds;
-
-                  let displayPerBird = resultUnit === "kg" ? perBird / 1000 : perBird;
-                  let displayTotal = resultUnit === "kg" ? perDay / 1000 : perDay;
-
-                  return (
-                    <tr key={r.id} className="border-t border-gray-200 dark:border-gray-600">
-                      <td className="px-4 py-2">{r.id}</td>
-                      <td className="px-4 py-2">{r.birdName}</td>
-                      <td className="px-4 py-2">{displayPerBird.toFixed(2)} {resultUnit}</td>
-                      <td className="px-4 py-2">{displayTotal.toFixed(2)} {resultUnit}</td>
-                      <td className="px-4 py-2 flex gap-2">
-                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => deleteRecord(r.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                records.map((r) => (
+                  <tr key={r.id} className="border-t border-gray-200 dark:border-gray-600">
+                    <td className="px-4 py-2">{r.id}</td>
+                    <td className="px-4 py-2">{r.birdName}</td>
+                    <td className="px-4 py-2">{r.feedPerBird.toFixed(2)} {resultUnit}</td>
+                    <td className="px-4 py-2">{r.feedPerDay.toFixed(2)} {resultUnit}</td>
+                    <td className="px-4 py-2 flex gap-2">
+                      <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                        onClick={() => handleDelete(r.id)}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
               ) : (
                 <tr>
                   <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
