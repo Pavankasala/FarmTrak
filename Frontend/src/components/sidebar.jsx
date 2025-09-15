@@ -24,7 +24,7 @@ export default function Sidebar() {
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-indigo-600 text-white shadow-lg"
         onClick={() => setIsOpen(!isOpen)}
       >
-        ☰
+        &#9776;
       </button>
 
       <AnimatePresence>
@@ -41,19 +41,22 @@ export default function Sidebar() {
             </h2>
             <nav className="flex flex-col space-y-2">
               <NavLink to="/dashboard" end className={navClass}>
-                📋 Dashboard
+                📊 Dashboard
               </NavLink>
               <NavLink to="/dashboard/feed" className={navClass}>
-                🧠 Feed Predictor
+                🌾 Feed Predictor
               </NavLink>
               <NavLink to="/dashboard/flock" className={navClass}>
-                🐓 Flock Management
+                🐔 Flock Management
               </NavLink>
               <NavLink to="/dashboard/eggs" className={navClass}>
                 🥚 Egg Production
               </NavLink>
               <NavLink to="/dashboard/expenses" className={navClass}>
-                💰 Expense Tracker
+                💸 Expense Tracker
+              </NavLink>
+              <NavLink to="/dashboard/revenue" className={navClass}>
+                💰 Revenue Tracker
               </NavLink>
             </nav>
           </motion.aside>

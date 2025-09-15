@@ -90,6 +90,24 @@ function deleteFeedRecord(id) {
   return axios.delete(`${API_BASE_URL}/feed-records/${id}`, { headers: getHeaders() });
 }
 
+// Revenue
+function getRevenue() {
+  return axios.get(`${API_BASE_URL}/revenue`, { headers: getHeaders() });
+}
+
+function saveRevenue(data) {
+  return axios.post(`${API_BASE_URL}/revenue`, data, { headers: getHeaders() });
+}
+
+function updateRevenue(id, data) {
+  return axios.put(`${API_BASE_URL}/revenue/${id}`, data, { headers: getHeaders() });
+}
+
+function deleteRevenue(id) {
+  return axios.delete(`${API_BASE_URL}/revenue/${id}`, { headers: getHeaders() });
+}
+
+
 // ✅ Default export as one object, so existing imports work
 export const apiClient = {
   googleLogin,
@@ -111,4 +129,8 @@ export const apiClient = {
   saveFeedRecord,
   updateFeedRecord,
   deleteFeedRecord,
+  getRevenue,
+  saveRevenue,
+  updateRevenue,
+  deleteRevenue,
 };

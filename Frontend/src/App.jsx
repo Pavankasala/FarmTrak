@@ -8,6 +8,7 @@ import DashboardLayout from "./layout/DashboardLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import ExpenseTracker from "./pages/ExpenseTracker";
 import ProductionTracker from "./pages/ProductionTracker";
+import RevenueTracker from "./pages/RevenueTracker"; // Import the new page
 import ThemeProvider, { useTheme } from "./components/ThemeProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="flock" element={<FlockManagement />} />
               <Route path="expenses" element={<ExpenseTracker />} />
               <Route path="eggs" element={<ProductionTracker />} />
+              <Route path="revenue" element={<RevenueTracker />} /> {/* Add the new route */}
             </Route>
           </Routes>
         </Router>
