@@ -18,7 +18,6 @@ public class EmailService {
     public void sendVerificationEmail(String toEmail, String username, String verifyCode) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(System.getenv("MAIL_USERNAME"));  // must match SMTP username
             message.setTo(toEmail);
             message.setSubject("Your 6-Digit Verification Code");
 
