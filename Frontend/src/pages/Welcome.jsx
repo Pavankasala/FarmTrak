@@ -88,7 +88,7 @@ function Welcome() {
           Welcome to <span className="text-light-primary dark:text-dark-primary">FarmTrak</span>
         </h1>
         <p className="mt-6 text-lg text-light-subtext dark:text-dark-subtext max-w-2xl">
-          Manage your poultry with ease. Track flocks, expenses, health, and more.
+          Manage your poultry with ease. Track flocks, expenses, feed, and more.
         </p>
         <div className="mt-8 flex justify-center gap-x-6">
           <button

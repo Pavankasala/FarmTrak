@@ -2,19 +2,7 @@
 import { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
 import { getCurrentUser } from "../utils/login";
-
-function Tooltip({ text }) {
-  return (
-    <span className="relative group cursor-pointer ml-1">
-      ℹ️
-      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 
-        bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 
-        transition pointer-events-none z-10">
-        {text}
-      </span>
-    </span>
-  );
-}
+import Tooltip from "../components/Tooltip";
 
 export default function FeedPredictor() {
   const [birdType, setBirdType] = useState("broiler");

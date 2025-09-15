@@ -21,12 +21,17 @@ public class AuthService {
     private static final int OTP_EXPIRATION_MINUTES = 10;
 
     public void sendVerification(String email, String username) {
+        if (email == null || email.isEmpty() || username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Email and username must be provided");
+        }
+
         String code = generateNumericOTP();
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(OTP_EXPIRATION_MINUTES);
 
         OTP otp = new OTP(email, code, expiry, false);
         otpRepository.save(otp);
 
+        // Send real email
         emailService.sendVerificationEmail(email, username, code);
     }
 

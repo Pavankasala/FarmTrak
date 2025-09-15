@@ -1,8 +1,7 @@
 // src/pages/FlockManagement.jsx
 import { useEffect, useState } from "react";
-import { apiClient } from "../utils/apiClient"; // <-- shared API client (must exist and use Render URL)
+import { apiClient } from "../utils/apiClient";
 import { getCurrentUser } from "../utils/login";
-import { motion, AnimatePresence } from "framer-motion";
 import TableCard from "../components/TableCard";
 import Tooltip from "../components/Tooltip";
 
@@ -181,13 +180,7 @@ export default function FlockManagement() {
             ) : (
               flocks.map((flock) =>
                 editingId === flock.id ? (
-                  <motion.tr
-                    key={flock.id}
-                    initial={{ scale: 0.98, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.15 }}
-                    className="border-b dark:border-gray-700"
-                  >
+                  <tr key={flock.id} className="border-b dark:border-gray-700">
                     <td className="p-2">
                       <select
                         value={editedFlock.birdType}
@@ -228,15 +221,9 @@ export default function FlockManagement() {
                       <button onClick={handleUpdate} className="bg-green-600 text-white px-3 py-1 rounded">Save</button>
                       <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded">Cancel</button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ) : (
-                  <motion.tr
-                    key={flock.id}
-                    initial={{ scale: 0.98, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.15 }}
-                    className="border-b dark:border-gray-700"
-                  >
+                  <tr key={flock.id} className="border-b dark:border-gray-700">
                     <td className="p-2 text-gray-900 dark:text-white">
                       {flock.birdType === "Other" ? flock.customBird || "Other" : flock.birdType}
                     </td>
@@ -246,13 +233,13 @@ export default function FlockManagement() {
                       <button onClick={() => startEditing(flock)} className="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
                       <button onClick={() => handleDelete(flock.id)} className="bg-red-600 text-white px-3 py-1 rounded">Delete</button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 )
               )
             )}
           </tbody>
         </table>
-        </TableCard>
+      </TableCard>
     </div>
   );
 }

@@ -1,22 +1,10 @@
 // src/pages/ExpenseTracker.jsx
 import { useState, useEffect } from "react";
 import { apiClient } from "../utils/apiClient";
-import { getCurrentUser } from "../utils/login"; // keep your existing helper
+import { getCurrentUser } from "../utils/login";
 import { motion, AnimatePresence } from "framer-motion";
 import TableCard from "../components/TableCard";
-
-function Tooltip({ text }) {
-  return (
-    <span className="relative group cursor-pointer ml-1">
-      ℹ️
-      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 
-        bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 
-        transition pointer-events-none z-10">
-        {text}
-      </span>
-    </span>
-  );
-}
+import Tooltip from "../components/Tooltip"; // ✅ shared tooltip
 
 export default function ExpenseTracker() {
   const userEmail = getCurrentUser();
@@ -61,7 +49,6 @@ export default function ExpenseTracker() {
       alert("Please enter a valid amount.");
       return;
     }
-
     const payload = {
       category,
       amount: parseFloat(amount),
@@ -69,7 +56,6 @@ export default function ExpenseTracker() {
       date: new Date().toISOString().split("T")[0],
       userEmail,
     };
-
     try {
       if (editId) {
         const res = await apiClient.updateExpense(editId, payload);
@@ -105,7 +91,9 @@ export default function ExpenseTracker() {
 
   return (
     <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">💰 Expense Tracker</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        💰 Expense Tracker
+      </h1>
 
       <AnimatePresence>
         {showTutorial && (
@@ -180,14 +168,20 @@ export default function ExpenseTracker() {
             {editId ? "Update" : "Save"}
           </button>
           {editId && (
-            <button onClick={resetForm} className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow">
+            <button
+              onClick={resetForm}
+              className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow"
+            >
               Cancel
             </button>
           )}
         </div>
       </div>
 
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">📋 Expense Records</h2>
+      {/* 📋 Expense Records Table */}
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        📋 Expense Records
+      </h2>
       <TableCard className="overflow-x-auto w-full p-0">
         <table className="min-w-full bg-white dark:bg-white/5 rounded-xl overflow-hidden">
           <thead>
@@ -215,10 +209,16 @@ export default function ExpenseTracker() {
                     <td className="px-4 py-2">₹{e.amount.toFixed(2)}</td>
                     <td className="px-4 py-2">{e.note || "-"}</td>
                     <td className="px-4 py-2 flex gap-2 flex-wrap">
-                      <button onClick={() => handleEdit(e)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
+                      <button
+                        onClick={() => handleEdit(e)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                      >
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(e.id)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">
+                      <button
+                        onClick={() => handleDelete(e.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      >
                         Delete
                       </button>
                     </td>
@@ -226,7 +226,10 @@ export default function ExpenseTracker() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+                  <td
+                    colSpan="5"
+                    className="px-4 py-4 text-center text-gray-500 dark:text-gray-400"
+                  >
                     No expenses recorded yet
                   </td>
                 </tr>

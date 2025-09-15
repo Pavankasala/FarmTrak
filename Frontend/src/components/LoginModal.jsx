@@ -103,20 +103,20 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
                 <input
                   type="email"
                   placeholder="Your email"
-                  className="my-2 p-2 w-full rounded border"
+                  className="my-2 p-2 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <input
                   type="text"
                   placeholder="Your username"
-                  className="my-2 p-2 w-full rounded border"
+                  className="my-2 p-2 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
                 <button
                   onClick={handleSendVerification}
-                  className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
+                  className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Send Verification Code
                 </button>
@@ -126,13 +126,13 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
                 <input
                   type="text"
                   placeholder="Enter verification code"
-                  className="my-2 p-2 w-full rounded border"
+                  className="my-2 p-2 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   value={verifyCode}
                   onChange={(e) => setVerifyCode(e.target.value)}
                 />
                 <button
                   onClick={handleVerifyEmail}
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg"
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
                   Verify Email
                 </button>
