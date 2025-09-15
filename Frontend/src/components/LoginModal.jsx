@@ -50,6 +50,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
   };
 
   const handleVerifyEmail = async () => {
+    console.log("Step 1: Verifying with email:", email, "and code:", verifyCode);
     try {
       const res = await apiClient.verifyEmail(email, verifyCode);
       if (res.data.verified) {

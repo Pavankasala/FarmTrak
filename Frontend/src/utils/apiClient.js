@@ -18,6 +18,7 @@ function sendVerification(email, username) {
 }
 
 function verifyEmail(email, code) {
+  console.log("Step 2: Sending POST request to /api/verify-email");
   return axios.post(`${API_BASE_URL}/verify-email`, { email, code });
 }
 
