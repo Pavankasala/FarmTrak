@@ -1,7 +1,8 @@
-// src/pages/FeedPredictor.jsx
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { apiClient } from "../utils/apiClient";
 import { getCurrentUser } from "../utils/login";
+import TableCard from "../components/TableCard";
 import Tooltip from "../components/Tooltip";
 
 export default function FeedPredictor() {
@@ -11,10 +12,10 @@ export default function FeedPredictor() {
   const [totalFeedGiven, setTotalFeedGiven] = useState("");
   const [feedUnit, setFeedUnit] = useState("kg");
   const [daysLasted, setDaysLasted] = useState("10");
-  const [resultUnit, setResultUnit] = useState("g");
+  const [resultUnit, setResultUnit] = useState("kg"); // ✅ Set default to "kg"
   const [result, setResult] = useState(null);
   const [records, setRecords] = useState([]);
-  const [editingId, setEditingId] = useState(null); // track editing record id
+  const [editingId, setEditingId] = useState(null);
 
   const fetchRecords = async () => {
     try {
@@ -32,21 +33,16 @@ export default function FeedPredictor() {
 
   const calculateResult = () => {
     if (!numBirds || !totalFeedGiven || !daysLasted) return;
-
     let total = parseFloat(totalFeedGiven);
     if (feedUnit === "kg") total *= 1000;
-
     const perDay = total / parseFloat(daysLasted);
     const perBird = perDay / parseFloat(numBirds);
-
     let displayTotal = perDay;
     let displayPerBird = perBird;
-
     if (resultUnit === "kg") {
       displayTotal /= 1000;
       displayPerBird /= 1000;
     }
-
     setResult({
       perBird: displayPerBird.toFixed(2),
       total: displayTotal.toFixed(2),
@@ -61,7 +57,7 @@ export default function FeedPredictor() {
     setTotalFeedGiven("");
     setFeedUnit("kg");
     setDaysLasted("10");
-    setResultUnit("g");
+    setResultUnit("kg"); // Reset default to kg
     setResult(null);
     setEditingId(null);
   };
@@ -74,12 +70,9 @@ export default function FeedPredictor() {
         totalFeedGiven: parseFloat(totalFeedGiven),
         daysLasted: parseInt(daysLasted),
       };
-
       if (editingId) {
-        // update existing
         await apiClient.updateFeedRecord(editingId, payload);
       } else {
-        // create new
         await apiClient.saveFeedRecord(payload);
       }
       await fetchRecords();
@@ -104,9 +97,8 @@ export default function FeedPredictor() {
     setCustomBird(record.birdName !== "broiler" && record.birdName !== "layer" ? record.birdName : "");
     setNumBirds(record.numBirds);
     setTotalFeedGiven(record.totalFeedGiven);
-    setDaysLasted(record.daysLasted);
-    setFeedUnit("kg"); // assume entered in kg, adjust if needed
-    setResultUnit("g");
+    setFeedUnit("kg");
+    setResultUnit("kg");
   };
 
   useEffect(() => {
@@ -114,15 +106,16 @@ export default function FeedPredictor() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center px-4 py-6 space-y-6 w-full max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-        🧠 Feed Predictor
-      </h1>
+    <motion.div
+      className="max-w-5xl mx-auto px-4 py-10 space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center">🧠 Feed Predictor</h1>
 
-      <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-6">
-        {/* Form Grid */}
+      <TableCard title="🧠 Feed Predictor Inputs">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {/* Bird Type */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Bird Type <Tooltip text="Select type of bird (Broiler, Layer, or Other)" />
@@ -153,7 +146,6 @@ export default function FeedPredictor() {
             </div>
           )}
 
-          {/* Number of Birds */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Number of Birds <Tooltip text="How many birds are in this flock?" />
@@ -167,7 +159,6 @@ export default function FeedPredictor() {
             />
           </div>
 
-          {/* Total Feed Given */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Total Feed Given <Tooltip text="Amount of feed provided in total (kg or g)" />
@@ -181,7 +172,6 @@ export default function FeedPredictor() {
             />
           </div>
 
-          {/* Feed Unit */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Feed Unit <Tooltip text="Select unit of feed (kg or g)" />
@@ -196,7 +186,6 @@ export default function FeedPredictor() {
             </select>
           </div>
 
-          {/* Days Lasted */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Days Feed Lasted <Tooltip text="Over how many days the feed was consumed" />
@@ -210,7 +199,6 @@ export default function FeedPredictor() {
             />
           </div>
 
-          {/* Result Unit */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Show Result In <Tooltip text="Choose whether to see results in grams or kilograms" />
@@ -226,8 +214,7 @@ export default function FeedPredictor() {
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-4">
           <button
             onClick={calculateResult}
             className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow"
@@ -250,63 +237,58 @@ export default function FeedPredictor() {
           )}
         </div>
 
-        {/* Result Box */}
         {result && (
-          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded">
+          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded mt-4">
             ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
           </div>
         )}
+      </TableCard>
 
-        {/* Records Table */}
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-6">
-          📋 Saved Records
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-            <thead>
-              <tr className="bg-gray-100 dark:bg-gray-700 text-left text-gray-600 dark:text-gray-300 text-sm uppercase">
-                <th className="px-4 py-2">ID</th>
-                <th className="px-4 py-2">Bird</th>
-                <th className="px-4 py-2">Per Bird/Day</th>
-                <th className="px-4 py-2">Total/Day</th>
-                <th className="px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.length > 0 ? (
-                records.map((r) => (
-                  <tr key={r.id} className="border-t border-gray-200 dark:border-gray-600">
-                    <td className="px-4 py-2">{r.id}</td>
-                    <td className="px-4 py-2">{r.birdName}</td>
-                    <td className="px-4 py-2">{r.feedPerBird.toFixed(2)} {resultUnit}</td>
-                    <td className="px-4 py-2">{r.feedPerDay.toFixed(2)} {resultUnit}</td>
-                    <td className="px-4 py-2 flex gap-2">
-                      <button
-                        onClick={() => handleEdit(r)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(r.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
-                    No records found
+      <TableCard title="📋 Saved Records" className="overflow-x-auto mt-6">
+        <table className="min-w-full text-left">
+          <thead>
+            <tr className="border-b dark:border-gray-700">
+              <th className="p-2 text-gray-900 dark:text-white">ID</th>
+              <th className="p-2 text-gray-900 dark:text-white">Bird</th>
+              <th className="p-2 text-gray-900 dark:text-white">Per Bird/Day</th>
+              <th className="p-2 text-gray-900 dark:text-white">Total/Day</th>
+              <th className="p-2 text-gray-900 dark:text-white">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.length ? (
+              records.map((r) => (
+                <tr key={r.id} className="border-b dark:border-gray-700">
+                  <td className="p-2">{r.id}</td>
+                  <td className="p-2">{r.birdName}</td>
+                  <td className="p-2">{r.feedPerBird.toFixed(2)} {resultUnit}</td>
+                  <td className="p-2">{r.feedPerDay.toFixed(2)} {resultUnit}</td>
+                  <td className="p-2 flex gap-2">
+                    <button
+                      onClick={() => handleEdit(r)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(r.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="p-4 text-center text-gray-500 dark:text-gray-400">
+                  No records found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </TableCard>
+    </motion.div>
   );
 }

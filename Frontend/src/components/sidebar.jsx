@@ -44,7 +44,7 @@ export default function Sidebar() {
                 📊 Dashboard
               </NavLink>
               <NavLink to="/dashboard/feed" className={navClass}>
-                🌾 Feed Predictor
+                🧠 Feed Predictor
               </NavLink>
               <NavLink to="/dashboard/flock" className={navClass}>
                 🐔 Flock Management

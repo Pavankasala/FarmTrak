@@ -4,12 +4,10 @@ import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { logOut, isLoggedIn, logIn } from "../utils/login";
 import LoginModal from "../components/LoginModal";
-import { motion, AnimatePresence } from "framer-motion";
 
 function Welcome() {
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
   const [showLogin, setShowLogin] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,14 +25,6 @@ function Welcome() {
     }
   }, [isDarkMode]);
 
-  useEffect(() => {
-    // Tutorial shown only once
-    const seen = localStorage.getItem("welcomeTutorialSeen");
-    if (!seen) {
-      setShowTutorial(true);
-    }
-  }, []);
-
   function handleLogout() {
     logOut();
     navigate("/");
@@ -46,11 +36,6 @@ function Welcome() {
     navigate("/dashboard");
   };
 
-  const dismissTutorial = () => {
-    localStorage.setItem("welcomeTutorialSeen", "true");
-    setShowTutorial(false);
-  };
-
   return (
     <div className="relative bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text min-h-screen">
       {/* Top-right controls */}
@@ -60,7 +45,11 @@ function Welcome() {
           className="p-2 rounded-full hover:bg-light-muted dark:hover:bg-dark-dim transition"
           aria-label="Toggle theme"
         >
-          {isDarkMode ? <SunIcon className="h-6 w-6 text-yellow-400" /> : <MoonIcon className="h-6 w-6 text-gray-700" />}
+          {isDarkMode ? (
+            <SunIcon className="h-6 w-6 text-yellow-400" />
+          ) : (
+            <MoonIcon className="h-6 w-6 text-gray-700" />
+          )}
         </button>
 
         {isLoggedIn() ? (
@@ -102,31 +91,6 @@ function Welcome() {
           </button>
         </div>
       </div>
-
-      {/* One-time Tutorial Banner */}
-      <AnimatePresence>
-        {showTutorial && (
-          <motion.div
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-100 dark:bg-blue-900/30 
-              text-blue-800 dark:text-blue-200 px-6 py-3 rounded-xl shadow-lg text-sm max-w-lg"
-          >
-            👋 Welcome to <b>FarmTrak</b>!  
-            Use the <span className="font-semibold">🌙 toggle</span> to switch theme.  
-            Click <span className="font-semibold">🔐 Login</span> to access your dashboard.  
-            <div className="mt-2 flex justify-end">
-              <button
-                onClick={dismissTutorial}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs"
-              >
-                Got it
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onSuccess={handleLoginSuccess} />
     </div>
