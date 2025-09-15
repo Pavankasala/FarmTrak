@@ -50,18 +50,23 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
   };
 
   const handleVerifyEmail = async () => {
-    console.log("Step 1: Verifying with email:", email, "and code:", verifyCode);
     try {
       const res = await apiClient.verifyEmail(email, verifyCode);
-      if (res.data.verified) {
-        alert("Email verified successfully!");
+      if (res.data.status === "success") {
+        logIn(res.data.token, res.data.email);
+
+        // ✅ ADD THIS LINE to trigger navigation
+        onSuccess({
+          token: res.data.token,
+          email: res.data.email,
+        });
+
         onClose();
-      } else {
-        alert("Invalid verification code.");
       }
     } catch (err) {
-      console.error("Verification failed:", err);
-      alert("Verification failed");
+      const message = err.response?.data?.message || "Verification failed";
+      console.error("Verification error:", err);
+      alert(message);
     }
   };
 

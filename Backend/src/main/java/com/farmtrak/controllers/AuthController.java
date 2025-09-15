@@ -31,9 +31,19 @@ public class AuthController {
 
         boolean isValid = authService.verifyEmail(email, code);
 
-        return ResponseEntity.ok(Map.of(
-                "verified", isValid,
-                "message", isValid ? "Email verified successfully." : "Invalid or expired OTP."
+        if (isValid) {
+            // ✅ On success, return a status and a dummy token, just like Google login
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "email", email,
+                    "token", "email-dummy-token-" + System.currentTimeMillis()
+            ));
+        }
+
+        // On failure, return a status and a message
+        return ResponseEntity.status(401).body(Map.of(
+                "status", "error",
+                "message", "Invalid or expired OTP."
         ));
     }
 }
