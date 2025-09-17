@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { apiClient } from "../utils/apiClient";
 import { getCurrentUser } from "../utils/login";
 import TableCard from "../components/TableCard";
@@ -12,7 +12,7 @@ export default function FeedPredictor() {
   const [totalFeedGiven, setTotalFeedGiven] = useState("");
   const [feedUnit, setFeedUnit] = useState("kg");
   const [daysLasted, setDaysLasted] = useState("10");
-  const [resultUnit, setResultUnit] = useState("kg"); // ✅ Set default to "kg"
+  const [resultUnit, setResultUnit] = useState("kg");
   const [result, setResult] = useState(null);
   const [records, setRecords] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -57,7 +57,7 @@ export default function FeedPredictor() {
     setTotalFeedGiven("");
     setFeedUnit("kg");
     setDaysLasted("10");
-    setResultUnit("kg"); // Reset default to kg
+    setResultUnit("kg");
     setResult(null);
     setEditingId(null);
   };
@@ -83,6 +83,7 @@ export default function FeedPredictor() {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this feed record?")) return;
     try {
       await apiClient.deleteFeedRecord(id);
       fetchRecords();
@@ -107,188 +108,319 @@ export default function FeedPredictor() {
 
   return (
     <motion.div
-      className="max-w-5xl mx-auto px-4 py-10 space-y-6"
+      className="max-w-7xl mx-auto px-6 py-12 space-y-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.6 }}
     >
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center">🧠 Feed Predictor</h1>
+      {/* Header Section */}
+      <div className="text-center space-y-4">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-3xl shadow-lg mb-4"
+        >
+          <span className="text-4xl">🧠</span>
+        </motion.div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+          Intelligent Feed Predictor
+        </h1>
+        <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+          Calculate optimal feed requirements and predict consumption patterns for your poultry flocks
+        </p>
+      </div>
 
-      <TableCard title="🧠 Feed Predictor Inputs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {/* Feed Calculator Form */}
+      <motion.div
+        className="glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center">
+            <span className="text-2xl">🧮</span>
+          </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Bird Type <Tooltip text="Select type of bird (Broiler, Layer, or Other)" />
+            <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">Feed Consumption Calculator</h2>
+            <p className="text-slate-600 dark:text-slate-400">Enter your flock details to calculate feed requirements</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">🐦</span>
+              Bird Species
+              <Tooltip text="Select the type of poultry for accurate feed calculations" />
             </label>
             <select
               value={birdType}
               onChange={(e) => setBirdType(e.target.value)}
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
-              <option value="broiler">Broiler</option>
-              <option value="layer">Layer</option>
-              <option value="other">Other</option>
+              <option value="broiler">🍗 Broiler Chickens</option>
+              <option value="layer">🥚 Layer Hens</option>
+              <option value="other">🦆 Other Species</option>
             </select>
-          </div>
-
-          {birdType === "other" && (
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                Custom Bird Name <Tooltip text="Enter the bird name if it's not Broiler or Layer" />
-              </label>
+            {birdType === "other" && (
               <input
                 type="text"
                 value={customBird}
                 onChange={(e) => setCustomBird(e.target.value)}
-                placeholder="Enter bird name"
-                className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+                placeholder="Enter species name (e.g., Duck, Turkey)"
+                className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
-            </div>
-          )}
+            )}
+          </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Number of Birds <Tooltip text="How many birds are in this flock?" />
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">📊</span>
+              Flock Size
+              <Tooltip text="Total number of birds in your flock" />
             </label>
             <input
               type="number"
               value={numBirds}
               onChange={(e) => setNumBirds(e.target.value)}
-              placeholder="Enter number of birds"
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              placeholder="Number of birds"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Total Feed Given <Tooltip text="Amount of feed provided in total (kg or g)" />
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">⚖️</span>
+              Feed Amount
+              <Tooltip text="Total amount of feed provided to the flock" />
             </label>
-            <input
-              type="number"
-              value={totalFeedGiven}
-              onChange={(e) => setTotalFeedGiven(e.target.value)}
-              placeholder="Enter feed amount"
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
-            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={totalFeedGiven}
+                onChange={(e) => setTotalFeedGiven(e.target.value)}
+                placeholder="Amount"
+                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+              <select
+                value={feedUnit}
+                onChange={(e) => setFeedUnit(e.target.value)}
+                className="px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Feed Unit <Tooltip text="Select unit of feed (kg or g)" />
-            </label>
-            <select
-              value={feedUnit}
-              onChange={(e) => setFeedUnit(e.target.value)}
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
-            >
-              <option value="kg">Kilograms</option>
-              <option value="g">Grams</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Days Feed Lasted <Tooltip text="Over how many days the feed was consumed" />
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">📅</span>
+              Duration (Days)
+              <Tooltip text="Number of days the feed lasted" />
             </label>
             <input
               type="number"
               value={daysLasted}
               onChange={(e) => setDaysLasted(e.target.value)}
-              placeholder="Enter days"
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              placeholder="Days"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Show Result In <Tooltip text="Choose whether to see results in grams or kilograms" />
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">📏</span>
+              Result Unit
+              <Tooltip text="Choose the unit for displaying results" />
             </label>
             <select
               value={resultUnit}
               onChange={(e) => setResultUnit(e.target.value)}
-              className="w-full p-2 border rounded-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
-              <option value="kg">Kilograms</option>
-              <option value="g">Grams</option>
+              <option value="kg">Kilograms (kg)</option>
+              <option value="g">Grams (g)</option>
             </select>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-4">
-          <button
+        <div className="flex flex-wrap gap-3 mt-8">
+          <motion.button
             onClick={calculateResult}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded shadow"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:from-blue-700 hover:to-indigo-700"
           >
-            Calculate
-          </button>
-          <button
+            <span className="flex items-center gap-2">
+              <span className="text-lg">🧮</span>
+              Calculate Feed Requirements
+            </span>
+          </motion.button>
+          <motion.button
             onClick={saveRecord}
-            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:from-emerald-700 hover:to-green-700"
           >
             {editingId ? "Update Record" : "Save Record"}
-          </button>
+          </motion.button>
           {editingId && (
-            <button
+            <motion.button
               onClick={resetForm}
-              className="bg-gray-500 hover:bg-gray-400 text-white px-4 py-2 rounded shadow"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl transition-colors"
             >
               Cancel Edit
-            </button>
+            </motion.button>
           )}
         </div>
 
-        {result && (
-          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded mt-4">
-            ✅ Per bird/day: <b>{result.perBird} {result.unit}</b> | Total/day: <b>{result.total} {result.unit}</b>
-          </div>
-        )}
-      </TableCard>
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl border border-green-200 dark:border-green-800"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                  <span className="text-xl">✅</span>
+                </div>
+                <h3 className="text-xl font-semibold text-green-900 dark:text-green-100">Feed Calculation Results</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                    {result.perBird} {result.unit}
+                  </div>
+                  <div className="text-sm text-green-600 dark:text-green-400">Per bird per day</div>
+                </div>
+                <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                    {result.total} {result.unit}
+                  </div>
+                  <div className="text-sm text-green-600 dark:text-green-400">Total per day</div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
-      <TableCard title="📋 Saved Records" className="overflow-x-auto mt-6">
-        <table className="min-w-full text-left">
-          <thead>
-            <tr className="border-b dark:border-gray-700">
-              <th className="p-2 text-gray-900 dark:text-white">ID</th>
-              <th className="p-2 text-gray-900 dark:text-white">Bird</th>
-              <th className="p-2 text-gray-900 dark:text-white">Per Bird/Day</th>
-              <th className="p-2 text-gray-900 dark:text-white">Total/Day</th>
-              <th className="p-2 text-gray-900 dark:text-white">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records.length ? (
-              records.map((r) => (
-                <tr key={r.id} className="border-b dark:border-gray-700">
-                  <td className="p-2">{r.id}</td>
-                  <td className="p-2">{r.birdName}</td>
-                  <td className="p-2">{r.feedPerBird.toFixed(2)} {resultUnit}</td>
-                  <td className="p-2">{r.feedPerDay.toFixed(2)} {resultUnit}</td>
-                  <td className="p-2 flex gap-2">
-                    <button
-                      onClick={() => handleEdit(r)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(r.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
+      {/* Saved Records Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <TableCard className="glass-effect rounded-3xl shadow-xl border border-white/20 dark:border-slate-700/50 overflow-hidden p-0">
+          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center">
+                <span className="text-xl">📋</span>
+              </div>
+              <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">Feed Records History</h2>
+            </div>
+            <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-sm font-medium">
+              {records.length} {records.length === 1 ? 'Record' : 'Records'}
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Species</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Flock Size</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Per Bird/Day</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Total/Day</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="p-4 text-center text-gray-500 dark:text-gray-400">
-                  No records found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </TableCard>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                <AnimatePresence>
+                  {records.length ? (
+                    records.map((record, index) => (
+                      <motion.tr
+                        key={record.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-slate-900 dark:text-slate-100 font-mono text-sm">
+                          #{record.id}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">
+                              {record.birdName === 'broiler' ? '🍗' : record.birdName === 'layer' ? '🥚' : '🦆'}
+                            </span>
+                            <span className="capitalize text-slate-900 dark:text-slate-100 font-medium">
+                              {record.birdName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-slate-900 dark:text-slate-100 font-semibold">
+                          {record.numBirds} birds
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                            {record.feedPerBird.toFixed(2)} {resultUnit}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                            {record.feedPerDay.toFixed(2)} {resultUnit}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <motion.button
+                              onClick={() => handleEdit(record)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium shadow-sm"
+                            >
+                              Edit
+                            </motion.button>
+                            <motion.button
+                              onClick={() => handleDelete(record.id)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium shadow-sm"
+                            >
+                              Delete
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-12 text-center">
+                        <div className="space-y-3">
+                          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                            <span className="text-3xl">🧠</span>
+                          </div>
+                          <p className="text-slate-500 dark:text-slate-400 font-medium">No feed records found</p>
+                          <p className="text-sm text-slate-400 dark:text-slate-500">Calculate and save your first feed record to get started</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
+        </TableCard>
+      </motion.div>
     </motion.div>
   );
 }
