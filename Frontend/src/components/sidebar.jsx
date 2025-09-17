@@ -2,26 +2,38 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChartBarIcon,
+  CubeIcon,
+  CurrencyDollarIcon,
+  BeakerIcon,
+  CreditCardIcon,
+  ArchiveBoxIcon
+} from "@heroicons/react/24/outline";
 
-/**
- * Sidebar navigation component for FarmTrak dashboard.
- * Responsive with toggle support for mobile.
- */
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
 
   const navClass = ({ isActive }) =>
-    `px-3 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
+    `px-3 py-2 rounded-lg transition-colors duration-200 flex items-center gap-3 text-sm font-medium ${
       isActive
-        ? "bg-indigo-600 text-white shadow"
-        : "text-light-text dark:text-dark-text hover:bg-indigo-500 hover:text-white"
+        ? "bg-light-primary text-white shadow-md"
+        : "text-light-subtext dark:text-dark-subtext hover:bg-light-primary/10 dark:hover:bg-dark-primary/20 hover:text-light-primary dark:hover:text-dark-primary"
     }`;
+
+    const navItems = [
+      { to: "/dashboard", icon: ChartBarIcon, label: "Dashboard" },
+      { to: "/dashboard/feed", icon: BeakerIcon, label: "Feed Predictor" },
+      { to: "/dashboard/flock", icon: CubeIcon, label: "Flock Management" },
+      { to: "/dashboard/eggs", icon: ArchiveBoxIcon, label: "Egg Production" },
+      { to: "/dashboard/expenses", icon: CreditCardIcon, label: "Expense Tracker" },
+      { to: "/dashboard/revenue", icon: CurrencyDollarIcon, label: "Revenue Tracker" },
+    ];
 
   return (
     <>
-      {/* Mobile Toggle Button */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-indigo-600 text-white shadow-lg"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-light-primary text-white shadow-lg"
         onClick={() => setIsOpen(!isOpen)}
       >
         &#9776;
@@ -34,30 +46,21 @@ export default function Sidebar() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -250, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="bg-light-bg dark:bg-dark-bg w-60 h-screen shadow-md p-4 space-y-4 transition-colors duration-200 fixed md:static z-40"
+            className="bg-light-card dark:bg-dark-card w-64 h-screen shadow-lg p-4 space-y-4 border-r border-light-border dark:border-dark-border fixed md:static z-40 flex flex-col"
           >
-            <h2 className="text-2xl font-bold text-light-text dark:text-dark-text mb-6">
-              🌾 FarmTrak
+            <h2 className="text-2xl font-bold text-light-text dark:text-dark-text mb-6 px-2 flex items-center gap-2">
+              <span className="text-3xl">🌾</span> FarmTrak
             </h2>
-            <nav className="flex flex-col space-y-2">
-              <NavLink to="/dashboard" end className={navClass}>
-                📊 Dashboard
-              </NavLink>
-              <NavLink to="/dashboard/feed" className={navClass}>
-                🧠 Feed Predictor
-              </NavLink>
-              <NavLink to="/dashboard/flock" className={navClass}>
-                🐔 Flock Management
-              </NavLink>
-              <NavLink to="/dashboard/eggs" className={navClass}>
-                🥚 Egg Production
-              </NavLink>
-              <NavLink to="/dashboard/expenses" className={navClass}>
-                💸 Expense Tracker
-              </NavLink>
-              <NavLink to="/dashboard/revenue" className={navClass}>
-                💰 Revenue Tracker
-              </NavLink>
+            <nav className="flex flex-col space-y-2 flex-grow">
+              {navItems.map(item => {
+                const Icon = item.icon;
+                return (
+                  <NavLink key={item.to} to={item.to} end={item.to === "/dashboard"} className={navClass}>
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                  </NavLink>
+                );
+              })}
             </nav>
           </motion.aside>
         )}

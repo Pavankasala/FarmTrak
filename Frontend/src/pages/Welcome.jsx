@@ -38,11 +38,10 @@ function Welcome() {
 
   return (
     <div className="relative bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text min-h-screen">
-      {/* Top-right controls */}
       <div className="absolute top-4 right-8 flex items-center gap-3 z-10">
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="p-2 rounded-full hover:bg-light-muted dark:hover:bg-dark-dim transition"
+          className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition"
           aria-label="Toggle theme"
         >
           {isDarkMode ? (
@@ -56,28 +55,27 @@ function Welcome() {
           <button
             onClick={handleLogout}
             aria-label="Logout"
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-semibold"
           >
-            🔓 Logout
+            Logout
           </button>
         ) : (
           <button
             onClick={() => setShowLogin(true)}
             aria-label="Login"
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500"
+            className="px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-primaryHover dark:hover:bg-dark-primaryHover font-semibold"
           >
-            🔐 Login
+            Login / Sign Up
           </button>
         )}
       </div>
 
-      {/* Hero Section */}
       <div className="flex flex-col justify-center items-center min-h-screen text-center px-4">
-        <h1 className="text-5xl font-semibold sm:text-7xl transition-transform duration-500 hover:scale-105">
+        <h1 className="text-5xl font-extrabold sm:text-7xl">
           Welcome to <span className="text-light-primary dark:text-dark-primary">FarmTrak</span>
         </h1>
         <p className="mt-6 text-lg text-light-subtext dark:text-dark-subtext max-w-2xl">
-          Manage your poultry with ease. Track flocks, expenses, feed, and more.
+          The all-in-one solution to manage your poultry farm with ease. Track flocks, expenses, egg production, and predict feed needs effortlessly.
         </p>
         <div className="mt-8 flex justify-center gap-x-6">
           <button
@@ -85,9 +83,9 @@ function Welcome() {
               if (isLoggedIn()) navigate("/dashboard");
               else setShowLogin(true);
             }}
-            className="bg-light-primary hover:bg-light-primaryHover dark:bg-dark-primary dark:hover:bg-dark-primaryHover px-4 py-2 rounded text-white"
+            className="bg-light-primary hover:bg-light-primaryHover dark:bg-dark-primary dark:hover:bg-dark-primaryHover px-6 py-3 rounded-lg text-white font-semibold text-lg shadow-lg transform hover:scale-105 transition-transform"
           >
-            🧠 Get Started
+            Get Started
           </button>
         </div>
       </div>

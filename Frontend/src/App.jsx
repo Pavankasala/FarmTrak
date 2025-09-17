@@ -34,7 +34,7 @@ export default function App() {
               <Route path="flock" element={<FlockManagement />} />
               <Route path="expenses" element={<ExpenseTracker />} />
               <Route path="eggs" element={<ProductionTracker />} />
-              <Route path="revenue" element={<RevenueTracker />} /> {/* Add the new route */}
+              <Route path="revenue" element={<RevenueTracker />} /> 
             </Route>
           </Routes>
         </Router>

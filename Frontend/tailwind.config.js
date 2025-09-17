@@ -8,28 +8,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        // 🌞 Light Mode
+        // Light Theme
         light: {
-          bg: '#ffffff',
-          text: '#111827',
-          subtext: '#4B5563',
-          muted: '#6B7280',
-          primary: '#4F46E5',
-          primaryHover: '#6366F1',
+          bg: '#f8fafc', // slate-50
+          card: '#ffffff', // white
+          text: '#0f172a', // slate-900
+          subtext: '#64748b', // slate-500
+          border: '#e2e8f0', // slate-200
+          primary: '#16a34a', // green-600
+          primaryHover: '#15803d', // green-700
         },
-        // 🌙 Dark Mode
+        // Dark Theme
         dark: {
-          bg: '#111827',
-          text: '#ffffff',
-          subtext: '#D1D5DB',
-          dim: '#9CA3AF',
-          card: 'rgba(255,255,255,0.05)', // white/5
-          primary: '#6366F1',
-          primaryHover: '#818CF8',
+          bg: '#0f172a', // slate-900
+          card: '#1e293b', // slate-800
+          text: '#f1f5f9', // slate-100
+          subtext: '#94a3b8', // slate-400
+          border: '#334155', // slate-700
+          primary: '#22c55e', // green-500
+          primaryHover: '#4ade80', // green-400
         },
-        // Fallback colors for legacy usage like bg-white
-        white: '#ffffff',
-        black: '#000000',
+      },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

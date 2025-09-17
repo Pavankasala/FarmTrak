@@ -12,7 +12,6 @@ export const useTheme = () => useContext(ThemeContext);
 /**
  * ThemeProvider handles light/dark theme toggling.
  * Persists theme in localStorage and updates <html> class.
- * Provides a reusable HoverLift component for consistent card/table animations.
  */
 const ThemeProvider = ({ children }) => {
   const getInitialTheme = () => {
@@ -34,20 +33,9 @@ const ThemeProvider = ({ children }) => {
   const toggleTheme = () =>
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
-  // Reusable HoverLift animation wrapper
-  const HoverLift = ({ children }) => (
-    <motion.div
-      initial={{ scale: 0.98, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 250, damping: 20 }}
-      whileHover={{ scale: 1.03, boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)" }}
-    >
-      {children}
-    </motion.div>
-  );
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, HoverLift }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

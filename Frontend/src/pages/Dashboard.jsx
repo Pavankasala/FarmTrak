@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -47,7 +45,6 @@ export default function Dashboard() {
       const eggs = eggsRes.data || [];
       const revenue = revenueRes.data || [];
 
-      // 1. Calculate and set the main statistics
       const totalBirds = flocks.reduce((sum, f) => sum + (f.numBirds || 0), 0);
       const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
       const totalRevenue = revenue.reduce((sum, r) => sum + (r.amount || 0), 0);
@@ -63,7 +60,6 @@ export default function Dashboard() {
         totalExpenses,
       });
 
-      // 2. Process data for the Area chart (last 7 days trend)
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -85,7 +81,6 @@ export default function Dashboard() {
       });
       setTrendData(combinedTrendData);
 
-      // 3. Process data for "Expenses by Category" pie chart
       const expensesData = expenses.reduce((acc, expense) => {
         const category = expense.category || 'Other';
         acc[category] = (acc[category] || 0) + expense.amount;
@@ -108,24 +103,23 @@ export default function Dashboard() {
 
   return (
     <motion.div
-      className="space-y-8 max-w-6xl mx-auto px-4 py-10"
+      className="space-y-8 max-w-7xl mx-auto px-6 py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
       <h1 className="text-3xl font-bold text-light-text dark:text-dark-text">🌾 Farm Dashboard</h1>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {[
           { emoji: "🐔", label: "Total Birds", value: stats.totalBirds },
           { emoji: "🥚", label: "Eggs Today", value: stats.eggsToday },
           { emoji: "📈", label: "Profit / Loss", value: `₹${stats.profit.toFixed(2)}` },
-          { emoji: "💸", label: "Total Expenses", value: `₹${stats.totalExpenses.toFixed(2)}` },
+          { emoji: "🧾", label: "Total Expenses", value: `₹${stats.totalExpenses.toFixed(2)}` },
         ].map((card, idx) => (
           <motion.div
             key={idx}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center"
+            className="bg-light-card dark:bg-dark-card rounded-xl shadow-sm border border-light-border dark:border-dark-border p-6 text-center"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 250, damping: 20, delay: idx * 0.1 }}
@@ -140,22 +134,20 @@ export default function Dashboard() {
         ))}
       </div>
       
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Egg Production & Revenue Trend */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+          className="bg-light-card dark:bg-dark-card rounded-xl shadow-sm border border-light-border dark:border-dark-border p-6"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-light-text dark:text-dark-text">
               Egg Production & Revenue
             </h3>
             <div className="flex items-center space-x-2">
-              <span className="text-2xl">📈</span>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Last 7 days</span>
+              <span className="text-2xl">📊</span>
+              <span className="text-sm text-light-subtext dark:text-dark-subtext">Last 7 days</span>
             </div>
           </div>
           <div className="h-80">
@@ -171,13 +163,13 @@ export default function Dashboard() {
                     <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="month" stroke="#6B7280" />
-                <YAxis stroke="#6B7280" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="month" stroke="var(--color-text-secondary)" />
+                <YAxis stroke="var(--color-text-secondary)" />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#F9FAFB',
-                    border: '1px solid #E5E7EB',
+                    backgroundColor: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: '8px'
                   }}
                 />
@@ -203,20 +195,19 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Expense Breakdown */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+          className="bg-light-card dark:bg-dark-card rounded-xl shadow-sm border border-light-border dark:border-dark-border p-6"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-light-text dark:text-dark-text">
               Expense Breakdown
             </h3>
              <div className="flex items-center space-x-2">
                <span className="text-2xl">💰</span>
-               <span className="text-sm text-gray-600 dark:text-gray-400">
+               <span className="text-sm text-light-subtext dark:text-dark-subtext">
                  Total: ₹{stats.totalExpenses.toFixed(2)}
                </span>
              </div>
@@ -240,8 +231,8 @@ export default function Dashboard() {
                 <Tooltip
                   formatter={(value) => [`₹${value.toFixed(2)}`, 'Amount']}
                   contentStyle={{
-                    backgroundColor: '#F9FAFB',
-                    border: '1px solid #E5E7EB',
+                    backgroundColor: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
                     borderRadius: '8px'
                   }}
                 />

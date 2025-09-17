@@ -1,6 +1,6 @@
-// src/components/Topbar.jsx
+// src/components/topbar.jsx
 import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { logOut, getCurrentUser, isLoggedIn } from "../utils/login";
 import { useTheme } from "./ThemeProvider";
 
@@ -9,10 +9,6 @@ export default function Topbar() {
   const { theme, toggleTheme } = useTheme();
   const user = getCurrentUser();
 
-  // ✅ Safe fallback for outletContext
-  const outletContext = useOutletContext() || {};
-  const { dashboardStats = {} } = outletContext;
-
   const handleLogout = () => {
     logOut();
     navigate("/");
@@ -20,17 +16,14 @@ export default function Topbar() {
   };
 
   return (
-    <header className="bg-light-bg dark:bg-gray-800 shadow h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
-      {/* Left section: Welcome */}
+    <header className="bg-light-card dark:bg-dark-card h-16 flex items-center justify-between px-6 border-b border-light-border dark:border-dark-border transition-colors duration-300 flex-shrink-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-        <span className="font-semibold text-gray-800 dark:text-white text-lg">
-          {isLoggedIn() ? `Welcome, ${user} 👨‍🌾` : "Welcome to FarmTrak"}
+        <span className="font-semibold text-light-text dark:text-dark-text text-lg">
+          {isLoggedIn() ? `Welcome, ${user} 🧑‍🌾` : "Welcome to FarmTrak"}
         </span>
       </div>
 
-      {/* Right section: Controls */}
       <div className="flex items-center gap-4">
-        {/* Theme toggle */}
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
@@ -43,13 +36,12 @@ export default function Topbar() {
           )}
         </button>
 
-        {/* Logout */}
         {isLoggedIn() && (
           <button
             onClick={handleLogout}
             className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-800 transition"
           >
-            🔓 Logout
+          🔓 Logout
           </button>
         )}
       </div>
