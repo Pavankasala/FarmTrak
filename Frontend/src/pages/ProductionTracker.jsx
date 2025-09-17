@@ -6,7 +6,7 @@ import { apiClient } from "../utils/apiClient";
 import TableCard from "../components/TableCard";
 import Tooltip from "./../components/Tooltip";
 
-export default function ProductionTracker({ onDataUpdate }) {
+export default function ProductionTracker() {
   const [flocks, setFlocks] = useState([]);
   const [productions, setProductions] = useState([]);
   const [form, setForm] = useState({ id: null, flockId: "", count: "", date: "" });
@@ -31,7 +31,6 @@ export default function ProductionTracker({ onDataUpdate }) {
       const totalToday = productionsData
         .filter(p => p.date.startsWith(today))
         .reduce((sum, p) => sum + Number(p.count), 0);
-      onDataUpdate?.({ eggsToday: totalToday });
     } catch (err) {
       console.error("Error loading data:", err);
     }

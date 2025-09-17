@@ -8,15 +8,13 @@ import DashboardLayout from "./layout/DashboardLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import ExpenseTracker from "./pages/ExpenseTracker";
 import ProductionTracker from "./pages/ProductionTracker";
-import RevenueTracker from "./pages/RevenueTracker"; // Import the new page
-import ThemeProvider, { useTheme } from "./components/ThemeProvider";
+import RevenueTracker from "./pages/RevenueTracker"; 
+import ThemeProvider from "./components/ThemeProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GOOGLE_CLIENT_ID = "1091305199358-8dmcca126f88clk710fkvkmu5r5l08ap.apps.googleusercontent.com";
 
 export default function App() {
-  const { theme } = useTheme() || {};
-
   return (
         <Router>
           <Routes>

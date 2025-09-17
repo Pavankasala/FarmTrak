@@ -15,18 +15,22 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/eggs")
-@CrossOrigin(origins = "https://pavankasala.github.io") // allow your deployed frontend
-public class EggProductionController {
+@CrossOrigin(origins = "https://pavankasala.github.io")
+public class EggProductionController extends BaseController<EggProduction, Long> {
 
     private final EggProductionRepository eggRepo;
     private final Logger logger = LoggerFactory.getLogger(EggProductionController.class);
 
     @Autowired
     public EggProductionController(EggProductionRepository eggRepo) {
+        super(eggRepo, (existing, updated) -> {
+            existing.setFlockId(updated.getFlockId());
+            existing.setCount(updated.getCount());
+            existing.setDate(updated.getDate());
+        });
         this.eggRepo = eggRepo;
     }
 
-    // Save new or update existing (with merge option)
     @PostMapping
     public EggProduction saveProduction(@RequestBody EggProduction eggProduction,
                                         @RequestParam(name = "merge", defaultValue = "false") boolean merge,
@@ -39,7 +43,6 @@ public class EggProductionController {
         Optional<EggProduction> existing = eggRepo.findByFlockIdAndDateAndUserEmail(
                 eggProduction.getFlockId(), eggProduction.getDate(), userEmail);
 
-        EggProduction result;
         if (existing.isPresent()) {
             EggProduction existingProd = existing.get();
             if (merge) {
@@ -47,42 +50,9 @@ public class EggProductionController {
             } else {
                 existingProd.setCount(eggProduction.getCount());
             }
-            result = eggRepo.save(existingProd);
-            logger.info("Updated EggProduction: id={}, flockId={}, count={}, date={}, userEmail={}",
-                    result.getId(), result.getFlockId(), result.getCount(), result.getDate(), result.getUserEmail());
-        } else {
-            result = eggRepo.save(eggProduction);
-            logger.info("Saved new EggProduction: id={}, flockId={}, count={}, date={}, userEmail={}",
-                    result.getId(), result.getFlockId(), result.getCount(), result.getDate(), result.getUserEmail());
+            return eggRepo.save(existingProd);
         }
-
-        return result;
-    }
-
-    @PutMapping("/{id}")
-    public EggProduction updateProduction(@PathVariable Long id, @RequestBody EggProduction updated,
-                                          @RequestHeader("X-User-Email") String userEmail) {
-        return eggRepo.findById(id)
-                .map(prod -> {
-                    if (!prod.getUserEmail().equals(userEmail)) {
-                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this record.");
-                    }
-                    prod.setFlockId(updated.getFlockId());
-                    prod.setCount(updated.getCount());
-                    prod.setDate(updated.getDate());
-                    return eggRepo.save(prod);
-                })
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "EggProduction not found"));
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteProduction(@PathVariable Long id, @RequestHeader("X-User-Email") String userEmail) {
-        EggProduction prod = eggRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "EggProduction not found"));
-        if (!prod.getUserEmail().equals(userEmail)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this record.");
-        }
-        eggRepo.deleteById(id);
+        return eggRepo.save(eggProduction);
     }
 
     @GetMapping("/today")
@@ -90,12 +60,6 @@ public class EggProductionController {
         return eggRepo.findByUserEmailAndDate(userEmail, LocalDate.now());
     }
 
-    @GetMapping
-    public List<EggProduction> getAll(@RequestHeader("X-User-Email") String userEmail) {
-        return eggRepo.findByUserEmail(userEmail);
-    }
-
-    // Check if record exists for given flockId + date + userEmail
     @GetMapping("/exists")
     public boolean checkIfExists(@RequestParam Long flockId, @RequestParam String date,
                                  @RequestHeader("X-User-Email") String userEmail) {
