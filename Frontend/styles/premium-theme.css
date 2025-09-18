@@ -98,14 +98,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 
 /* Primary buttons */
-.bg-light-primary, .bg-indigo-600, .bg-green-600, .bg-blue-600 {
+/* Only map our custom semantic classes — do NOT touch core Tailwind utilities */
+.bg-light-primary {
     background-color: var(--color-primary);
     color: var(--color-primary-text);
 }
-.hover\:bg-light-primaryHover:hover, .hover\:bg-indigo-500:hover, .hover\:bg-green-500:hover, .hover\:bg-blue-700:hover {
+.hover\:bg-light-primaryHover:hover {
     background-color: var(--color-primary-hover);
 }
-
 /* Secondary/Danger buttons */
 .bg-red-500, .bg-red-600 { background-color: #ef4444; }
 .hover\:bg-red-600:hover, .hover\:bg-red-700:hover { background-color: #dc2626; }
