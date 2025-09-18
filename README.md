@@ -84,28 +84,94 @@ FarmTrak is a comprehensive web application designed to help poultry farmers man
 ## 📁 File Structure
     FarmTrak/
     ├─ Backend/
-    │ ├─ src/
-    │ │ ├─ main/
-    │ │ │ ├─ java/com/farmtrak/
-    │ │ │ │ ├─ controller/
-    │ │ │ │ ├─ model/
-    │ │ │ │ ├─ repository/
-    │ │ │ │ ├─ service/
-    │ │ │ │ └─ FarmTrakApplication.java
-    │ │ │ └─ resources/
-    │ │ │ └─ application.properties
-    │ │ └─ test/
-    │ ├─ pom.xml
-    │ └─ mvnw / mvnw.cmd
+    │  ├─ .gitattributes
+    │  ├─ Dockerfile
+    │  ├─ HELP.md
+    │  ├─ mvnw
+    │  ├─ mvnw.cmd
+    │  ├─ pom.xml
+    │  ├─ render.yml
+    │  └─ src/
+    │     └─ main/
+    │        ├─ java/com/farmtrak/
+    │        │  ├─ FarmTrakApplication.java
+    │        │  ├─ config/
+    │        │  │  └─ WebConfig.java
+    │        │  ├─ controllers/
+    │        │  │  ├─ AuthController.java
+    │        │  │  ├─ BaseController.java
+    │        │  │  ├─ EggProductionController.java
+    │        │  │  ├─ ExpenseController.java
+    │        │  │  ├─ FeedRecordController.java
+    │        │  │  ├─ FlockController.java
+    │        │  │  ├─ LoginController.java
+    │        │  │  └─ RevenueController.java
+    │        │  ├─ model/
+    │        │  │  ├─ BaseEntity.java
+    │        │  │  ├─ EggProduction.java
+    │        │  │  ├─ Expense.java
+    │        │  │  ├─ FeedRecord.java
+    │        │  │  ├─ Flock.java
+    │        │  │  ├─ OTP.java
+    │        │  │  ├─ Revenue.java
+    │        │  │  └─ User.java
+    │        │  ├─ repository/
+    │        │  │  ├─ BaseRepository.java
+    │        │  │  ├─ EggProductionRepository.java
+    │        │  │  ├─ ExpenseRepository.java
+    │        │  │  ├─ FeedRecordRepository.java
+    │        │  │  ├─ FlockRepository.java
+    │        │  │  ├─ OTPRepository.java
+    │        │  │  ├─ RevenueRepository.java
+    │        │  │  └─ UserRepository.java
+    │        │  └─ service/
+    │        │     ├─ AuthService.java
+    │        │     └─ EmailService.java
+    │        └─ resources/
+    │           └─ application.properties
     ├─ Frontend/
-    │ ├─ src/
-    │ │ ├─ components/
-    │ │ ├─ pages/
-    │ │ ├─ utils/
-    │ │ └─ App.jsx
-    │ ├─ public/
-    │ └─ package.json
-    └─ README.md
+    │  ├─ .gitignore
+    │  ├─ index.html
+    │  ├─ package-lock.json
+    │  ├─ package.json
+    │  ├─ postcss.config.cjs
+    │  ├─ public/
+    │  │  ├─ 404.html
+    │  │  └─ favicon.ico
+    │  ├─ src/
+    │  │  ├─ App.jsx
+    │  │  ├─ components/
+    │  │  │  ├─ DataTable.jsx
+    │  │  │  ├─ LoginModal.jsx
+    │  │  │  ├─ PageHeader.jsx
+    │  │  │  ├─ PrivateRoute.jsx
+    │  │  │  ├─ StatCard.jsx
+    │  │  │  ├─ TableCard.jsx
+    │  │  │  ├─ ThemeProvider.jsx
+    │  │  │  ├─ Tooltip.jsx
+    │  │  │  ├─ sidebar.jsx
+    │  │  │  └─ topbar.jsx
+    │  │  ├─ index.css
+    │  │  ├─ layout/
+    │  │  │  └─ DashboardLayout.jsx
+    │  │  ├─ main.jsx
+    │  │  └─ pages/
+    │  │     ├─ Dashboard.jsx
+    │  │     ├─ ExpenseTracker.jsx
+    │  │     ├─ FeedPredictor.jsx
+    │  │     ├─ FlockManagement.jsx
+    │  │     ├─ ProductionTracker.jsx
+    │  │     ├─ RevenueTracker.jsx
+    │  │     └─ Welcome.jsx
+    │  │  └─ utils/
+    │  │     ├─ apiClient.js
+    │  │     └─ login.js
+    │  ├─ styles/
+    │  │  └─ premium-theme.css
+    │  ├─ tailwind.config.js
+    │  └─ vite.config.js
+    └─ .gitignore
+
 
 ---
 
