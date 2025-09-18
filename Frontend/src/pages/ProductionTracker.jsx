@@ -1,3 +1,4 @@
+// src/pages/ProductionTracker.jsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { apiClient } from "../utils/apiClient";
@@ -72,7 +73,12 @@ export default function ProductionTracker() {
       key: "flockId", 
       render: (item) => {
         const flock = flocks.find(f => f.id === item.flockId);
-        return flock ? (flock.birdType === "Other" ? flock.customBird : flock.birdType) : "Unknown";
+        return flock ? (
+          <div>
+            <p>{flock.birdType === "Other" ? flock.customBird : flock.birdType}</p>
+            <p className="text-sm text-gray-500">{flock.numBirds} birds</p>
+          </div>
+        ) : "Unknown";
       }
     },
     { header: "Egg Count", key: "count" },
