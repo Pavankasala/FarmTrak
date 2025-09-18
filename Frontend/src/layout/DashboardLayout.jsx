@@ -26,7 +26,7 @@ export default function DashboardLayout() {
   return (
     <div className="flex h-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text">
       <Sidebar />
-      <div className="flex flex-col flex-grow md:ml-64">
+      <div className="flex flex-col flex-grow">
         <Topbar />
         <main className="flex-grow overflow-y-auto">
           <Outlet context={{ dashboardStats, setDashboardStats }} />
