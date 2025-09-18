@@ -32,7 +32,7 @@ export default function FeedPredictor() {
 
   useEffect(() => { fetchRecords(); }, []);
 
-  const handleChange = (e) => setForm(prev => ({...prev, [e.target.name]: e.target.value}));
+  const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const calculateResult = () => {
     if (!form.numBirds || !form.totalFeedGiven || !form.daysLasted) return;
@@ -84,21 +84,21 @@ export default function FeedPredictor() {
   const handleEdit = (record) => {
     setEditingId(record.id);
     setForm({
-        ...form,
-        birdType: record.birdName === "broiler" || record.birdName === "layer" ? record.birdName : "other",
-        customBird: record.birdName !== "broiler" && record.birdName !== "layer" ? record.birdName : "",
-        numBirds: record.numBirds,
-        totalFeedGiven: record.totalFeedGiven,
-        daysLasted: record.daysLasted,
+      ...form,
+      birdType: record.birdName === "broiler" || record.birdName === "layer" ? record.birdName : "other",
+      customBird: record.birdName !== "broiler" && record.birdName !== "layer" ? record.birdName : "",
+      numBirds: record.numBirds,
+      totalFeedGiven: record.totalFeedGiven,
+      daysLasted: record.daysLasted,
     });
   };
 
   const columns = [
-    { header: "ID", key: "id", render: item => `#${item.id}`},
+    { header: "ID", key: "id", render: item => `#${item.id}` },
     { header: "Species", key: "birdName", render: item => <span className="capitalize">{item.birdName}</span> },
     { header: "Flock Size", key: "numBirds" },
-    { header: "Per Bird/Day", key: "feedPerBird", render: item => `${item.feedPerBird.toFixed(2)} ${form.resultUnit}`},
-    { header: "Total/Day", key: "feedPerDay", render: item => `${item.feedPerDay.toFixed(2)} ${form.resultUnit}`},
+    { header: "Per Bird/Day", key: "feedPerBird", render: item => `${item.feedPerBird.toFixed(2)} ${form.resultUnit}` },
+    { header: "Total/Day", key: "feedPerDay", render: item => `${item.feedPerDay.toFixed(2)} ${form.resultUnit}` },
   ];
 
   return (
@@ -112,55 +112,55 @@ export default function FeedPredictor() {
       <motion.div className="glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Feed Consumption Calculator</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">🐦</span>Bird Species<Tooltip text="Select the type of poultry for accurate feed calculations" />
-                </label>
-                <select name="birdType" value={form.birdType} onChange={handleChange} className={selectStyle}>
-                    <option value="broiler">Broiler Chickens</option>
-                    <option value="layer">Layer Hens</option>
-                    <option value="other">Other Species</option>
-                </select>
-                {form.birdType === "other" && <input type="text" name="customBird" value={form.customBird} onChange={handleChange} placeholder="Enter species name" className={`mt-2 ${inputStyle}`} />}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">🐦</span>Bird Species<Tooltip text="Select the type of poultry for accurate feed calculations" />
+            </label>
+            <select name="birdType" value={form.birdType} onChange={handleChange} className={selectStyle}>
+              <option value="Broiler">🐓Broiler</option>
+              <option value="Layer">🥚Layer</option>
+              <option value="Other">🦆Other</option>
+            </select>
+            {form.birdType === "other" && <input type="text" name="customBird" value={form.customBird} onChange={handleChange} placeholder="Enter species name" className={`mt-2 ${inputStyle}`} />}
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">📊</span>Flock Size<Tooltip text="Total number of birds in your flock" />
+            </label>
+            <input type="number" name="numBirds" value={form.numBirds} onChange={handleChange} placeholder="Number of birds" className={inputStyle} />
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">⚖️</span>Feed Amount<Tooltip text="Total amount of feed provided to the flock" />
+            </label>
+            <div className="flex gap-2">
+              <input type="number" name="totalFeedGiven" value={form.totalFeedGiven} onChange={handleChange} placeholder="Amount" className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100" />
+              <select name="feedUnit" value={form.feedUnit} onChange={handleChange} className="px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100">
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+              </select>
             </div>
-            <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">📊</span>Flock Size<Tooltip text="Total number of birds in your flock" />
-                </label>
-                <input type="number" name="numBirds" value={form.numBirds} onChange={handleChange} placeholder="Number of birds" className={inputStyle} />
-            </div>
-            <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">⚖️</span>Feed Amount<Tooltip text="Total amount of feed provided to the flock" />
-                </label>
-                <div className="flex gap-2">
-                    <input type="number" name="totalFeedGiven" value={form.totalFeedGiven} onChange={handleChange} placeholder="Amount" className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
-                    <select name="feedUnit" value={form.feedUnit} onChange={handleChange} className="px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100">
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                    </select>
-                </div>
-            </div>
-             <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">📅</span>Duration (Days)<Tooltip text="Number of days the feed lasted" />
-                </label>
-                <input type="number" name="daysLasted" value={form.daysLasted} onChange={handleChange} placeholder="Days" className={inputStyle}/>
-            </div>
-            <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">📏</span>Result Unit<Tooltip text="Choose the unit for displaying results" />
-                </label>
-                <select name="resultUnit" value={form.resultUnit} onChange={handleChange} className={selectStyle}>
-                    <option value="kg">Kilograms (kg)</option>
-                    <option value="g">Grams (g)</option>
-                </select>
-            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">📅</span>Duration (Days)<Tooltip text="Number of days the feed lasted" />
+            </label>
+            <input type="number" name="daysLasted" value={form.daysLasted} onChange={handleChange} placeholder="Days" className={inputStyle} />
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">📏</span>Result Unit<Tooltip text="Choose the unit for displaying results" />
+            </label>
+            <select name="resultUnit" value={form.resultUnit} onChange={handleChange} className={selectStyle}>
+              <option value="kg">Kilograms (kg)</option>
+              <option value="g">Grams (g)</option>
+            </select>
+          </div>
         </div>
         <div className="flex flex-wrap gap-3 mt-8">
-            <motion.button onClick={calculateResult} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg">Calculate</motion.button>
-            <motion.button onClick={saveRecord} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{editingId ? "Update Record" : "Save Record"}</motion.button>
-            {editingId && (<motion.button onClick={resetForm} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>)}
+          <motion.button onClick={calculateResult} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg">Calculate</motion.button>
+          <motion.button onClick={saveRecord} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{editingId ? "Update Record" : "Save Record"}</motion.button>
+          {editingId && (<motion.button onClick={resetForm} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>)}
         </div>
         <AnimatePresence>
           {result && (
@@ -179,22 +179,22 @@ export default function FeedPredictor() {
         icon="📋"
         title="Feed Records History"
         badge={
-            <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-sm font-medium">
-                {records.length} {records.length === 1 ? 'Record' : 'Records'}
-            </div>
+          <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-sm font-medium">
+            {records.length} {records.length === 1 ? 'Record' : 'Records'}
+          </div>
         }
       >
         <DataTable
-            isLoading={loading}
-            data={records}
-            columns={columns}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+          isLoading={loading}
+          data={records}
+          columns={columns}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         >
-            <div className="space-y-3">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🌾</span></div>
-                <p className="text-slate-500 dark:text-slate-400 font-medium">No feed records found</p>
-            </div>
+          <div className="space-y-3">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🌾</span></div>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">No feed records found</p>
+          </div>
         </DataTable>
       </TableCard>
     </motion.div>
