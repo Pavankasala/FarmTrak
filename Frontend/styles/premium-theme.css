@@ -1,25 +1,30 @@
 /* Frontend/styles/premium-theme.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /*
  * =============================================================================
  * PREMIUM THEME - FarmTrak Visual Overhaul
  * =============================================================================
+ * This stylesheet provides a visual-only enhancement, ensuring all original
+ * functionality, class names, and component logic remain untouched.
+ * =============================================================================
  */
 
 /*
- * :root -> Light & Dark Theme Color Palette & Base Styles
+ * :root -> Light & Dark Theme Color Palette
  * =============================================================================
  */
 :root {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
     /* Light Theme */
-    --color-bg-primary: #f8fafc;
-    --color-bg-secondary: #ffffff;
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #64748b;
-    --color-border: #e2e8f0;
-    --color-primary: #16a34a;
-    --color-primary-hover: #15803d;
+    --color-bg-primary: #f8f9fa; /* Off-white */
+    --color-bg-secondary: #ffffff; /* Pure white for cards */
+    --color-text-primary: #1f2937; /* Dark gray */
+    --color-text-secondary: #6b7280; /* Medium gray */
+    --color-border: #e5e7eb; /* Light gray border */
+    --color-primary: #4f46e5; /* Indigo */
+    --color-primary-hover: #4338ca;
     --color-primary-text: #ffffff;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -28,18 +33,19 @@
 
 html.dark {
     /* Dark Theme */
-    --color-bg-primary: #0f172a;
-    --color-bg-secondary: #1e293b;
-    --color-text-primary: #f1f5f9;
-    --color-text-secondary: #94a3b8;
-    --color-border: #334155;
-    --color-primary: #22c55e;
-    --color-primary-hover: #4ade80;
+    --color-bg-primary: #111827; /* Dark blue-gray */
+    --color-bg-secondary: #1f2937; /* Lighter blue-gray for cards */
+    --color-text-primary: #f9fafb; /* Off-white */
+    --color-text-secondary: #9ca3af; /* Medium gray */
+    --color-border: #374151; /* Dark gray border */
+    --color-primary: #6366f1; /* Lighter Indigo */
+    --color-primary-hover: #818cf8;
     --color-primary-text: #ffffff;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.15);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.2);
 }
+
 
 /*
  * Base & Typography Styles
@@ -50,50 +56,133 @@ body {
     background-color: var(--color-bg-primary);
     color: var(--color-text-primary);
     transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+p {
+    color: var(--color-text-secondary);
+}
+
 
 /*
- * Custom utility for glassmorphism effect
+ * General Component Overrides
  * =============================================================================
  */
-.glass-effect {
-    background-color: rgba(255, 255, 255, 0.6);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+button, input, select, textarea {
+    transition: all 200ms ease-in-out;
+    border-color: var(--color-border);
 }
 
-html.dark .glass-effect {
-    background-color: rgba(30, 41, 59, 0.7);
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-color: transparent;
 }
+
 
 /*
- * Custom Scrollbar
+ * Specific Component Style Overrides (Targeting existing classes)
  * =============================================================================
  */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+
+/* Cards and backgrounds */
+.bg-white.dark\:bg-gray-800,
+.bg-white.dark\:bg-white\/5 {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
 }
 
-::-webkit-scrollbar-track {
-    background: var(--color-bg-primary);
+/* Primary buttons */
+.bg-light-primary, .bg-indigo-600, .bg-green-600, .bg-blue-600 {
+    background-color: var(--color-primary);
+    color: var(--color-primary-text);
+}
+.hover\:bg-light-primaryHover:hover, .hover\:bg-indigo-500:hover, .hover\:bg-green-500:hover, .hover\:bg-blue-700:hover {
+    background-color: var(--color-primary-hover);
 }
 
-::-webkit-scrollbar-thumb {
-    background: #9ca3af;
-    border-radius: 10px;
+/* Secondary/Danger buttons */
+.bg-red-500, .bg-red-600 { background-color: #ef4444; }
+.hover\:bg-red-600:hover, .hover\:bg-red-700:hover { background-color: #dc2626; }
+.bg-yellow-500 { background-color: #f59e0b; }
+.hover\:bg-yellow-600:hover { background-color: #d97706; }
+.bg-gray-500 { background-color: #6b7280; }
+.hover\:bg-gray-400:hover { background-color: #9ca3af; }
+
+
+/* Text colors */
+.text-light-primary, .text-light-primary.dark\:text-dark-primary {
+    color: var(--color-primary);
+}
+.text-gray-900.dark\:text-white, .text-light-text.dark\:text-dark-text {
+    color: var(--color-text-primary);
+}
+.text-sm.text-gray-600.dark\:text-gray-400 {
+    color: var(--color-text-secondary);
 }
 
-html.dark ::-webkit-scrollbar-thumb {
-    background: #4b5563;
+/* Inputs & Selects */
+input, select {
+    background-color: var(--color-bg-primary);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
+input:focus, select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
 }
 
-html.dark ::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
+/* Tables */
+table {
+    background-color: var(--color-bg-secondary);
+}
+th {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+td, th {
+    border-color: var(--color-border);
+}
+
+/* Recharts Tooltip */
+.recharts-tooltip-wrapper {
+    transition: opacity 200ms ease-in-out, transform 200ms ease-in-out !important;
+}
+.recharts-default-tooltip {
+    background-color: var(--color-bg-secondary) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: var(--shadow-lg);
+}
+.recharts-tooltip-label {
+    color: var(--color-text-primary) !important;
+}
+
+/* Sidebar & Topbar */
+aside, header {
+    background-color: var(--color-bg-secondary);
+    border-color: var(--color-border);
+}
+
+
+/*
+ * Animations & Accessibility
+ * =============================================================================
+ */
+@media (prefers-reduced-motion: reduce) {
+    *, :before, :after {
+        animation-delay: -1ms !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        background-attachment: initial !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+    }
 }
