@@ -8,129 +8,45 @@ const getHeaders = () => ({
   Authorization: getToken() ? `Bearer ${getToken()}` : undefined,
 });
 
-// Auth endpoints
+/**
+ * A factory function to create a set of CRUD API methods for a resource.
+ * @param {string} resource - The name of the resource (e.g., 'flocks', 'expenses').
+ * @returns {object} An object with getAll, save, update, and delete methods.
+ */
+const createCrudClient = (resource) => ({
+  getAll: () => axios.get(`${API_BASE_URL}/${resource}`, { headers: getHeaders() }),
+  save: (data) => axios.post(`${API_BASE_URL}/${resource}`, data, { headers: getHeaders() }),
+  update: (id, data) => axios.put(`${API_BASE_URL}/${resource}/${id}`, data, { headers: getHeaders() }),
+  delete: (id) => axios.delete(`${API_BASE_URL}/${resource}/${id}`, { headers: getHeaders() }),
+});
+
+// Auth endpoints remain the same
 function googleLogin(token) {
   return axios.post(`${API_BASE_URL}/google-login`, { token });
 }
 
 function sendVerification(email, username) {
-  return axios.post(`${API_BASE_URL}/send-verification`, { email, username });
+  // Assuming your refactored auth controller is at /api/auth
+  return axios.post(`${API_BASE_URL}/auth/register`, { email, username });
 }
 
-function verifyEmail(email, code) {
-  console.log("Step 2: Sending POST request to /api/verify-email");
-  return axios.post(`${API_BASE_URL}/verify-email`, { email, code });
+function verifyAndCreateUser(email, code, username) {
+  return axios.post(`${API_BASE_URL}/auth/verify`, { email, code, username });
 }
 
-// Flocks
-function getFlocks() {
-  return axios.get(`${API_BASE_URL}/flocks`, { headers: getHeaders() });
+function login(email) {
+  return axios.post(`${API_BASE_URL}/auth/login`, { email });
 }
 
-function saveFlock(data) {
-  return axios.post(`${API_BASE_URL}/flocks`, data, { headers: getHeaders() });
-}
-
-function updateFlock(id, data) {
-  return axios.put(`${API_BASE_URL}/flocks/${id}`, data, { headers: getHeaders() });
-}
-
-function deleteFlock(id) {
-  return axios.delete(`${API_BASE_URL}/flocks/${id}`, { headers: getHeaders() });
-}
-
-// Expenses
-function getExpenses() {
-  return axios.get(`${API_BASE_URL}/expenses`, { headers: getHeaders() });
-}
-
-function saveExpense(data) {
-  return axios.post(`${API_BASE_URL}/expenses`, data, { headers: getHeaders() });
-}
-
-function updateExpense(id, data) {
-  return axios.put(`${API_BASE_URL}/expenses/${id}`, data, { headers: getHeaders() });
-}
-
-function deleteExpense(id) {
-  return axios.delete(`${API_BASE_URL}/expenses/${id}`, { headers: getHeaders() });
-}
-
-// Eggs
-function getEggProductions() {
-  return axios.get(`${API_BASE_URL}/eggs`, { headers: getHeaders() });
-}
-
-function saveEggProduction(data) {
-  return axios.post(`${API_BASE_URL}/eggs`, data, { headers: getHeaders() });
-}
-
-function updateEggProduction(id, data) {
-  return axios.put(`${API_BASE_URL}/eggs/${id}`, data, { headers: getHeaders() });
-}
-
-function deleteEggProduction(id) {
-  return axios.delete(`${API_BASE_URL}/eggs/${id}`, { headers: getHeaders() });
-}
-
-// Feed records
-function getFeedRecords() {
-  return axios.get(`${API_BASE_URL}/feed-records`, { headers: getHeaders() });
-}
-
-function saveFeedRecord(data) {
-  return axios.post(`${API_BASE_URL}/feed-records`, data, { headers: getHeaders() });
-}
-
-function updateFeedRecord(id, data) {
-  return axios.put(`${API_BASE_URL}/feed-records/${id}`, data, { headers: getHeaders() });
-}
-
-function deleteFeedRecord(id) {
-  return axios.delete(`${API_BASE_URL}/feed-records/${id}`, { headers: getHeaders() });
-}
-
-// Revenue
-function getRevenue() {
-  return axios.get(`${API_BASE_URL}/revenue`, { headers: getHeaders() });
-}
-
-function saveRevenue(data) {
-  return axios.post(`${API_BASE_URL}/revenue`, data, { headers: getHeaders() });
-}
-
-function updateRevenue(id, data) {
-  return axios.put(`${API_BASE_URL}/revenue/${id}`, data, { headers: getHeaders() });
-}
-
-function deleteRevenue(id) {
-  return axios.delete(`${API_BASE_URL}/revenue/${id}`, { headers: getHeaders() });
-}
-
-
-// ✅ Default export as one object, so existing imports work
+// Export a single apiClient object with nested resources
 export const apiClient = {
   googleLogin,
   sendVerification,
-  verifyEmail,
-  getFlocks,
-  saveFlock,
-  updateFlock,
-  deleteFlock,
-  getExpenses,
-  saveExpense,
-  updateExpense,
-  deleteExpense,
-  getEggProductions,
-  saveEggProduction,
-  updateEggProduction,
-  deleteEggProduction,
-  getFeedRecords,
-  saveFeedRecord,
-  updateFeedRecord,
-  deleteFeedRecord,
-  getRevenue,
-  saveRevenue,
-  updateRevenue,
-  deleteRevenue,
+  verifyAndCreateUser,
+  login,
+  flocks: createCrudClient("flocks"),
+  expenses: createCrudClient("expenses"),
+  eggs: createCrudClient("eggs"),
+  feedRecords: createCrudClient("feed-records"),
+  revenue: createCrudClient("revenue"),
 };

@@ -18,7 +18,7 @@ export default function FlockManagement() {
     if (!userEmail) return;
     setLoading(true);
     try {
-      const res = await apiClient.getFlocks();
+      const res = await apiClient.flocks.getAll();
       setFlocks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch flocks:", err);
@@ -42,7 +42,7 @@ export default function FlockManagement() {
     };
     if (!payload.birdType || payload.numBirds <= 0 || payload.age < 0) return alert("Please fill valid flock details.");
     try {
-      await apiClient.saveFlock(payload);
+      await apiClient.flocks.save(payload);
       setNewFlock({ birdType: "Broiler", customBird: "", numBirds: "", age: "" });
       fetchFlocks();
     } catch (err) {
@@ -54,7 +54,7 @@ export default function FlockManagement() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this flock?")) return;
     try {
-      await apiClient.deleteFlock(id);
+      await apiClient.flocks.delete(id);
       fetchFlocks();
     } catch (err) {
       console.error("Failed to delete flock:", err);
@@ -88,7 +88,7 @@ export default function FlockManagement() {
     };
     if (!payload.birdType || payload.numBirds <= 0 || payload.age < 0) return alert("Please fill valid flock details.");
     try {
-      await apiClient.updateFlock(editingId, payload);
+      await apiClient.flocks.update(editingId, payload);
       cancelEdit();
       fetchFlocks();
     } catch (err) {
