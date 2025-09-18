@@ -1,4 +1,3 @@
-// src/pages/ProductionTracker.jsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { apiClient } from "../utils/apiClient";
@@ -13,7 +12,7 @@ const selectStyle = inputStyle;
 
 export default function ProductionTracker() {
   const [flocks, setFlocks] = useState([]);
-  const [productions, setProductions] = useState([]);
+  const [productions, setProductions] = useState([]); // Initialized with an empty array
   const [form, setForm] = useState({ id: null, flockId: "", count: "", date: new Date().toISOString().split("T")[0] });
   const [loading, setLoading] = useState(true);
 
@@ -75,8 +74,8 @@ export default function ProductionTracker() {
         const flock = flocks.find(f => f.id === item.flockId);
         return flock ? (
           <div>
-            <p>{flock.birdType === "Other" ? flock.customBird : flock.birdType}</p>
-            <p className="text-sm text-gray-500">{flock.numBirds} birds</p>
+            <p className="font-semibold text-slate-900 dark:text-slate-100">{flock.birdType === "Other" ? flock.customBird : flock.birdType}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{flock.numBirds} birds</p>
           </div>
         ) : "Unknown";
       }
