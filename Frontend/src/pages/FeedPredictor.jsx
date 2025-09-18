@@ -1,3 +1,4 @@
+// Frontend/src/pages/FeedPredictor.jsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiClient } from "../utils/apiClient";
@@ -7,11 +8,20 @@ import DataTable from "../components/DataTable";
 import StatCard from "../components/StatCard";
 import Tooltip from "../components/Tooltip";
 
-const inputStyle = "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all";
+const inputStyle =
+  "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all";
 const selectStyle = inputStyle;
 
 export default function FeedPredictor() {
-  const [form, setForm] = useState({ birdType: "broiler", customBird: "", numBirds: "", totalFeedGiven: "", feedUnit: "kg", daysLasted: "10", resultUnit: "kg" });
+  const [form, setForm] = useState({
+    birdType: "Broiler",
+    customBird: "",
+    numBirds: "",
+    totalFeedGiven: "",
+    feedUnit: "kg",
+    daysLasted: "1",
+    resultUnit: "kg",
+  });
   const [result, setResult] = useState(null);
   const [records, setRecords] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -21,45 +31,78 @@ export default function FeedPredictor() {
     setLoading(true);
     try {
       const res = await apiClient.feedRecords.getAll();
-      const processed = res.data.map((r) => ({ ...r, feedPerDay: r.totalFeedGiven / r.daysLasted, feedPerBird: r.totalFeedGiven / r.numBirds / r.daysLasted }));
+      const rows = Array.isArray(res?.data) ? res.data : [];
+      const processed = rows.map((r) => {
+        const totalFeed = Number(r.totalFeedGiven || 0);
+        const days = Number(r.daysLasted || 1) || 1;
+        const birds = Number(r.numBirds || 1) || 1;
+        const feedPerDay = totalFeed / days;
+        const feedPerBird = feedPerDay / birds;
+        return { ...r, feedPerDay, feedPerBird };
+      });
       setRecords(processed);
     } catch (err) {
       console.error("Error fetching records:", err);
+      setRecords([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchRecords(); }, []);
+  useEffect(() => {
+    fetchRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) =>
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const calculateResult = () => {
     if (!form.numBirds || !form.totalFeedGiven || !form.daysLasted) return;
-    let total = parseFloat(form.totalFeedGiven);
-    if (form.feedUnit === "kg") total *= 1000;
-    const perDay = total / parseFloat(form.daysLasted);
-    const perBird = perDay / parseFloat(form.numBirds);
-    let displayTotal = perDay, displayPerBird = perBird;
+    let total = parseFloat(form.totalFeedGiven || 0);
+    if (form.feedUnit === "kg") total *= 1000; // convert to grams for internal calc
+    const days = parseFloat(form.daysLasted || 1) || 1;
+    const numBirds = parseFloat(form.numBirds || 1) || 1;
+
+    const perDay = total / days; // grams/day
+    const perBird = perDay / numBirds; // grams/bird/day
+
     if (form.resultUnit === "kg") {
-      displayTotal /= 1000;
-      displayPerBird /= 1000;
+      setResult({
+        perBird: +(perBird / 1000).toFixed(3),
+        total: +(perDay / 1000).toFixed(3),
+        unit: "kg",
+      });
+    } else {
+      setResult({
+        perBird: +perBird.toFixed(2),
+        total: +perDay.toFixed(0),
+        unit: "g",
+      });
     }
-    setResult({ perBird: displayPerBird.toFixed(2), total: displayTotal.toFixed(2), unit: form.resultUnit });
   };
 
   const resetForm = () => {
-    setForm({ birdType: "broiler", customBird: "", numBirds: "", totalFeedGiven: "", feedUnit: "kg", daysLasted: "10", resultUnit: "kg" });
+    setForm({
+      birdType: "Broiler",
+      customBird: "",
+      numBirds: "",
+      totalFeedGiven: "",
+      feedUnit: "kg",
+      daysLasted: "1",
+      resultUnit: "kg",
+    });
     setResult(null);
     setEditingId(null);
   };
 
   const saveRecord = async () => {
     const payload = {
-      birdName: form.birdType === "other" ? form.customBird : form.birdType,
-      numBirds: parseInt(form.numBirds),
-      totalFeedGiven: parseFloat(form.totalFeedGiven),
-      daysLasted: parseInt(form.daysLasted),
+      birdName:
+        form.birdType === "Other" ? form.customBird || "Other" : form.birdType,
+      numBirds: parseInt(form.numBirds, 10) || 0,
+      totalFeedGiven: parseFloat(form.totalFeedGiven) || 0,
+      daysLasted: parseInt(form.daysLasted, 10) || 1,
     };
     try {
       if (editingId) await apiClient.feedRecords.update(editingId, payload);
@@ -68,6 +111,7 @@ export default function FeedPredictor() {
       resetForm();
     } catch (err) {
       console.error("Error saving record:", err);
+      alert("Failed to save feed record.");
     }
   };
 
@@ -75,100 +119,241 @@ export default function FeedPredictor() {
     if (!window.confirm("Delete this feed record?")) return;
     try {
       await apiClient.feedRecords.delete(id);
-      fetchRecords();
+      await fetchRecords();
     } catch (err) {
       console.error("Error deleting record:", err);
+      alert("Failed to delete record.");
     }
   };
 
   const handleEdit = (record) => {
-    setEditingId(record.id);
+    setEditingId(record.id || record._id || null);
     setForm({
-      ...form,
-      birdType: record.birdName === "broiler" || record.birdName === "layer" ? record.birdName : "other",
-      customBird: record.birdName !== "broiler" && record.birdName !== "layer" ? record.birdName : "",
-      numBirds: record.numBirds,
-      totalFeedGiven: record.totalFeedGiven,
-      daysLasted: record.daysLasted,
+      birdType:
+        record.birdName === "Broiler" || record.birdName === "Layer"
+          ? record.birdName
+          : "Other",
+      customBird:
+        record.birdName !== "Broiler" && record.birdName !== "Layer"
+          ? record.birdName
+          : "",
+      numBirds: record.numBirds?.toString() || "",
+      totalFeedGiven: record.totalFeedGiven?.toString() || "",
+      daysLasted: record.daysLasted?.toString() || "1",
+      resultUnit: form.resultUnit,
+      feedUnit: form.feedUnit,
     });
   };
 
+  const totalRecords = records.length;
+
   const columns = [
-    { header: "ID", key: "id", render: item => `#${item.id}` },
-    { header: "Species", key: "birdName", render: item => <span className="capitalize">{item.birdName}</span> },
-    { header: "Flock Size", key: "numBirds" },
-    { header: "Per Bird/Day", key: "feedPerBird", render: item => `${item.feedPerBird.toFixed(2)} ${form.resultUnit}` },
-    { header: "Total/Day", key: "feedPerDay", render: item => `${item.feedPerDay.toFixed(2)} ${form.resultUnit}` },
+    {
+      header: "ID",
+      key: "id",
+      render: (item) => <span>#{item.id ?? item._id ?? "—"}</span>,
+    },
+    {
+      header: "Species",
+      key: "birdName",
+      render: (item) => <span className="capitalize">{item.birdName}</span>,
+    },
+    { header: "Flock Size", key: "numBirds", render: (item) => `${item.numBirds}` },
+    {
+      header: "Per Bird/Day",
+      key: "feedPerBird",
+      render: (item) =>
+        `${(item.feedPerBird ?? 0).toFixed(2)} ${form.resultUnit === "kg" ? "g (raw)" : "g"}`,
+    },
+    {
+      header: "Total/Day",
+      key: "feedPerDay",
+      render: (item) =>
+        `${(item.feedPerDay ?? 0).toFixed(2)} g`,
+    },
   ];
 
   return (
-    <motion.div className="max-w-7xl mx-auto px-6 py-12 space-y-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+    <motion.div
+      className="flex flex-col items-center px-6 py-12 space-y-8 w-full max-w-7xl mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
       <PageHeader
-        icon="🧠"
+        icon={"🌾"}
         title="Intelligent Feed Predictor"
         description="Calculate optimal feed requirements and predict consumption patterns for your poultry flocks"
       />
 
-      <motion.div className="glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Feed Consumption Calculator</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+        <StatCard icon={"📋"} label="Total Records" value={totalRecords} />
+      </div>
+
+      <motion.div
+        className="w-full max-w-4xl glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
+          Feed Consumption Calculator
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">🐦</span>Bird Species<Tooltip text="Select the type of poultry for accurate feed calculations" />
+              <span className="text-lg">🐦</span>Bird Species
+              <Tooltip text="Select the type of poultry for accurate feed calculations" />
             </label>
-            <select name="birdType" value={form.birdType} onChange={handleChange} className={selectStyle}>
-              <option value="Broiler">🐓Broiler</option>
-              <option value="Layer">🥚Layer</option>
-              <option value="Other">🦆Other</option>
+            <select
+              name="birdType"
+              value={form.birdType}
+              onChange={handleChange}
+              className={selectStyle}
+            >
+              <option value="Broiler">🐓 Broiler</option>
+              <option value="Layer">🥚 Layer</option>
+              <option value="Other">🐥 Other</option>
             </select>
-            {form.birdType === "other" && <input type="text" name="customBird" value={form.customBird} onChange={handleChange} placeholder="Enter species name" className={`mt-2 ${inputStyle}`} />}
+            {form.birdType === "Other" && (
+              <input
+                type="text"
+                name="customBird"
+                value={form.customBird}
+                onChange={handleChange}
+                placeholder="Enter species name"
+                className={`mt-2 ${inputStyle}`}
+              />
+            )}
           </div>
+
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">📊</span>Flock Size<Tooltip text="Total number of birds in your flock" />
+              <span className="text-lg">📊</span>Flock Size
+              <Tooltip text="Total number of birds in your flock" />
             </label>
-            <input type="number" name="numBirds" value={form.numBirds} onChange={handleChange} placeholder="Number of birds" className={inputStyle} />
+            <input
+              type="number"
+              name="numBirds"
+              value={form.numBirds}
+              onChange={handleChange}
+              placeholder="Number of birds"
+              className={inputStyle}
+            />
           </div>
+
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">⚖️</span>Feed Amount<Tooltip text="Total amount of feed provided to the flock" />
+              <span className="text-lg">⚖️</span>Feed Amount
+              <Tooltip text="Total amount of feed provided to the flock" />
             </label>
             <div className="flex gap-2">
-              <input type="number" name="totalFeedGiven" value={form.totalFeedGiven} onChange={handleChange} placeholder="Amount" className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100" />
-              <select name="feedUnit" value={form.feedUnit} onChange={handleChange} className="px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100">
+              <input
+                type="number"
+                name="totalFeedGiven"
+                value={form.totalFeedGiven}
+                onChange={handleChange}
+                placeholder="Amount"
+                className={`${inputStyle} flex-1`}
+              />
+              <select
+                name="feedUnit"
+                value={form.feedUnit}
+                onChange={handleChange}
+                className={selectStyle}
+              >
                 <option value="kg">kg</option>
                 <option value="g">g</option>
               </select>
             </div>
           </div>
+
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">📅</span>Duration (Days)<Tooltip text="Number of days the feed lasted" />
+              <span className="text-lg">📅</span>Duration (Days)
+              <Tooltip text="Number of days the feed lasted" />
             </label>
-            <input type="number" name="daysLasted" value={form.daysLasted} onChange={handleChange} placeholder="Days" className={inputStyle} />
+            <input
+              type="number"
+              name="daysLasted"
+              value={form.daysLasted}
+              onChange={handleChange}
+              placeholder="Days"
+              className={inputStyle}
+            />
           </div>
+
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">📏</span>Result Unit<Tooltip text="Choose the unit for displaying results" />
+              <span className="text-lg">📏</span>Result Unit
+              <Tooltip text="Choose the unit for displaying results" />
             </label>
-            <select name="resultUnit" value={form.resultUnit} onChange={handleChange} className={selectStyle}>
+            <select
+              name="resultUnit"
+              value={form.resultUnit}
+              onChange={handleChange}
+              className={selectStyle}
+            >
               <option value="kg">Kilograms (kg)</option>
               <option value="g">Grams (g)</option>
             </select>
           </div>
         </div>
+
         <div className="flex flex-wrap gap-3 mt-8">
-          <motion.button onClick={calculateResult} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg">Calculate</motion.button>
-          <motion.button onClick={saveRecord} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{editingId ? "Update Record" : "Save Record"}</motion.button>
-          {editingId && (<motion.button onClick={resetForm} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>)}
+          <motion.button
+            onClick={calculateResult}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg"
+          >
+            Calculate
+          </motion.button>
+
+          <motion.button
+            onClick={saveRecord}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg"
+          >
+            {editingId ? "Update Record" : "Save Record"}
+          </motion.button>
+
+          {editingId && (
+            <motion.button
+              onClick={resetForm}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl"
+            >
+              Cancel Edit
+            </motion.button>
+          )}
         </div>
+
         <AnimatePresence>
           {result && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-8 p-6 bg-green-100/50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800">
-              <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-4">Feed Calculation Results</h3>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mt-8 p-6 bg-green-100/50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800"
+            >
+              <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-4">
+                Feed Calculation Results
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <StatCard icon="🐔" label="Per Bird / Day" value={`${result.perBird} ${result.unit}`} />
-                <StatCard icon="📦" label="Total / Day" value={`${result.total} ${result.unit}`} />
+                <StatCard
+                  icon={"🐦"}
+                  label="Per Bird / Day"
+                  value={`${result.perBird} ${result.unit}`}
+                />
+                <StatCard
+                  icon={"📦"}
+                  label="Total / Day"
+                  value={`${result.total} ${result.unit}`}
+                />
               </div>
             </motion.div>
           )}
@@ -176,11 +361,11 @@ export default function FeedPredictor() {
       </motion.div>
 
       <TableCard
-        icon="📋"
+        icon={"📋"}
         title="Feed Records History"
         badge={
           <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-sm font-medium">
-            {records.length} {records.length === 1 ? 'Record' : 'Records'}
+            {records.length} {records.length === 1 ? "Record" : "Records"}
           </div>
         }
       >
@@ -192,7 +377,9 @@ export default function FeedPredictor() {
           onDelete={handleDelete}
         >
           <div className="space-y-3">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🌾</span></div>
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+              <span className="text-3xl">🌿</span>
+            </div>
             <p className="text-slate-500 dark:text-slate-400 font-medium">No feed records found</p>
           </div>
         </DataTable>

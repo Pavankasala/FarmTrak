@@ -93,7 +93,7 @@ export default function FlockManagement() {
       key: "birdType",
       render: (item) => (
         <div className="flex items-center gap-3">
-            <span className="text-lg">{item.birdType === "Broiler" ? "🐓" : item.birdType === "Layer" ? "🐔" : "🦆"}</span>
+            <span className="text-lg">{item.birdType === "Broiler" ? "🐔" : item.birdType === "Layer" ? "🥚" : "🦆"}</span>
             <div>
               <div className="font-semibold text-slate-900 dark:text-slate-100">
                 {item.birdType === "Other" ? item.customBird || "Other" : item.birdType}
@@ -111,42 +111,39 @@ export default function FlockManagement() {
 
   return (
     <motion.div
-      className="w-full max-w-7xl mx-auto px-6 py-12 space-y-8"
+      className="flex flex-col items-center px-6 py-12 space-y-8 w-full max-w-7xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
       <PageHeader
-        icon="🐔"
+        icon="🐓"
         title="Flock Management Center"
         description="Efficiently manage your poultry flocks with comprehensive tracking and monitoring tools"
       />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        <StatCard icon="🐾" label="Total Birds" value={totalBirds} />
-        <StatCard icon="🐣" label="Active Flocks" value={flocks.length} />
+        <StatCard icon="🐣" label="Total Birds" value={totalBirds} />
+        <StatCard icon="📈" label="Active Flocks" value={flocks.length} />
       </div>
 
-       <motion.div 
-        className="w-full max-w-4xl glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+      <TableCard
+        icon="📝"
+        title="Add New Flock"
       >
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Add New Flock</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-           <div className="space-y-2">
+          <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
               <span className="text-lg">🐦</span>
               Bird Species
               <Tooltip text="Select the type of poultry: Broiler for meat, Layer for eggs, or specify a custom species" />
             </label>
             <select value={newFlock.birdType} onChange={(e) => setNewFlock({ ...newFlock, birdType: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all">
-              <option value="Broiler">🐓Broiler</option>
+              <option value="Broiler">🐔Broiler</option>
               <option value="Layer">🥚Layer</option>
               <option value="Other">🦆Other</option>
             </select>
-             {newFlock.birdType === "Other" && (
+            {newFlock.birdType === "Other" && (
               <input type="text" value={newFlock.customBird} onChange={(e) => setNewFlock({ ...newFlock, customBird: e.target.value })} placeholder="Species name" className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
             )}
           </div>
@@ -170,10 +167,10 @@ export default function FlockManagement() {
             <motion.button onClick={handleAddFlock} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">Add Flock</motion.button>
           </div>
         </div>
-      </motion.div>
+      </TableCard>
 
       <TableCard
-        icon="🐔"
+        icon="📋"
         title="Active Flocks"
         badge={
           <div className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">

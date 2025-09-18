@@ -15,8 +15,8 @@ export default {
           text: '#0f172a', // slate-900
           subtext: '#64748b', // slate-500
           border: '#e2e8f0', // slate-200
-          primary: '#16a34a', // green-600
-          primaryHover: '#15803d', // green-700
+          primary: '#4f46e5', // Original Indigo
+          primaryHover: '#4338ca', // Original Indigo Hover
         },
         // Dark Theme
         dark: {
@@ -25,8 +25,8 @@ export default {
           text: '#f1f5f9', // slate-100
           subtext: '#94a3b8', // slate-400
           border: '#334155', // slate-700
-          primary: '#22c55e', // green-500
-          primaryHover: '#4ade80', // green-400
+          primary: '#6366f1', // Original Lighter Indigo
+          primaryHover: '#818cf8', // Original Lighter Indigo Hover
         },
       },
       fontFamily: {

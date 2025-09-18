@@ -1,10 +1,149 @@
-/* src/index.css */
+/* Updated index.css with enhanced Tailwind integration */
+@import '../styles/premium-theme.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Enhanced base layer */
 @layer base {
   html, body {
-    @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white min-h-screen;
+    @apply min-h-screen;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
+  
+  /* Enhanced scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-100 dark:bg-slate-800;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-600 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 dark:bg-slate-500;
+  }
+}
+
+@layer components {
+  /* Enhanced form components */
+  .form-input-enhanced {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 
+           bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 
+           focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary 
+           focus:border-transparent transition-all duration-300 
+           placeholder:text-slate-400 dark:placeholder:text-slate-500;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Enhanced glass cards */
+  .glass-card {
+    @apply bg-white/10 dark:bg-slate-800/10 backdrop-blur-lg 
+           border border-white/20 dark:border-slate-700/50 
+           rounded-3xl shadow-xl transition-all duration-300;
+  }
+  
+  /* Enhanced buttons */
+  .btn-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 
+           hover:from-blue-700 hover:to-indigo-700
+           text-white font-semibold px-8 py-3 rounded-xl shadow-lg 
+           transition-all duration-300 transform hover:scale-105 hover:shadow-xl;
+  }
+  
+  /* Enhanced navigation */
+  .nav-item {
+    @apply px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-3 
+           text-sm font-medium relative overflow-hidden;
+  }
+  
+  .nav-item::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 
+           opacity-0 transition-opacity duration-300;
+  }
+  
+  .nav-item:hover::before {
+    @apply opacity-10;
+  }
+  
+  .nav-item.active {
+    @apply bg-light-primary text-white shadow-md;
+  }
+  
+  /* Enhanced tables */
+  .table-enhanced {
+    @apply w-full border-collapse;
+  }
+  
+  .table-enhanced th {
+    @apply bg-slate-50 dark:bg-slate-800/50 px-6 py-4 text-left text-sm font-semibold 
+           text-slate-700 dark:text-slate-300 uppercase tracking-wider
+           border-b border-slate-200 dark:border-slate-700;
+  }
+  
+  .table-enhanced td {
+    @apply px-6 py-4 border-b border-slate-200 dark:border-slate-700
+           transition-colors duration-150;
+  }
+  
+  .table-enhanced tr:hover {
+    @apply bg-slate-50 dark:bg-slate-800/50;
+  }
+}
+
+@layer utilities {
+  /* Premium gradients */
+  .gradient-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  }
+  
+  .gradient-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  
+  .gradient-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  }
+  
+  .gradient-error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+  
+  /* Text gradients */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-success {
+    @apply bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent;
+  }
+  
+  /* Shadow utilities */
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+  }
+  
+  .shadow-glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  
+  /* Animation utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }

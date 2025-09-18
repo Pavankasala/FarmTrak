@@ -133,7 +133,6 @@ export default function ProductionTracker() {
           {form.id && (<motion.button type="button" onClick={resetForm} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>)}
         </div>
       </motion.form>
-
       <TableCard
         icon="📋"
         title="Production History"
