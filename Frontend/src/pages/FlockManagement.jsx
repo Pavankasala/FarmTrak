@@ -86,6 +86,10 @@ export default function FlockManagement() {
   };
 
   const totalBirds = flocks.reduce((sum, flock) => sum + flock.numBirds, 0);
+  const formState = editingId ? editedFlock : newFlock;
+  const setFormState = editingId ? setEditedFlock : setNewFlock;
+  const handleFormSubmit = editingId ? handleUpdate : handleAddFlock;
+  const buttonText = editingId ? "Update Flock" : "Add Flock";
 
   const columns = [
     {
@@ -129,7 +133,7 @@ export default function FlockManagement() {
 
       <TableCard
         icon="📝"
-        title="Add New Flock"
+        title={editingId ? "Edit Flock" : "Add New Flock"}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
           <div className="space-y-2">
@@ -138,13 +142,13 @@ export default function FlockManagement() {
               Bird Species
               <Tooltip text="Select the type of poultry: Broiler for meat, Layer for eggs, or specify a custom species" />
             </label>
-            <select value={newFlock.birdType} onChange={(e) => setNewFlock({ ...newFlock, birdType: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all">
+            <select value={formState.birdType} onChange={(e) => setFormState({ ...formState, birdType: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all">
               <option value="Broiler">🐔Broiler</option>
               <option value="Layer">🥚Layer</option>
               <option value="Other">🦆Other</option>
             </select>
-            {newFlock.birdType === "Other" && (
-              <input type="text" value={newFlock.customBird} onChange={(e) => setNewFlock({ ...newFlock, customBird: e.target.value })} placeholder="Species name" className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
+            {formState.birdType === "Other" && (
+              <input type="text" value={formState.customBird} onChange={(e) => setFormState({ ...formState, customBird: e.target.value })} placeholder="Species name" className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
             )}
           </div>
           <div className="space-y-2">
@@ -153,7 +157,7 @@ export default function FlockManagement() {
                 Flock Size
                 <Tooltip text="Enter the total number of birds in this flock" />
             </label>
-            <input type="number" value={newFlock.numBirds} onChange={(e) => setNewFlock({ ...newFlock, numBirds: e.target.value })} placeholder="Number of birds" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
+            <input type="number" value={formState.numBirds} onChange={(e) => setFormState({ ...formState, numBirds: e.target.value })} placeholder="Number of birds" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -161,10 +165,13 @@ export default function FlockManagement() {
                 Age (Weeks)
                 <Tooltip text="Current age of the flock in weeks" />
             </label>
-            <input type="number" value={newFlock.age} onChange={(e) => setNewFlock({ ...newFlock, age: e.target.value })} placeholder="Age in weeks" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
+            <input type="number" value={formState.age} onChange={(e) => setFormState({ ...formState, age: e.target.value })} placeholder="Age in weeks" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
           </div>
-          <div className="flex justify-end">
-            <motion.button onClick={handleAddFlock} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">Add Flock</motion.button>
+          <div className="flex justify-end gap-3">
+            <motion.button onClick={handleFormSubmit} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{buttonText}</motion.button>
+            {editingId && (
+              <motion.button onClick={cancelEdit} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>
+            )}
           </div>
         </div>
       </TableCard>
