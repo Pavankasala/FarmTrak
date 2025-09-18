@@ -5,6 +5,7 @@ import PageHeader from "../components/PageHeader";
 import StatCard from "../components/StatCard";
 import TableCard from "../components/TableCard";
 import DataTable from "../components/DataTable";
+import Tooltip from "../components/Tooltip";
 
 const inputStyle = "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all";
 const selectStyle = inputStyle;
@@ -30,6 +31,7 @@ export default function RevenueTracker() {
   useEffect(() => { fetchRevenue(); }, []);
   
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
   const resetForm = () => {
     setForm({ category: "egg_sale", amount: "", note: "", date: new Date().toISOString().split("T")[0] });
     setEditId(null);
@@ -37,10 +39,15 @@ export default function RevenueTracker() {
 
   const saveRevenue = async () => {
     if (!form.amount || form.amount <= 0) return alert("Please enter a valid amount.");
+    
     const payload = { ...form, amount: parseFloat(form.amount) };
+
     try {
-      if (editId) await apiClient.revenue.update(editId, payload);
-      else await apiClient.revenue.save(payload);
+      if (editId) {
+        await apiClient.revenue.update(editId, payload);
+      } else {
+        await apiClient.revenue.save(payload);
+      }
       resetForm();
       fetchRevenue();
     } catch (err) {
@@ -90,8 +97,8 @@ export default function RevenueTracker() {
     >
       <PageHeader
         icon="💰"
-        title="Revenue Tracker"
-        description="Track and analyze all income sources from your poultry operations"
+        title="Revenue Management Center"
+        description="Track and analyze all income sources from your poultry operations with detailed insights"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
@@ -102,11 +109,15 @@ export default function RevenueTracker() {
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">{editId ? "Edit Revenue Entry" : "Record New Revenue"}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Date</label>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">🗓️</span>Date<Tooltip text="Date the revenue was earned" />
+            </label>
             <input type="date" name="date" value={form.date} onChange={handleChange} className={inputStyle} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Source</label>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">🏷️</span>Revenue Source<Tooltip text="Categorize the source of this revenue" />
+            </label>
             <select name="category" value={form.category} onChange={handleChange} className={selectStyle}>
               <option value="egg_sale">🥚 Egg Sales</option>
               <option value="flock_sale">🐔 Flock Sales</option>
@@ -114,13 +125,17 @@ export default function RevenueTracker() {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount (₹)</label>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">💵</span>Amount Received (₹)<Tooltip text="Enter the total amount received" />
+            </label>
             <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder="0.00" className={inputStyle}/>
           </div>
         </div>
         <div className="space-y-2 mb-6">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Notes (Optional)</label>
-            <input type="text" name="note" value={form.note} onChange={handleChange} placeholder="e.g., Sold 100 eggs to market" className={inputStyle}/>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">📝</span>Sale Details & Notes (Optional)<Tooltip text="Add details about this sale for future reference" />
+            </label>
+            <input type="text" name="note" value={form.note} onChange={handleChange} placeholder="e.g., Sold 100 eggs to local market" className={inputStyle}/>
         </div>
         <div className="flex gap-3">
           <motion.button onClick={saveRevenue} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{editId ? "Update Revenue" : "Save Revenue"}</motion.button>

@@ -31,6 +31,7 @@ export default function ExpenseTracker() {
   useEffect(() => { fetchExpenses(); }, []);
 
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  
   const resetForm = () => {
     setForm({ category: "feed", amount: "", note: "", date: new Date().toISOString().split("T")[0] });
     setEditId(null);
@@ -90,24 +91,28 @@ export default function ExpenseTracker() {
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
     >
       <PageHeader
-        icon="💸"
-        title="Expense Tracker"
+        icon="🧾"
+        title="Expense Management Hub"
         description="Track and manage all your farm expenses with detailed categorization and insights"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        <StatCard icon="💵" label="Total Expenses" value={`₹${totalExpenses.toFixed(2)}`} />
+        <StatCard icon="💰" label="Total Expenses" value={`₹${totalExpenses.toFixed(2)}`} />
       </div>
 
       <motion.div className="w-full max-w-4xl glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">{editId ? "Edit Expense" : "Record New Expense"}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Date</label>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">🗓️</span>Date<Tooltip text="Date the expense was incurred" />
+            </label>
             <input type="date" name="date" value={form.date} onChange={handleChange} className={inputStyle} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Category</label>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">🏷️</span>Category<Tooltip text="Categorize your expense" />
+            </label>
             <select name="category" value={form.category} onChange={handleChange} className={selectStyle}>
               <option value="feed">🌾 Feed & Nutrition</option>
               <option value="medicine">💊 Medicine & Healthcare</option>
@@ -116,12 +121,16 @@ export default function ExpenseTracker() {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount (₹)</label>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">💵</span>Amount (₹)<Tooltip text="Enter the total amount spent" />
+            </label>
             <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder="0.00" className={inputStyle}/>
           </div>
         </div>
         <div className="space-y-2 mb-6">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Note (Optional)</label>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">📝</span>Note (Optional)<Tooltip text="Add any relevant details" />
+            </label>
             <input type="text" name="note" value={form.note} onChange={handleChange} placeholder="e.g., Premium layer feed - 50kg bags" className={inputStyle}/>
         </div>
         <div className="flex gap-3">

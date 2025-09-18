@@ -4,6 +4,7 @@ import { apiClient } from "../utils/apiClient";
 import PageHeader from "../components/PageHeader";
 import TableCard from "../components/TableCard";
 import DataTable from "../components/DataTable";
+import StatCard from "../components/StatCard";
 import Tooltip from "../components/Tooltip";
 
 const inputStyle = "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all";
@@ -112,20 +113,26 @@ export default function FeedPredictor() {
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Feed Consumption Calculator</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Bird Species</label>
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <span className="text-lg">🐦</span>Bird Species<Tooltip text="Select the type of poultry for accurate feed calculations" />
+                </label>
                 <select name="birdType" value={form.birdType} onChange={handleChange} className={selectStyle}>
-                    <option value="broiler">🍗Broiler Chickens</option>
-                    <option value="layer">🥚Layer Hens</option>
-                    <option value="other"> 🦆Other Species</option>
+                    <option value="broiler">Broiler Chickens</option>
+                    <option value="layer">Layer Hens</option>
+                    <option value="other">Other Species</option>
                 </select>
                 {form.birdType === "other" && <input type="text" name="customBird" value={form.customBird} onChange={handleChange} placeholder="Enter species name" className={`mt-2 ${inputStyle}`} />}
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Flock Size</label>
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <span className="text-lg">📊</span>Flock Size<Tooltip text="Total number of birds in your flock" />
+                </label>
                 <input type="number" name="numBirds" value={form.numBirds} onChange={handleChange} placeholder="Number of birds" className={inputStyle} />
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Feed Amount</label>
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <span className="text-lg">⚖️</span>Feed Amount<Tooltip text="Total amount of feed provided to the flock" />
+                </label>
                 <div className="flex gap-2">
                     <input type="number" name="totalFeedGiven" value={form.totalFeedGiven} onChange={handleChange} placeholder="Amount" className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100"/>
                     <select name="feedUnit" value={form.feedUnit} onChange={handleChange} className="px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100">
@@ -135,11 +142,15 @@ export default function FeedPredictor() {
                 </div>
             </div>
              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Duration (Days)</label>
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <span className="text-lg">📅</span>Duration (Days)<Tooltip text="Number of days the feed lasted" />
+                </label>
                 <input type="number" name="daysLasted" value={form.daysLasted} onChange={handleChange} placeholder="Days" className={inputStyle}/>
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Result Unit</label>
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <span className="text-lg">📏</span>Result Unit<Tooltip text="Choose the unit for displaying results" />
+                </label>
                 <select name="resultUnit" value={form.resultUnit} onChange={handleChange} className={selectStyle}>
                     <option value="kg">Kilograms (kg)</option>
                     <option value="g">Grams (g)</option>
