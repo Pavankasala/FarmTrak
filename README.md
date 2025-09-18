@@ -1,6 +1,6 @@
 # 🌾 FarmTrak - Poultry Farm Management
 
-![CodeFactor Grade](https://www.codefactor.io/repository/github/pavankasala/farmtrak/stats)
+![CodeFactor Grade](https://www.codefactor.io/repository/github/pavankasala/farmtrak/badge/main)
 
 FarmTrak is a comprehensive web application designed to help poultry farmers manage their operations efficiently. It provides a centralized platform for tracking flocks, recording financial data, monitoring egg production, and analyzing key farm metrics to optimize performance.
 
