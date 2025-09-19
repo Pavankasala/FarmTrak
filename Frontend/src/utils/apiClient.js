@@ -26,7 +26,7 @@ function googleLogin(token) {
 }
 // 1. Send code to email
 function register(email, username, password) {
-  return axios.post(`${API_URL}/auth/register`, { email, username, password });
+  return axios.post(`${API_URL}/auth/register`, { email, username, password }); 
 }
 // 2. Check code and create user
 function verifyAndCreateUser(email, code, username, password) {
