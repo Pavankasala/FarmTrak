@@ -10,3 +10,14 @@ services:
         value: prod
       - key: JAVA_VERSION
         value: 17
+      # Add these database environment variables
+      - key: JDBC_DATABASE_URL
+        sync: false 
+      - key: JDBC_DATABASE_USERNAME
+        sync: false
+      - key: JDBC_DATABASE_PASSWORD
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_APP_PASSWORD
+        sync: false

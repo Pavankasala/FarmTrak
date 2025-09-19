@@ -24,7 +24,9 @@ const createCrudClient = (resource) => ({
 function googleLogin(token) {
   return axios.post(`${API_BASE_URL}/google-login`, { token });
 }
-
+function register(email, username) {
+  return axios.post(`${API_BASE_URL}/auth/register`, { email, username });
+}
 function sendVerification(email, username) {
   // Assuming your refactored auth controller is at /api/auth
   return axios.post(`${API_BASE_URL}/auth/register`, { email, username });
@@ -41,7 +43,7 @@ function login(email) {
 // Export a single apiClient object with nested resources
 export const apiClient = {
   googleLogin,
-  sendVerification,
+  register,
   verifyAndCreateUser,
   login,
   flocks: createCrudClient("flocks"),
