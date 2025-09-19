@@ -1,9 +1,8 @@
-// src/pages/Welcome.jsx
 import { useState, useEffect } from "react";
 import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { logOut, isLoggedIn, logIn } from "../utils/login";
-import LoginModal from "../components/LoginModal";
+import FirebaseLogin from "../components/FirebaseLogin"; // 🔥 Changed import
 
 function Welcome() {
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
@@ -90,7 +89,11 @@ function Welcome() {
         </div>
       </div>
 
-      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onSuccess={handleLoginSuccess} />
+      <FirebaseLogin 
+        isOpen={showLogin} 
+        onClose={() => setShowLogin(false)} 
+        onSuccess={handleLoginSuccess} 
+      />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// src/App.jsx
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
@@ -8,33 +7,26 @@ import DashboardLayout from "./layout/DashboardLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import ExpenseTracker from "./pages/ExpenseTracker";
 import ProductionTracker from "./pages/ProductionTracker";
-import RevenueTracker from "./pages/RevenueTracker"; 
-import ThemeProvider from "./components/ThemeProvider";
-import { GoogleOAuthProvider } from "@react-oauth/google";
-
-const GOOGLE_CLIENT_ID = "1091305199358-8dmcca126f88clk710fkvkmu5r5l08ap.apps.googleusercontent.com";
+import RevenueTracker from "./pages/RevenueTracker";
 
 export default function App() {
   return (
-        <Router>
-          <Routes>
-            <Route path="/" element={<Welcome />} />
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <DashboardLayout />
-                </PrivateRoute>
-              }
-            >
-              <Route index element={<Dashboard />} />
-              <Route path="feed" element={<FeedPredictor />} />
-              <Route path="flock" element={<FlockManagement />} />
-              <Route path="expenses" element={<ExpenseTracker />} />
-              <Route path="eggs" element={<ProductionTracker />} />
-              <Route path="revenue" element={<RevenueTracker />} /> 
-            </Route>
-          </Routes>
-        </Router>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/dashboard" element={
+          <PrivateRoute>
+            <DashboardLayout />
+          </PrivateRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="feed" element={<FeedPredictor />} />
+          <Route path="flock" element={<FlockManagement />} />
+          <Route path="expenses" element={<ExpenseTracker />} />
+          <Route path="eggs" element={<ProductionTracker />} />
+          <Route path="revenue" element={<RevenueTracker />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
