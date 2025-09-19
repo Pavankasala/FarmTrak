@@ -26,16 +26,16 @@ function googleLogin(token) {
 }
 // 1. Send code to email
 function register(email, username, password) {
-  return axios.post(`${API_URL}/auth/register`, { email, username, password }); 
+  return axios.post(`${API_BASE_URL}/auth/register`, { email, username, password }); 
 }
 // 2. Check code and create user
 function verifyAndCreateUser(email, code, username, password) {
-  return axios.post(`${API_URL}/auth/verify`, { email, code, username, password });
+  return axios.post(`${API_BASE_URL}/auth/verify`, { email, code, username, password });
 }
 
 // 3. Login user
 function login(email, password) {
-  return axios.post(`${API_URL}/auth/login`, { email, password });
+  return axios.post(`${API_BASE_URL}/auth/login`, { email, password });
 }
 
 // Export a single apiClient object with nested resources
