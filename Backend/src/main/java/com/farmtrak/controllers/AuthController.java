@@ -1,14 +1,22 @@
 package com.farmtrak.controllers;
+
+import com.farmtrak.model.OTP;
+import com.farmtrak.repository.OTPRepository;  // ← ADD THIS
 import com.farmtrak.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;  // ← ADD THIS
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
     @Autowired private AuthService authService;
+    @Autowired private OTPRepository otpRepository;  // ← ADD THIS
 
     // 1. STEP 1: Send verification code
     @PostMapping("/register")
@@ -56,5 +64,25 @@ public class AuthController {
         } else {
             return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Wrong email or password!"));
         }
+    }
+
+    // 4. DEBUG: Check OTP codes in database
+    @GetMapping("/debug-otp/{email}")
+    public ResponseEntity<Map<String, Object>> debugOtp(@PathVariable String email) {
+        List<OTP> otps = otpRepository.findAll().stream()
+            .filter(otp -> otp.getEmail().equals(email))
+            .toList();
+        
+        List<Map<String, Object>> otpInfo = otps.stream().map(otp -> {
+            Map<String, Object> info = new HashMap<>();
+            info.put("email", otp.getEmail());
+            info.put("code", otp.getCode());
+            info.put("verified", otp.isVerified());
+            info.put("expiryTime", otp.getExpiryTime().toString());
+            info.put("isExpired", otp.getExpiryTime().isBefore(LocalDateTime.now()));
+            return info;
+        }).toList();
+        
+        return ResponseEntity.ok(Map.of("otps", otpInfo));
     }
 }
