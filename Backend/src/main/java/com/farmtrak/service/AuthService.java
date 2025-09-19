@@ -1,93 +1,75 @@
+// AuthService.java - Everything in one place!
 package com.farmtrak.service;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.farmtrak.model.OTP;
 import com.farmtrak.model.User;
 import com.farmtrak.repository.OTPRepository;
 import com.farmtrak.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class AuthService {
+    @Autowired private OTPRepository otpRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private EmailService emailService;
 
-    @Autowired
-    private OTPRepository otpRepository;
+    // PASSWORD HELPERS (right here in the same file!)
+    private String makePasswordSafe(String password) {
+        return "SAFE_" + password.hashCode();
+    }
+    
+    private boolean isPasswordCorrect(String userPassword, String savedPassword) {
+        return makePasswordSafe(userPassword).equals(savedPassword);
+    }
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private EmailService emailService;
-
-    private static final int OTP_LENGTH = 6;
-    private static final int OTP_EXPIRATION_MINUTES = 10;
-
-    /**
-     * Handles user registration: checks if user exists, then sends OTP.
-     */
-    public void register(String email, String username) {
+    // 1. REGISTER: Send code to email
+    public void sendCodeToEmail(String email, String username) {
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new IllegalStateException("User with this email already exists. Please log in.");
+            throw new RuntimeException("Email already used!");
         }
-        sendVerification(email, username);
-    }
-
-    /**
-     * Handles user login: checks if user exists and returns them.
-     */
-    public Optional<User> login(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    /**
-     * Generates, saves, and emails a new OTP for verification.
-     */
-    public void sendVerification(String email, String username) {
-        String code = generateNumericOTP(OTP_LENGTH);
-        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(OTP_EXPIRATION_MINUTES);
-
-        // Save or update the OTP for this email
-        OTP otp = new OTP(email, code, expiryTime, false);
+        
+        String code = String.valueOf(100000 + new Random().nextInt(900000));
+        LocalDateTime expires = LocalDateTime.now().plusMinutes(10);
+        OTP otp = new OTP(email, code, expires, false);
         otpRepository.save(otp);
-
-        // Send the email
+        
         emailService.sendVerificationEmail(email, username, code);
     }
 
-    /**
-     * Verifies the OTP and creates the user if valid.
-     */
-    public boolean verifyAndCreateUser(String email, String code, String username) {
+    // 2. VERIFY: Check code and create user
+    public boolean createUserWithCode(String email, String code, String username, String password) {
         OTP otp = otpRepository.findByEmailAndCode(email, code);
-
+        
         if (otp != null && !otp.isVerified() && otp.getExpiryTime().isAfter(LocalDateTime.now())) {
             otp.setVerified(true);
             otpRepository.save(otp);
-
-            // Create and save the new user
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setUsername(username);
-            userRepository.save(newUser);
-
+            
+            User user = new User();
+            user.setEmail(email);
+            user.setUsername(username);
+            user.setPassword(makePasswordSafe(password)); // Use helper directly!
+            userRepository.save(user);
+            
             return true;
         }
         return false;
     }
 
-    /**
-     * Generates a random numeric string of a given length.
-     */
-    private String generateNumericOTP(int length) {
-        Random random = new Random();
-        StringBuilder otp = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            otp.append(random.nextInt(10));
+    // 3. LOGIN: Check email and password
+    public Optional<User> checkLogin(String email, String password) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (isPasswordCorrect(password, user.getPassword())) { // Use helper directly!
+                return Optional.of(user);
+            }
         }
-        return otp.toString();
+        return Optional.empty();
     }
 }
