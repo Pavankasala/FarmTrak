@@ -12,7 +12,7 @@ const selectStyle = inputStyle;
 
 export default function ProductionTracker() {
   const [flocks, setFlocks] = useState([]);
-  const [productions, setProductions] = useState([]); // Initialized with an empty array
+  const [productions, setProductions] = useState([]);
   const [form, setForm] = useState({ id: null, flockId: "", count: "", date: new Date().toISOString().split("T")[0] });
   const [loading, setLoading] = useState(true);
 
@@ -36,8 +36,19 @@ export default function ProductionTracker() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.flockId || !form.count || !form.date) return alert("Please fill all fields");
-    const payload = { flockId: Number(form.flockId), count: Number(form.count), date: form.date };
+
+    // 1. Check for missing fields
+    if (!form.flockId || !form.count || !form.date) {
+      return alert("Please fill all fields");
+    }
+
+    // 2. Check for negative or zero count
+    const eggCount = Number(form.count);
+    if (eggCount <= 0) {
+      return alert("Egg count must be a positive number.");
+    }
+
+    const payload = { flockId: Number(form.flockId), count: eggCount, date: form.date };
     try {
       if (form.id) await apiClient.eggs.update(form.id, payload);
       else await apiClient.eggs.save(payload);
@@ -49,7 +60,7 @@ export default function ProductionTracker() {
   };
 
   const handleEdit = (prod) => setForm({ id: prod.id, flockId: prod.flockId.toString(), count: prod.count.toString(), date: prod.date });
-  
+
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this record?")) return;
     try {
@@ -64,12 +75,12 @@ export default function ProductionTracker() {
   const todayEggs = productions
     .filter(p => p.date === new Date().toISOString().split("T")[0])
     .reduce((sum, p) => sum + p.count, 0);
-  
+
   const columns = [
     { header: "Date", key: "date", render: (item) => new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) },
-    { 
-      header: "Flock", 
-      key: "flockId", 
+    {
+      header: "Flock",
+      key: "flockId",
       render: (item) => {
         const flock = flocks.find(f => f.id === item.flockId);
         return flock ? (
@@ -100,8 +111,8 @@ export default function ProductionTracker() {
         <StatCard icon="🐔" label="Active Flocks" value={flocks.length} />
       </div>
 
-      <motion.form 
-        onSubmit={handleSubmit} 
+      <motion.form
+        onSubmit={handleSubmit}
         className="w-full max-w-4xl glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -111,27 +122,27 @@ export default function ProductionTracker() {
           {form.id ? "Update Production Record" : "Record Egg Production"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">🐔</span>Select Flock<Tooltip text="Choose the flock for this egg collection record" />
-                </label>
-                <select name="flockId" value={form.flockId} onChange={handleChange} className={selectStyle}>
-                    <option value="">Choose a flock...</option>
-                    {flocks.map(f => <option key={f.id} value={f.id}>{f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)</option>)}
-                </select>
-            </div>
-            <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">🥚</span>Egg Count<Tooltip text="Enter the total number of eggs collected" />
-                </label>
-                <input type="number" name="count" value={form.count} onChange={handleChange} placeholder="Number of eggs" className={inputStyle}/>
-            </div>
-            <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                    <span className="text-lg">📅</span>Collection Date<Tooltip text="Select the date of collection" />
-                </label>
-                <input type="date" name="date" value={form.date} onChange={handleChange} className={inputStyle}/>
-            </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">🐔</span>Select Flock<Tooltip text="Choose the flock for this egg collection record" />
+            </label>
+            <select name="flockId" value={form.flockId} onChange={handleChange} className={selectStyle}>
+              <option value="">Choose a flock...</option>
+              {flocks.map(f => <option key={f.id} value={f.id}>{f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)</option>)}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">🥚</span>Egg Count<Tooltip text="Enter the total number of eggs collected" />
+            </label>
+            <input type="number" name="count" value={form.count} onChange={handleChange} placeholder="Number of eggs" className={inputStyle} min="0" />
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <span className="text-lg">📅</span>Collection Date<Tooltip text="Select the date of collection" />
+            </label>
+            <input type="date" name="date" value={form.date} onChange={handleChange} className={inputStyle} />
+          </div>
         </div>
         <div className="flex gap-3">
           <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{form.id ? "Update Record" : "Add Production"}</motion.button>
@@ -154,10 +165,10 @@ export default function ProductionTracker() {
           onEdit={handleEdit}
           onDelete={handleDelete}
         >
-             <div className="space-y-3">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🥚</span></div>
-                <p className="text-slate-500 dark:text-slate-400 font-medium">No production records yet</p>
-            </div>
+          <div className="space-y-3">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🥚</span></div>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">No production records yet</p>
+          </div>
         </DataTable>
       </TableCard>
     </motion.div>

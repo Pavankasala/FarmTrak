@@ -12,7 +12,7 @@ const selectStyle = inputStyle;
 
 export default function ExpenseTracker() {
   const [expenses, setExpenses] = useState([]);
-  const [form, setForm] = useState({ category: "feed", amount: "", note: "", date: new Date().toISOString().split("T")[0] });
+  const [form, setForm] = useState({ category: "feed", amount: "", notes: "", date: new Date().toISOString().split("T")[0] });
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,9 +31,9 @@ export default function ExpenseTracker() {
   useEffect(() => { fetchExpenses(); }, []);
 
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  
+
   const resetForm = () => {
-    setForm({ category: "feed", amount: "", note: "", date: new Date().toISOString().split("T")[0] });
+    setForm({ category: "feed", amount: "", notes: "", date: new Date().toISOString().split("T")[0] });
     setEditId(null);
   };
 
@@ -52,7 +52,7 @@ export default function ExpenseTracker() {
   };
 
   const handleEdit = (expense) => {
-    setForm({ category: expense.category, amount: expense.amount, note: expense.note, date: expense.date });
+    setForm({ category: expense.category, amount: expense.amount, notes: expense.notes, date: expense.date });
     setEditId(expense.id);
   };
 
@@ -71,9 +71,9 @@ export default function ExpenseTracker() {
 
   const columns = [
     { header: "Date", key: "date", render: (item) => new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) },
-    { 
-      header: "Category", 
-      key: "category", 
+    {
+      header: "Category",
+      key: "category",
       render: (item) => (
         <div className="flex items-center gap-2">
           <span className="text-lg">{item.category === 'feed' ? '🌾' : item.category === 'medicine' ? '💊' : item.category === 'maintenance' ? '🛠️' : '📦'}</span>
@@ -82,7 +82,7 @@ export default function ExpenseTracker() {
       )
     },
     { header: "Amount", key: "amount", render: (item) => <span className="font-bold text-slate-900 dark:text-slate-100">₹{item.amount.toFixed(2)}</span> },
-    { header: "Description", key: "note", render: (item) => item.note || "N/A" },
+    { header: "Description", key: "notes", render: (item) => item.notes || "N/A" },
   ];
 
   return (
@@ -105,13 +105,13 @@ export default function ExpenseTracker() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                <span className="text-lg">🗓️</span>Date<Tooltip text="Date the expense was incurred" />
+              <span className="text-lg">🗓️</span>Date<Tooltip text="Date the expense was incurred" />
             </label>
             <input type="date" name="date" value={form.date} onChange={handleChange} className={inputStyle} />
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                <span className="text-lg">🏷️</span>Category<Tooltip text="Categorize your expense" />
+              <span className="text-lg">🏷️</span>Category<Tooltip text="Categorize your expense" />
             </label>
             <select name="category" value={form.category} onChange={handleChange} className={selectStyle}>
               <option value="feed">🌾 Feed & Nutrition</option>
@@ -122,16 +122,16 @@ export default function ExpenseTracker() {
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                <span className="text-lg">💵</span>Amount (₹)<Tooltip text="Enter the total amount spent" />
+              <span className="text-lg">💵</span>Amount (₹)<Tooltip text="Enter the total amount spent" />
             </label>
-            <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder="0.00" className={inputStyle}/>
+            <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder="0.00" className={inputStyle} />
           </div>
         </div>
         <div className="space-y-2 mb-6">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                <span className="text-lg">📝</span>Note (Optional)<Tooltip text="Add any relevant details" />
-            </label>
-            <input type="text" name="note" value={form.note} onChange={handleChange} placeholder="e.g., Premium layer feed - 50kg bags" className={inputStyle}/>
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+            <span className="text-lg">📝</span>Note (Optional)<Tooltip text="Add any relevant details" />
+          </label>
+          <input type="text" name="notes" value={form.notes} onChange={handleChange} placeholder="e.g., Premium layer feed - 50kg bags" className={inputStyle} />
         </div>
         <div className="flex gap-3">
           <motion.button onClick={saveExpense} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{editId ? "Update Expense" : "Save Expense"}</motion.button>
@@ -143,9 +143,9 @@ export default function ExpenseTracker() {
         icon="🧾"
         title="Expense Records"
         badge={
-            <div className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm font-medium">
-                {expenses.length} {expenses.length === 1 ? 'Record' : 'Records'}
-            </div>
+          <div className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm font-medium">
+            {expenses.length} {expenses.length === 1 ? 'Record' : 'Records'}
+          </div>
         }
       >
         <DataTable
@@ -156,8 +156,8 @@ export default function ExpenseTracker() {
           onDelete={handleDelete}
         >
           <div className="space-y-3">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🧾</span></div>
-              <p className="text-slate-500 dark:text-slate-400 font-medium">No expenses recorded yet</p>
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🧾</span></div>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">No expenses recorded yet</p>
           </div>
         </DataTable>
       </TableCard>

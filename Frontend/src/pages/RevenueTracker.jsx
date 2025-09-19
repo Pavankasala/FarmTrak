@@ -12,7 +12,7 @@ const selectStyle = inputStyle;
 
 export default function RevenueTracker() {
   const [revenue, setRevenue] = useState([]);
-  const [form, setForm] = useState({ category: "egg_sale", amount: "", note: "", date: new Date().toISOString().split("T")[0] });
+  const [form, setForm] = useState({ category: "egg_sales", amount: "", notes: "", date: new Date().toISOString().split("T")[0] });
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +33,7 @@ export default function RevenueTracker() {
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const resetForm = () => {
-    setForm({ category: "egg_sale", amount: "", note: "", date: new Date().toISOString().split("T")[0] });
+    setForm({ category: "egg_sales", amount: "", notes: "", date: new Date().toISOString().split("T")[0] });
     setEditId(null);
   };
 
@@ -57,7 +57,7 @@ export default function RevenueTracker() {
   };
 
   const handleEdit = (item) => {
-    setForm({ category: item.category, amount: item.amount, note: item.note, date: item.date });
+    setForm({ category: item.category, amount: item.amount, notes: item.notes, date: item.date });
     setEditId(item.id);
   };
   
@@ -81,13 +81,13 @@ export default function RevenueTracker() {
       key: "category", 
       render: (item) => (
         <div className="flex items-center gap-2">
-          <span className="text-lg">{item.category === 'egg_sale' ? '🥚' : item.category === 'flock_sale' ? '🐔' : '📦'}</span>
+          <span className="text-lg">{item.category === 'egg_sales' ? '🥚' : item.category === 'flock_sales' ? '🐔' : '📦'}</span>
           <span className="capitalize">{item.category.replace('_', ' ')}</span>
         </div>
       )
     },
     { header: "Amount", key: "amount", render: (item) => <span className="font-bold text-green-600 dark:text-green-400">₹{item.amount.toFixed(2)}</span> },
-    { header: "Details", key: "note", render: (item) => item.note || "N/A" },
+    { header: "Details", key: "notes", render: (item) => item.notes || "N/A" },
   ];
 
   return (
@@ -119,8 +119,8 @@ export default function RevenueTracker() {
                 <span className="text-lg">🏷️</span>Revenue Source<Tooltip text="Categorize the source of this revenue" />
             </label>
             <select name="category" value={form.category} onChange={handleChange} className={selectStyle}>
-              <option value="egg_sale">🥚 Egg Sales</option>
-              <option value="flock_sale">🐔 Flock Sales</option>
+              <option value="egg_sales">🥚 Egg Sales</option>
+              <option value="flock_sales">🐔 Flock Sales</option>
               <option value="other">📦 Other Income</option>
             </select>
           </div>
@@ -133,9 +133,9 @@ export default function RevenueTracker() {
         </div>
         <div className="space-y-2 mb-6">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                <span className="text-lg">📝</span>Sale Details & Notes (Optional)<Tooltip text="Add details about this sale for future reference" />
+                <span className="text-lg">📝</span>Sale Details & notes (Optional)<Tooltip text="Add details about this sale for future reference" />
             </label>
-            <input type="text" name="note" value={form.note} onChange={handleChange} placeholder="e.g., Sold 100 eggs to local market" className={inputStyle}/>
+            <input type="text" name="notes" value={form.notes} onChange={handleChange} placeholder="e.g., Sold 100 eggs to local market" className={inputStyle}/>
         </div>
         <div className="flex gap-3">
           <motion.button onClick={saveRevenue} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{editId ? "Update Revenue" : "Save Revenue"}</motion.button>
