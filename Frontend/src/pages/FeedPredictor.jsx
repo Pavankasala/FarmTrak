@@ -153,20 +153,38 @@ export default function FeedPredictor() {
     {
       header: "Species",
       key: "birdName",
-      render: (item) => <span className="capitalize">{item.birdName}</span>,
+      render: (item) => <span className="capitalize font-medium">{item.birdName}</span>,
     },
-    { header: "Flock Size", key: "numBirds", render: (item) => `${item.numBirds}` },
+    {
+      header: "Flock Size",
+      key: "numBirds",
+      render: (item) => <span>{item.numBirds} birds</span>
+    },
     {
       header: "Per Bird/Day",
       key: "feedPerBird",
-      render: (item) =>
-        `${(item.feedPerBird ?? 0).toFixed(2)} ${form.resultUnit === "kg" ? "g (raw)" : "g"}`,
+      render: (item) => {
+        const feedPerBird = item.feedPerBird ?? 0;
+        if (form.resultUnit === "kg") {
+          return <span className="font-medium text-blue-600 dark:text-blue-400">{feedPerBird.toFixed(3)} kg</span>;
+        } else {
+          const feedInGrams = feedPerBird * 1000; // Convert kg to grams
+          return <span className="font-medium text-blue-600 dark:text-blue-400">{feedInGrams.toFixed(1)} g</span>;
+        }
+      },
     },
     {
       header: "Total/Day",
       key: "feedPerDay",
-      render: (item) =>
-        `${(item.feedPerDay ?? 0).toFixed(2)} g`,
+      render: (item) => {
+        const feedPerDay = item.feedPerDay ?? 0;
+        if (form.resultUnit === "kg") {
+          return <span className="font-medium text-green-600 dark:text-green-400">{feedPerDay.toFixed(3)} kg</span>;
+        } else {
+          const feedInGrams = feedPerDay * 1000; // Convert kg to grams
+          return <span className="font-medium text-green-600 dark:text-green-400">{feedInGrams.toFixed(0)} g</span>;
+        }
+      },
     },
   ];
 
@@ -240,7 +258,7 @@ export default function FeedPredictor() {
                 className={inputStyle}
               />
             </div>
-
+            {/* FIXED Feed Amount Section - Proper spacing */}
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 <span className="text-lg">⚖️</span>Feed Amount
@@ -252,21 +270,24 @@ export default function FeedPredictor() {
                   name="totalFeedGiven"
                   value={form.totalFeedGiven}
                   onChange={handleChange}
-                  placeholder="Amount"
-                  className={`${inputStyle} flex-1`}
+                  placeholder="Enter amount"
+                  min="0"
+                  step="0.1"
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all"
+                  required
                 />
                 <select
                   name="feedUnit"
                   value={form.feedUnit}
                   onChange={handleChange}
-                  className={selectStyle}
+                  className="w-20 px-2 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all"
+                  title="Feed unit"
                 >
                   <option value="kg">kg</option>
                   <option value="g">g</option>
                 </select>
               </div>
             </div>
-
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 <span className="text-lg">📅</span>Duration (Days)
