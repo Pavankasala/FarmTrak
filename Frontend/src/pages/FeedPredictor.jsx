@@ -1,4 +1,3 @@
-// Frontend/src/pages/FeedPredictor.jsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiClient } from "../utils/apiClient";
@@ -8,8 +7,7 @@ import DataTable from "../components/DataTable";
 import StatCard from "../components/StatCard";
 import Tooltip from "../components/Tooltip";
 
-const inputStyle =
-  "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all";
+const inputStyle = "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all";
 const selectStyle = inputStyle;
 
 export default function FeedPredictor() {
@@ -51,7 +49,6 @@ export default function FeedPredictor() {
 
   useEffect(() => {
     fetchRecords();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e) =>
@@ -60,12 +57,12 @@ export default function FeedPredictor() {
   const calculateResult = () => {
     if (!form.numBirds || !form.totalFeedGiven || !form.daysLasted) return;
     let total = parseFloat(form.totalFeedGiven || 0);
-    if (form.feedUnit === "kg") total *= 1000; // convert to grams for internal calc
+    if (form.feedUnit === "kg") total *= 1000;
     const days = parseFloat(form.daysLasted || 1) || 1;
     const numBirds = parseFloat(form.numBirds || 1) || 1;
 
-    const perDay = total / days; // grams/day
-    const perBird = perDay / numBirds; // grams/bird/day
+    const perDay = total / days;
+    const perBird = perDay / numBirds;
 
     if (form.resultUnit === "kg") {
       setResult({
@@ -175,216 +172,217 @@ export default function FeedPredictor() {
 
   return (
     <motion.div
-      className="container-responsive spacing-lg space-y-4 sm:space-y-6 lg:space-y-8"
+      className="min-h-screen bg-light-bg dark:bg-dark-bg py-8 px-4 sm:px-6 lg:px-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <PageHeader
-        icon={"🌾"}
-        title="Intelligent Feed Predictor"
-        description="Calculate optimal feed requirements and predict consumption patterns for your poultry flocks"
-      />
+      <div className="max-w-7xl mx-auto space-y-8">
+        <PageHeader
+          icon={"🌾"}
+          title="Intelligent Feed Predictor"
+          description="Calculate optimal feed requirements and predict consumption patterns for your poultry flocks"
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        <StatCard icon={"📋"} label="Total Records" value={totalRecords} />
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <StatCard icon={"📊"} label="Total Records" value={totalRecords} />
+        </div>
 
-      <motion.div
-        className="w-full max-w-4xl glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
-          Feed Consumption Calculator
-        </h2>
+        <motion.div
+          className="max-w-6xl mx-auto glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
+            Feed Consumption Calculator
+          </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">🐦</span>Bird Species
-              <Tooltip text="Select the type of poultry for accurate feed calculations" />
-            </label>
-            <select
-              name="birdType"
-              value={form.birdType}
-              onChange={handleChange}
-              className={selectStyle}
-            >
-              <option value="Broiler">🐓 Broiler</option>
-              <option value="Layer">🥚 Layer</option>
-              <option value="Other">🐥 Other</option>
-            </select>
-            {form.birdType === "Other" && (
-              <input
-                type="text"
-                name="customBird"
-                value={form.customBird}
-                onChange={handleChange}
-                placeholder="Enter species name"
-                className={`mt-2 ${inputStyle}`}
-              />
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">📊</span>Flock Size
-              <Tooltip text="Total number of birds in your flock" />
-            </label>
-            <input
-              type="number"
-              name="numBirds"
-              value={form.numBirds}
-              onChange={handleChange}
-              placeholder="Number of birds"
-              className={inputStyle}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">⚖️</span>Feed Amount
-              <Tooltip text="Total amount of feed provided to the flock" />
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                name="totalFeedGiven"
-                value={form.totalFeedGiven}
-                onChange={handleChange}
-                placeholder="Amount"
-                className={`${inputStyle} flex-1`}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">🐔</span>Bird Species
+                <Tooltip text="Select the type of poultry for accurate feed calculations" />
+              </label>
               <select
-                name="feedUnit"
-                value={form.feedUnit}
+                name="birdType"
+                value={form.birdType}
                 onChange={handleChange}
                 className={selectStyle}
               >
-                <option value="kg">kg</option>
-                <option value="g">g</option>
+                <option value="Broiler">Broiler</option>
+                <option value="Layer">Layer</option>
+                <option value="Other">Other</option>
+              </select>
+              {form.birdType === "Other" && (
+                <input
+                  type="text"
+                  name="customBird"
+                  value={form.customBird}
+                  onChange={handleChange}
+                  placeholder="Enter species name"
+                  className={`mt-2 ${inputStyle}`}
+                />
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">📈</span>Flock Size
+                <Tooltip text="Total number of birds in your flock" />
+              </label>
+              <input
+                type="number"
+                name="numBirds"
+                value={form.numBirds}
+                onChange={handleChange}
+                placeholder="Number of birds"
+                className={inputStyle}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">⚖️</span>Feed Amount
+                <Tooltip text="Total amount of feed provided to the flock" />
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  name="totalFeedGiven"
+                  value={form.totalFeedGiven}
+                  onChange={handleChange}
+                  placeholder="Amount"
+                  className={`${inputStyle} flex-1`}
+                />
+                <select
+                  name="feedUnit"
+                  value={form.feedUnit}
+                  onChange={handleChange}
+                  className={selectStyle}
+                >
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">📅</span>Duration (Days)
+                <Tooltip text="Number of days the feed lasted" />
+              </label>
+              <input
+                type="number"
+                name="daysLasted"
+                value={form.daysLasted}
+                onChange={handleChange}
+                placeholder="Days"
+                className={inputStyle}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">📏</span>Result Unit
+                <Tooltip text="Choose the unit for displaying results" />
+              </label>
+              <select
+                name="resultUnit"
+                value={form.resultUnit}
+                onChange={handleChange}
+                className={selectStyle}
+              >
+                <option value="kg">Kilograms (kg)</option>
+                <option value="g">Grams (g)</option>
               </select>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">📅</span>Duration (Days)
-              <Tooltip text="Number of days the feed lasted" />
-            </label>
-            <input
-              type="number"
-              name="daysLasted"
-              value={form.daysLasted}
-              onChange={handleChange}
-              placeholder="Days"
-              className={inputStyle}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">📏</span>Result Unit
-              <Tooltip text="Choose the unit for displaying results" />
-            </label>
-            <select
-              name="resultUnit"
-              value={form.resultUnit}
-              onChange={handleChange}
-              className={selectStyle}
-            >
-              <option value="kg">Kilograms (kg)</option>
-              <option value="g">Grams (g)</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-3 mt-8">
-          <motion.button
-            onClick={calculateResult}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg"
-          >
-            Calculate
-          </motion.button>
-
-          <motion.button
-            onClick={saveRecord}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="btn-responsive bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200
-"
-          >
-            {editingId ? "Update Record" : "Save Record"}
-          </motion.button>
-
-          {editingId && (
+          <div className="flex flex-wrap gap-3 mt-8">
             <motion.button
-              onClick={resetForm}
+              onClick={calculateResult}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg"
             >
-              Cancel Edit
+              Calculate
             </motion.button>
-          )}
-        </div>
 
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="mt-8 p-6 bg-green-100/50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800"
+            <motion.button
+              onClick={saveRecord}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg"
             >
-              <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-4">
-                Feed Calculation Results
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <StatCard
-                  icon={"🐦"}
-                  label="Per Bird / Day"
-                  value={`${result.perBird} ${result.unit}`}
-                />
-                <StatCard
-                  icon={"📦"}
-                  label="Total / Day"
-                  value={`${result.total} ${result.unit}`}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+              {editingId ? "Update Record" : "Save Record"}
+            </motion.button>
 
-      <TableCard
-        icon={"📋"}
-        title="Feed Records History"
-        badge={
-          <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-sm font-medium">
-            {records.length} {records.length === 1 ? "Record" : "Records"}
+            {editingId && (
+              <motion.button
+                onClick={resetForm}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl"
+              >
+                Cancel Edit
+              </motion.button>
+            )}
           </div>
-        }
-      >
-        <DataTable
-          isLoading={loading}
-          data={records}
-          columns={columns}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        >
-          <div className="space-y-3">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-3xl">🌿</span>
+
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-8 p-6 bg-green-100/50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800"
+              >
+                <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-4">
+                  Feed Calculation Results
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <StatCard
+                    icon={"🐔"}
+                    label="Per Bird / Day"
+                    value={`${result.perBird} ${result.unit}`}
+                  />
+                  <StatCard
+                    icon={"📦"}
+                    label="Total / Day"
+                    value={`${result.total} ${result.unit}`}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        <TableCard
+          icon={"📋"}
+          title="Feed Records History"
+          badge={
+            <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-full text-sm font-medium">
+              {records.length} {records.length === 1 ? "Record" : "Records"}
             </div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">No feed records found</p>
-          </div>
-        </DataTable>
-      </TableCard>
+          }
+        >
+          <DataTable
+            isLoading={loading}
+            data={records}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          >
+            <div className="space-y-3">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                <span className="text-3xl">🌿</span>
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">No feed records found</p>
+            </div>
+          </DataTable>
+        </TableCard>
+      </div>
     </motion.div>
   );
 }

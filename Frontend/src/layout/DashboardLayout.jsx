@@ -1,4 +1,3 @@
-// src/layout/DashboardLayout.jsx
 import Sidebar from "../components/sidebar";
 import Topbar from "../components/topbar";
 import { Outlet } from "react-router-dom";
@@ -24,11 +23,19 @@ export default function DashboardLayout() {
   }, [dashboardStats]);
 
   return (
-    <div className="flex h-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text">
+    <div className="flex h-screen bg-light-bg dark:bg-dark-bg overflow-hidden">
+      {/* Sidebar */}
       <Sidebar />
-      <div className="flex flex-col flex-grow">
-        <Topbar />
-        <main className="flex-grow overflow-y-auto">
+      
+      {/* Main Content Area */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Topbar - Higher z-index to stay above sidebar */}
+        <div className="relative z-50">
+          <Topbar />
+        </div>
+        
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-light-bg dark:bg-dark-bg">
           <Outlet context={{ dashboardStats, setDashboardStats }} />
         </main>
       </div>

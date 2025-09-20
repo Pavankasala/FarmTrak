@@ -36,13 +36,9 @@ export default function ProductionTracker() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // 1. Check for missing fields
     if (!form.flockId || !form.count || !form.date) {
       return alert("Please fill all fields");
     }
-
-    // 2. Check for negative or zero count
     const eggCount = Number(form.count);
     if (eggCount <= 0) {
       return alert("Egg count must be a positive number.");
@@ -96,82 +92,105 @@ export default function ProductionTracker() {
 
   return (
     <motion.div
-      className="container-responsive spacing-lg space-y-4 sm:space-y-6 lg:space-y-8"
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+      className="min-h-screen bg-light-bg dark:bg-dark-bg py-8 px-4 sm:px-6 lg:px-8"
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.6 }}
     >
-      <PageHeader
-        icon="🥚"
-        title="Egg Production Tracker"
-        description="Monitor and record daily egg production across all your flocks with detailed analytics"
-      />
+      <div className="max-w-7xl mx-auto space-y-8">
+        <PageHeader
+          icon="🥚"
+          title="Egg Production Tracker"
+          description="Monitor and record daily egg production across all your flocks with detailed analytics"
+        />
 
-      <div className="grid-responsive-3 w-full max-w-4xl">
-        <StatCard icon="🥚" label="Eggs Today" value={todayEggs} />
-        <StatCard icon="📈" label="Total Eggs Recorded" value={totalEggs} />
-        <StatCard icon="🐔" label="Active Flocks" value={flocks.length} />
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <StatCard icon="🥚" label="Eggs Today" value={todayEggs} />
+          <StatCard icon="📈" label="Total Eggs Recorded" value={totalEggs} />
+          <StatCard icon="🐔" label="Active Flocks" value={flocks.length} />
+        </div>
 
-      <motion.form
-        onSubmit={handleSubmit}
-        className="w-full max-w-4xl glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
-          {form.id ? "Update Production Record" : "Record Egg Production"}
-        </h2>
-        <div className="grid-responsive-3 mb-6">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">🐔</span>Select Flock<Tooltip text="Choose the flock for this egg collection record" />
-            </label>
-            <select name="flockId" value={form.flockId} onChange={handleChange} className={selectStyle}>
-              <option value="">Choose a flock...</option>
-              {flocks.map(f => <option key={f.id} value={f.id}>{f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)</option>)}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">🥚</span>Egg Count<Tooltip text="Enter the total number of eggs collected" />
-            </label>
-            <input type="number" name="count" value={form.count} onChange={handleChange} placeholder="Number of eggs" className={inputStyle} min="0" />
-          </div>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              <span className="text-lg">📅</span>Collection Date<Tooltip text="Select the date of collection" />
-            </label>
-            <input type="date" name="date" value={form.date} onChange={handleChange} className={inputStyle} />
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="btn-responsive bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200
-">{form.id ? "Update Record" : "Add Production"}</motion.button>
-          {form.id && (<motion.button type="button" onClick={resetForm} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>)}
-        </div>
-      </motion.form>
-      <TableCard
-        icon="📋"
-        title="Production History"
-        badge={
-          <div className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">
-            {productions.length} {productions.length === 1 ? 'Record' : 'Records'}
-          </div>
-        }
-      >
-        <DataTable
-          isLoading={loading}
-          data={[...productions].sort((a, b) => new Date(b.date) - new Date(a.date))}
-          columns={columns}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+        <motion.form
+          onSubmit={handleSubmit}
+          className="max-w-6xl mx-auto glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
         >
-          <div className="space-y-3">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto"><span className="text-3xl">🥚</span></div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">No production records yet</p>
+          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
+            {form.id ? "Update Production Record" : "Record Egg Production"}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">🐔</span>Select Flock<Tooltip text="Choose the flock for this egg collection record" />
+              </label>
+              <select name="flockId" value={form.flockId} onChange={handleChange} className={selectStyle}>
+                <option value="">Choose a flock...</option>
+                {flocks.map(f => <option key={f.id} value={f.id}>{f.birdType === "Other" ? f.customBird : f.birdType} ({f.numBirds} birds)</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">🥚</span>Egg Count<Tooltip text="Enter the total number of eggs collected" />
+              </label>
+              <input type="number" name="count" value={form.count} onChange={handleChange} placeholder="Number of eggs" className={inputStyle} min="0" />
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-lg">📅</span>Collection Date<Tooltip text="Select the date of collection" />
+              </label>
+              <input type="date" name="date" value={form.date} onChange={handleChange} className={inputStyle} />
+            </div>
           </div>
-        </DataTable>
-      </TableCard>
+          <div className="flex gap-3">
+            <motion.button 
+              type="submit" 
+              whileHover={{ scale: 1.02 }} 
+              whileTap={{ scale: 0.98 }} 
+              className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg"
+            >
+              {form.id ? "Update Record" : "Add Production"}
+            </motion.button>
+            {form.id && (
+              <motion.button 
+                type="button" 
+                onClick={resetForm} 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }} 
+                className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl"
+              >
+                Cancel Edit
+              </motion.button>
+            )}
+          </div>
+        </motion.form>
+
+        <TableCard
+          icon="📋"
+          title="Production History"
+          badge={
+            <div className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">
+              {productions.length} {productions.length === 1 ? 'Record' : 'Records'}
+            </div>
+          }
+        >
+          <DataTable
+            isLoading={loading}
+            data={[...productions].sort((a, b) => new Date(b.date) - new Date(a.date))}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          >
+            <div className="space-y-3">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                <span className="text-3xl">🥚</span>
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">No production records yet</p>
+            </div>
+          </DataTable>
+        </TableCard>
+      </div>
     </motion.div>
   );
 }
