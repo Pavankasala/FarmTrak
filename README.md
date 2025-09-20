@@ -86,88 +86,87 @@ FarmTrak is a comprehensive web application designed to help poultry farmers man
 ---
 
 ## 📁 File Structure
-FarmTrak/
-├── Backend/
-│   ├── render.yml
-│   └── src/
-│       └── main/
-│           ├── java/
-│           │   └── com/
-│           │       └── farmtrak/
-│           │           ├── FarmTrakApplication.java
-│           │           ├── config/
-│           │           │   └── WebConfig.java
-│           │           ├── controllers/
-│           │           │   ├── BaseController.java
-│           │           │   ├── EggProductionController.java
-│           │           │   ├── ExpenseController.java
-│           │           │   ├── FeedRecordController.java
-│           │           │   ├── FlockController.java
-│           │           │   ├── LoginController.java
-│           │           │   └── RevenueController.java
-│           │           ├── model/
-│           │           │   ├── BaseEntity.java
-│           │           │   ├── EggProduction.java
-│           │           │   ├── Expense.java
-│           │           │   ├── FeedRecord.java
-│           │           │   ├── Flock.java
-│           │           │   └── Revenue.java
-│           │           └── repository/
-│           │               ├── BaseRepository.java
-│           │               ├── EggProductionRepository.java
-│           │               ├── ExpenseRepository.java
-│           │               ├── FeedRecordRepository.java
-│           │               ├── FlockRepository.java
-│           │               └── RevenueRepository.java
-│           └── resources/
-│               └── application.properties
-└── Frontend/
-├── dist/
-│   ├── assets/
-│   │   ├── index-92f00f58.js
-│   │   └── index-a75c8297.css
-│   ├── 404.html
-│   └── index.html
-├── public/
-│   └── 404.html
-├── src/
-│   ├── App.jsx
-│   ├── components/
-│   │   ├── DataTable.jsx
-│   │   ├── FirebaseLogin.jsx
-│   │   ├── PageHeader.jsx
-│   │   ├── PrivateRoute.jsx
-│   │   ├── StatCard.jsx
-│   │   ├── TableCard.jsx
-│   │   ├── ThemeProvider.jsx
-│   │   ├── Tooltip.jsx
-│   │   └── topbar.jsx
-│   ├── index.css
-│   ├── layout/
-│   │   └── DashboardLayout.jsx
-│   ├── main.jsx
-│   ├── pages/
-│   │   ├── Dashboard.jsx
-│   │   ├── ExpenseTracker.jsx
-│   │   ├── FeedPredictor.jsx
-│   │   ├── FlockManagement.jsx
-│   │   ├── ProductionTracker.jsx
-│   │   ├── RevenueTracker.jsx
-│   │   └── Welcome.jsx
-│   └── utils/
-│       ├── apiClient.js
-│       ├── firebase.js
-│       └── login.js
-├── styles/
-│   └── premium-theme.css
-├── .gitignore
-├── index.html
-├── package-lock.json
-├── package.json
-├── postcss.config.js
-├── tailwind.config.js
-└── vite.config.js
-
+    FarmTrak/
+    ├── Backend/
+    │   ├── render.yml
+    │   └── src/
+    │       └── main/
+    │           ├── java/
+    │           │   └── com/
+    │           │       └── farmtrak/
+    │           │           ├── FarmTrakApplication.java
+    │           │           ├── config/
+    │           │           │   └── WebConfig.java
+    │           │           ├── controllers/
+    │           │           │   ├── BaseController.java
+    │           │           │   ├── EggProductionController.java
+    │           │           │   ├── ExpenseController.java
+    │           │           │   ├── FeedRecordController.java
+    │           │           │   ├── FlockController.java
+    │           │           │   ├── LoginController.java
+    │           │           │   └── RevenueController.java
+    │           │           ├── model/
+    │           │           │   ├── BaseEntity.java
+    │           │           │   ├── EggProduction.java
+    │           │           │   ├── Expense.java
+    │           │           │   ├── FeedRecord.java
+    │           │           │   ├── Flock.java
+    │           │           │   └── Revenue.java
+    │           │           └── repository/
+    │           │               ├── BaseRepository.java
+    │           │               ├── EggProductionRepository.java
+    │           │               ├── ExpenseRepository.java
+    │           │               ├── FeedRecordRepository.java
+    │           │               ├── FlockRepository.java
+    │           │               └── RevenueRepository.java
+    │           └── resources/
+    │               └── application.properties
+    └── Frontend/
+    ├── dist/
+    │   ├── assets/
+    │   │   ├── index-92f00f58.js
+    │   │   └── index-a75c8297.css
+    │   ├── 404.html
+    │   └── index.html
+    ├── public/
+    │   └── 404.html
+    ├── src/
+    │   ├── App.jsx
+    │   ├── components/
+    │   │   ├── DataTable.jsx
+    │   │   ├── FirebaseLogin.jsx
+    │   │   ├── PageHeader.jsx
+    │   │   ├── PrivateRoute.jsx
+    │   │   ├── StatCard.jsx
+    │   │   ├── TableCard.jsx
+    │   │   ├── ThemeProvider.jsx
+    │   │   ├── Tooltip.jsx
+    │   │   └── topbar.jsx
+    │   ├── index.css
+    │   ├── layout/
+    │   │   └── DashboardLayout.jsx
+    │   ├── main.jsx
+    │   ├── pages/
+    │   │   ├── Dashboard.jsx
+    │   │   ├── ExpenseTracker.jsx
+    │   │   ├── FeedPredictor.jsx
+    │   │   ├── FlockManagement.jsx
+    │   │   ├── ProductionTracker.jsx
+    │   │   ├── RevenueTracker.jsx
+    │   │   └── Welcome.jsx
+    │   └── utils/
+    │       ├── apiClient.js
+    │       ├── firebase.js
+    │       └── login.js
+    ├── styles/
+    │   └── premium-theme.css
+    ├── .gitignore
+    ├── index.html
+    ├── package-lock.json
+    ├── package.json
+    ├── postcss.config.js
+    ├── tailwind.config.js
+    └── vite.config.js
 
 ---
 
