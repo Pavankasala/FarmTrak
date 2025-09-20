@@ -258,13 +258,12 @@ export default function FeedPredictor() {
                 className={inputStyle}
               />
             </div>
-            {/* FIXED Feed Amount Section - Proper spacing */}
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 <span className="text-lg">⚖️</span>Feed Amount
                 <Tooltip text="Total amount of feed provided to the flock" />
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
                 <input
                   type="number"
                   name="totalFeedGiven"
@@ -273,14 +272,14 @@ export default function FeedPredictor() {
                   placeholder="Enter amount"
                   min="0"
                   step="0.1"
-                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all"
+                  className="w-full sm:flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all touch-manipulation"
                   required
                 />
                 <select
                   name="feedUnit"
                   value={form.feedUnit}
                   onChange={handleChange}
-                  className="w-20 px-2 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all"
+                  className="w-full sm:w-24 px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all touch-manipulation"
                   title="Feed unit"
                 >
                   <option value="kg">kg</option>
