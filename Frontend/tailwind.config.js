@@ -1,4 +1,3 @@
-// tailwind.config.js
 export default {
   darkMode: 'class',
   content: [
@@ -7,31 +6,49 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',      // Extra small phones
+        'sm': '640px',      // Small tablets
+        'md': '768px',      // Medium tablets
+        'lg': '1024px',     // Laptops
+        'xl': '1280px',     // Desktops
+        '2xl': '1536px',    // Large desktops
+        '3xl': '1920px',    // Ultra-wide
+      },
       colors: {
-        // Light Theme
         light: {
-          bg: '#f8fafc', // slate-50
-          card: '#ffffff', // white
-          text: '#0f172a', // slate-900
-          subtext: '#64748b', // slate-500
-          border: '#e2e8f0', // slate-200
-          primary: '#4f46e5', // Original Indigo
-          primaryHover: '#4338ca', // Original Indigo Hover
+          bg: '#f8fafc',
+          card: '#ffffff',
+          text: '#0f172a',
+          subtext: '#64748b',
+          border: '#e2e8f0',
+          primary: '#4f46e5',
+          primaryHover: '#4338ca',
         },
-        // Dark Theme
         dark: {
-          bg: '#0f172a', // slate-900
-          card: '#1e293b', // slate-800
-          text: '#f1f5f9', // slate-100
-          subtext: '#94a3b8', // slate-400
-          border: '#334155', // slate-700
-          primary: '#6366f1', // Original Lighter Indigo
-          primaryHover: '#818cf8', // Original Lighter Indigo Hover
+          bg: '#0f172a',
+          card: '#1e293b',
+          text: '#f1f5f9',
+          subtext: '#94a3b8',
+          border: '#334155',
+          primary: '#6366f1',
+          primaryHover: '#818cf8',
         },
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+      },
+      maxWidth: {
+        'xs': '20rem',
+        '8xl': '88rem',
+        '9xl': '96rem',
+      }
     },
   },
   plugins: [],

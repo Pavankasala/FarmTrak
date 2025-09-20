@@ -96,7 +96,7 @@ export default function ProductionTracker() {
 
   return (
     <motion.div
-      className="flex flex-col items-center px-6 py-12 space-y-8 w-full max-w-7xl mx-auto"
+      className="container-responsive spacing-lg space-y-4 sm:space-y-6 lg:space-y-8"
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
     >
       <PageHeader
@@ -105,7 +105,7 @@ export default function ProductionTracker() {
         description="Monitor and record daily egg production across all your flocks with detailed analytics"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+      <div className="grid-responsive-3 w-full max-w-4xl">
         <StatCard icon="🥚" label="Eggs Today" value={todayEggs} />
         <StatCard icon="📈" label="Total Eggs Recorded" value={totalEggs} />
         <StatCard icon="🐔" label="Active Flocks" value={flocks.length} />
@@ -121,7 +121,7 @@ export default function ProductionTracker() {
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
           {form.id ? "Update Production Record" : "Record Egg Production"}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid-responsive-3 mb-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
               <span className="text-lg">🐔</span>Select Flock<Tooltip text="Choose the flock for this egg collection record" />
@@ -145,7 +145,8 @@ export default function ProductionTracker() {
           </div>
         </div>
         <div className="flex gap-3">
-          <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{form.id ? "Update Record" : "Add Production"}</motion.button>
+          <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="btn-responsive bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200
+">{form.id ? "Update Record" : "Add Production"}</motion.button>
           {form.id && (<motion.button type="button" onClick={resetForm} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>)}
         </div>
       </motion.form>

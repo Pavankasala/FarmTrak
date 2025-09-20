@@ -92,7 +92,7 @@ export default function RevenueTracker() {
 
   return (
     <motion.div
-      className="flex flex-col items-center px-6 py-12 space-y-8 w-full max-w-7xl mx-auto"
+      className="container-responsive spacing-lg space-y-4 sm:space-y-6 lg:space-y-8"
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
     >
       <PageHeader
@@ -107,7 +107,7 @@ export default function RevenueTracker() {
 
       <motion.div className="w-full max-w-4xl glass-effect rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
         <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-6">{editId ? "Edit Revenue Entry" : "Record New Revenue"}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid-responsive-3 mb-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 <span className="text-lg">🗓️</span>Date<Tooltip text="Date the revenue was earned" />
@@ -138,7 +138,8 @@ export default function RevenueTracker() {
             <input type="text" name="notes" value={form.notes} onChange={handleChange} placeholder="e.g., Sold 100 eggs to local market" className={inputStyle}/>
         </div>
         <div className="flex gap-3">
-          <motion.button onClick={saveRevenue} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg">{editId ? "Update Revenue" : "Save Revenue"}</motion.button>
+          <motion.button onClick={saveRevenue} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="btn-responsive bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200
+">{editId ? "Update Revenue" : "Save Revenue"}</motion.button>
           {editId && (<motion.button onClick={resetForm} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-6 py-3 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-xl">Cancel Edit</motion.button>)}
         </div>
       </motion.div>

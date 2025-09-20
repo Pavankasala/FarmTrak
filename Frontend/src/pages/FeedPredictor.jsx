@@ -175,7 +175,7 @@ export default function FeedPredictor() {
 
   return (
     <motion.div
-      className="flex flex-col items-center px-6 py-12 space-y-8 w-full max-w-7xl mx-auto"
+      className="container-responsive spacing-lg space-y-4 sm:space-y-6 lg:space-y-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -315,7 +315,8 @@ export default function FeedPredictor() {
             onClick={saveRecord}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl shadow-lg"
+            className="btn-responsive bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200
+"
           >
             {editingId ? "Update Record" : "Save Record"}
           </motion.button>

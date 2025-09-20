@@ -1,8 +1,10 @@
-/* Updated index.css with enhanced Tailwind integration */
-@import '../styles/premium-theme.css';
+/* Updated index.css with CORRECT import order */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Import custom theme AFTER Tailwind */
+@import '../styles/premium-theme.css';
 
 /* Enhanced base layer */
 @layer base {
@@ -98,48 +100,106 @@
 }
 
 @layer utilities {
-  /* Premium gradients */
-  .gradient-primary {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  /* Responsive Containers */
+  .container-responsive {
+    @apply w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8;
   }
   
-  .gradient-success {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  .container-form {
+    @apply w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl mx-auto;
+  }
+
+  /* Responsive Spacing */
+  .spacing-xs {
+    @apply p-2 sm:p-3 md:p-4;
   }
   
-  .gradient-warning {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  .spacing-sm {
+    @apply p-3 sm:p-4 md:p-6;
   }
   
-  .gradient-error {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  .spacing-md {
+    @apply p-4 sm:p-6 md:p-8;
   }
   
-  /* Text gradients */
-  .text-gradient-primary {
-    @apply bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent;
+  .spacing-lg {
+    @apply p-6 sm:p-8 md:p-10 lg:p-12;
+  }
+
+  /* Responsive Text */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
   }
   
-  .text-gradient-success {
-    @apply bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent;
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
   }
   
-  /* Shadow utilities */
-  .shadow-glow {
-    box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+  .text-responsive-base {
+    @apply text-sm sm:text-base md:text-lg;
   }
   
-  .shadow-glow-green {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
   }
   
-  /* Animation utilities */
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
+  }
+
+  /* Responsive Buttons */
+  .btn-responsive {
+    @apply px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl;
   }
   
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .btn-responsive-sm {
+    @apply px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm rounded md:rounded-lg;
+  }
+
+  /* Responsive Forms */
+  .input-responsive {
+    @apply w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-all;
+  }
+
+  /* Responsive Cards */
+  .card-responsive {
+    @apply bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 lg:p-8;
+  }
+
+  /* Responsive Grids */
+  .grid-responsive-1 {
+    @apply grid grid-cols-1 gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  .grid-responsive-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  button, input, select, textarea {
+    min-height: 44px;
+  }
+  
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .container-responsive {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }
 
