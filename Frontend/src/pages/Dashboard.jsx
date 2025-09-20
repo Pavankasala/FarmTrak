@@ -66,7 +66,7 @@ export default function Dashboard() {
     { icon: "🐔", label: "Total Birds", value: stats.totalBirds, colorClass: "text-blue-600" },
     { icon: "🥚", label: "Eggs Today", value: stats.eggsToday, colorClass: "text-yellow-600" },
     { icon: "📈", label: "Profit / Loss", value: `₹${stats.profit.toFixed(2)}`, colorClass: stats.profit < 0 ? 'text-red-500' : 'text-green-500' },
-    { icon: "💰", label: "Total Expenses", value: `₹${stats.totalExpenses.toFixed(2)}`, colorClass: "text-red-600" },
+    { icon: "💰", label: "Total Expenses", value: `₹${stats.totalExpenses.toFixed(2)}`, colorClass: "text-orange-500" },
   ];
 
   return (
