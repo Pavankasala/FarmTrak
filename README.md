@@ -173,7 +173,7 @@ FarmTrak is a comprehensive web application designed to help poultry farmers man
 ## 🖼️ Screenshots
 
 **Dashboard**
-![Dashboard] (screenshots/dashboard.png)
+![Dashboard](screenshots/dashboard.png)
 
 **Feed Calculator**
 ![Feed Calculator](screenshots/feed-predictor.png)
