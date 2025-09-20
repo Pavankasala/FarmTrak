@@ -194,7 +194,7 @@ FarmTrak is a comprehensive web application designed to help poultry farmers man
 
 ## 🌐 Live Demo
 
--   **Frontend**: [https://pavankasala.github.io](https://pavankasala.github.io)
+-   **Frontend**: [https://pavankasala.github.io/FarmTrak/](https://pavankasala.github.io/FarmTrak/)
 -   **Backend API**: [https://farmtrak.onrender.com](https://farmtrak.onrender.com)
 
 ---
