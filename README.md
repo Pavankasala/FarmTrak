@@ -186,6 +186,7 @@ FarmTrak is a comprehensive web application designed to help poultry farmers man
 
 **Expense Tracker**
 ![Expense Tracker](screenshots/expense-tracker.png)
+
 **Revenue Tracker**
 ![Revenue Tracker](screenshots/revenue-tracker.png)
 
