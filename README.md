@@ -175,14 +175,19 @@ FarmTrak is a comprehensive web application designed to help poultry farmers man
 **Dashboard**
 ![Dashboard](screenshots/dashboard.png)
 
+**Feed Calculator**
+![Feed Calculator](screenshots/feed-predictor.png)
+
 **Flock Management**
 ![Flock Management](screenshots/flock-management.png)
 
 **Egg Production Tracker**
 ![Egg Production Tracker](screenshots/egg-production.png)
 
-**Expense Tracker & Feed Calculator**
-![Expense & Feed](screenshots/expense-feed.png)
+**Expense Tracker**
+![Expense Tracker](screenshots/expense-tracker.png)
+**Revenue Tracker**
+![Revenue Tracker](screenshots/revenue-tracker.png)
 
 ---
 
