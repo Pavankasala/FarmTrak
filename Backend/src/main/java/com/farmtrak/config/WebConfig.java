@@ -30,14 +30,23 @@ public class WebConfig implements WebMvcConfigurer {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
                 // Set security headers
-                response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-                response.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
-                response.setHeader("X-Content-Type-Options", "nosniff");
-                response.setHeader("X-Frame-Options", "SAMEORIGIN");
-                response.setHeader("X-XSS-Protection", "1; mode=block");
-                
+                String uri = request.getRequestURI();
+                if (uri.contains("/api/google-login")) {
+                    // Relax COOP for login endpoint to avoid popup warning
+                    response.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+                    response.setHeader("X-Content-Type-Options", "nosniff");
+                    response.setHeader("X-Frame-Options", "SAMEORIGIN");
+                    response.setHeader("X-XSS-Protection", "1; mode=block");
+                } else {
+                    response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+                    response.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+                    response.setHeader("X-Content-Type-Options", "nosniff");
+                    response.setHeader("X-Frame-Options", "SAMEORIGIN");
+                    response.setHeader("X-XSS-Protection", "1; mode=block");
+                }
+
                 // Handle auth token in cookie
-                if (request.getRequestURI().contains("/api/google-login")) {
+                if (uri.contains("/api/google-login")) {
                     String token = request.getHeader("Authorization");
                     if (token != null) {
                         ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", token)
