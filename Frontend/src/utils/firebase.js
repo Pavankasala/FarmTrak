@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDApUwWI-KcL00w1oIfvopttzDxQG2mPgA",
-  authDomain: "farmtrak-d963f.firebaseapp.com",
-  projectId: "farmtrak-d963f",
-  storageBucket: "farmtrak-d963f.firebasestorage.app",
-  messagingSenderId: "97993700630",
-  appId: "1:97993700630:web:42d670d8a838df2f6d4c37",
-  measurementId: "G-4N1SECLGGB"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);

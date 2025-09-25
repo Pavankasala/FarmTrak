@@ -1,12 +1,14 @@
 import axios from "axios";
-import { getCurrentUser, getToken } from "./login";
+import { getCurrentUser } from "./login";
 
 const API_BASE_URL = "https://farmtrak.onrender.com/api";
 
 const getHeaders = () => ({
   "X-User-Email": getCurrentUser() || "",
-  Authorization: getToken() ? `Bearer ${getToken()}` : undefined,
 });
+
+// Configure axios to handle cookies
+axios.defaults.withCredentials = true;
 
 /**
  * A factory function to create a set of CRUD API methods for a resource.

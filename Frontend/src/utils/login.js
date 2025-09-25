@@ -1,36 +1,32 @@
 // src/utils/login.js
 
-const getEmailKey = () => {
-  const userKey = Object.keys(localStorage).find(key => key.startsWith('farmtrak-user-'));
-  return userKey ? localStorage.getItem(userKey) : null;
-};
-
-// Save token & user email
+// Save user email (non-sensitive data only)
 export const logIn = (token, email) => {
   if (!email) return;
-  localStorage.setItem(`farmtrak-token-${email}`, token);
-  localStorage.setItem(`farmtrak-user-${email}`, email);
+  localStorage.setItem('farmtrak-user-email', email);
+  // Token is automatically handled by cookies
 };
 
-// Clear all session-related items
-export const logOut = () => {
-  Object.keys(localStorage)
-    .filter(key => key.startsWith('farmtrak-'))
-    .forEach(key => localStorage.removeItem(key));
+// Clear session data
+export const logOut = async () => {
+  localStorage.removeItem('farmtrak-user-email');
+  // Cookie will be cleared by the backend
+  try {
+    await fetch('https://farmtrak.onrender.com/api/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
 };
 
 // Get the currently logged-in user's email
 export const getCurrentUser = () => {
-  return getEmailKey();
+  return localStorage.getItem('farmtrak-user-email');
 };
 
-// Check if a token exists for any user
+// Check if user is logged in
 export const isLoggedIn = () => {
-  return !!getToken();
-};
-
-// Get the token for the currently logged-in user
-export const getToken = () => {
-  const email = getEmailKey();
-  return email ? localStorage.getItem(`farmtrak-token-${email}`) : null;
+  return !!getCurrentUser();
 };
