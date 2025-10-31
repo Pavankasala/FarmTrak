@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: farmtrak-backend
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean install -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JAVA_VERSION
+        value: 17
+      # Database Configuration
+      - key: JDBC_DATABASE_URL
+        sync: false 
+      - key: JDBC_DATABASE_USERNAME
+        sync: false
+      - key: JDBC_DATABASE_PASSWORD
+        sync: false
+      # Mail Configuration
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_APP_PASSWORD
+        sync: false
+      # Security and Cookie Configuration
+      - key: COOKIE_DOMAIN
+        value: farmtrak.onrender.com
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ALLOWED_ORIGINS
+        value: "https://pavankasala.github.io,https://farmtrak.onrender.com"
+      # Session Configuration
+      - key: SESSION_TIMEOUT_MINUTES
+        value: "1440"  # 24 hours
+      # Production Settings
+      - key: SPRING_JPA_SHOW_SQL
+        value: "false"
+      - key: SPRING_H2_CONSOLE_ENABLED
+        value: "false"
+      - key: COOKIE_DOMAIN
+        value: farmtrak.onrender.com
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ALLOWED_ORIGINS
+        value: "https://pavankasala.github.io,https://farmtrak.onrender.com"
