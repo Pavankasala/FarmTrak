@@ -47,11 +47,16 @@
         
 
         
-        <!-- Google API Client for OAuth (minimal) -->
+        <!-- Google API Client for OAuth -->
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
             <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-jackson2</artifactId>
+            <version>1.41.6</version>
         </dependency>
     </dependencies>
     
