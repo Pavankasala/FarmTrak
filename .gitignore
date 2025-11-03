@@ -1,0 +1,30 @@
+# ======================
+# Node/Vite frontend
+# ======================
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.env
+Frontend/.DS_Store
+
+# ======================
+# Java/Spring Boot backend
+# ======================
+Backend/target/
+Backend/.mvn/
+Backend/.classpath
+Backend/.project
+Backend/.settings/
+Backend/.idea/
+Backend/*.iml
+Backend/*.log
+Backend/*.jar
+
+# ======================
+# General
+# ======================
+*.log
+*.DS_Store
+.vscode/
+
+# Firebase Service Account Key
+Backend/src/main/resources/serviceAccountKey.json
