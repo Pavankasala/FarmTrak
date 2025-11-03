@@ -25,3 +25,6 @@ Backend/*.jar
 *.log
 *.DS_Store
 .vscode/
+
+# Firebase Service Account Key
+Backend/src/main/resources/serviceAccountKey.json
